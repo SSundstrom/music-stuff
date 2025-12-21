@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import type { TournamentMatch, Song } from "@/types/game";
 
 interface MatchDisplayProps {
@@ -20,32 +20,50 @@ export default function MatchDisplay({
   playerId,
   isOwner,
   sessionId,
-  onMatchComplete,
 }: MatchDisplayProps) {
   const [userVote, setUserVote] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [matchState, setMatchState] = useState(match);
   const [isPlaying, setIsPlaying] = useState(false);
+  const eventSourceRef = useRef<EventSource | null>(null);
 
   useEffect(() => {
-    const fetchMatchState = async () => {
-      try {
-        const response = await fetch(`/api/game/${sessionId}`);
-        const data = (await response.json()) as { matches: TournamentMatch[] };
+    // Connect to SSE stream with playerId
+    const playerId_ = playerId || "guest";
+    const eventSource = new EventSource(
+      `/api/game/${sessionId}/stream?playerId=${encodeURIComponent(playerId_)}`,
+    );
 
-        const updated = data.matches.find((m) => m.id === match.id);
-        if (updated) {
-          setMatchState(updated);
+    eventSource.addEventListener("message", (event) => {
+      try {
+        const parsedEvent = JSON.parse(event.data);
+
+        if (parsedEvent.type === "game_state") {
+          const { matches } = parsedEvent.data;
+          const updated = matches.find(
+            (m: TournamentMatch) => m.id === match.id,
+          );
+          if (updated) {
+            setMatchState(updated);
+          }
         }
       } catch (err) {
-        console.error("Failed to fetch match state:", err);
+        console.error("Failed to parse SSE message:", err);
       }
+    });
+
+    eventSource.onerror = () => {
+      console.error("SSE connection error");
+      eventSource.close();
     };
 
-    const interval = setInterval(fetchMatchState, 1000);
-    return () => clearInterval(interval);
-  }, [match.id, sessionId]);
+    eventSourceRef.current = eventSource;
+
+    return () => {
+      eventSource.close();
+    };
+  }, [match.id, sessionId, playerId]);
 
   const handleVote = async (songId: string) => {
     if (!playerId) {
@@ -98,6 +116,7 @@ export default function MatchDisplay({
         body: JSON.stringify({
           action: "play",
           match_id: match.id,
+          songId: songId,
         }),
       });
 
@@ -135,7 +154,8 @@ export default function MatchDisplay({
     }
   };
 
-  const canVote = playerId && songA.player_id !== playerId && songB.player_id !== playerId;
+  const canVote =
+    playerId && songA.player_id !== playerId && songB.player_id !== playerId;
   const duration = matchState.round_number === 1 ? 30 : 15;
 
   return (
@@ -195,12 +215,6 @@ export default function MatchDisplay({
               </button>
             )}
 
-            {!canVote && (
-              <div className="rounded bg-yellow-100 p-2 text-center text-sm text-yellow-800">
-                You submitted this song
-              </div>
-            )}
-
             {/* Vote Count */}
             <div className="text-center text-base font-semibold text-black">
               Votes: {matchState.votes_a}
@@ -253,12 +267,6 @@ export default function MatchDisplay({
               >
                 {userVote === songB.id ? "✓ You voted" : "Vote"}
               </button>
-            )}
-
-            {!canVote && (
-              <div className="rounded bg-yellow-100 p-2 text-center text-sm text-yellow-800">
-                You submitted this song
-              </div>
             )}
 
             {/* Vote Count */}

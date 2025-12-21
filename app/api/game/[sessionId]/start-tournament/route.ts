@@ -1,5 +1,6 @@
-import { getSession, updateSession, getSongs } from "@/lib/game-session";
+import { getSession, updateSession, getSongs, getPlayers, getMatches } from "@/lib/game-session";
 import { generateTournamentBracket } from "@/lib/tournament";
+import { sseManager } from "@/lib/sse-manager";
 
 export async function POST(
   request: Request,
@@ -43,6 +44,23 @@ export async function POST(
     updateSession(sessionId, {
       status: "tournament",
     });
+
+    // Broadcast updated game state to all players
+    const updatedSession = getSession(sessionId);
+    if (updatedSession) {
+      const players = getPlayers(sessionId);
+      const matches = getMatches(sessionId, updatedSession.current_round);
+
+      sseManager.broadcast(sessionId, {
+        type: "game_state",
+        data: {
+          session: updatedSession,
+          players,
+          songs,
+          matches,
+        },
+      });
+    }
 
     return new Response(
       JSON.stringify({
