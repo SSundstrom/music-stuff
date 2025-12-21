@@ -1,9 +1,9 @@
-import { auth } from "@/lib/auth";
-
 let cachedAccessToken: string | null = null;
 let tokenExpirationTime: number | null = null;
 
-async function getSpotifyAccessToken(isOwner: boolean = false): Promise<string> {
+async function getSpotifyAccessToken(
+  isOwner: boolean = false,
+): Promise<string> {
   // For owner, use OAuth token from session
   if (isOwner) {
     const session = await getServerSession(authOptions);
@@ -14,7 +14,11 @@ async function getSpotifyAccessToken(isOwner: boolean = false): Promise<string> 
   }
 
   // For server-side operations, use Client Credentials flow
-  if (cachedAccessToken && tokenExpirationTime && Date.now() < tokenExpirationTime) {
+  if (
+    cachedAccessToken &&
+    tokenExpirationTime &&
+    Date.now() < tokenExpirationTime
+  ) {
     return cachedAccessToken;
   }
 
@@ -30,7 +34,7 @@ async function getSpotifyAccessToken(isOwner: boolean = false): Promise<string> 
   const response = await fetch("https://accounts.spotify.com/api/token", {
     method: "POST",
     headers: {
-      "Authorization": `Basic ${encoded}`,
+      Authorization: `Basic ${encoded}`,
       "Content-Type": "application/x-www-form-urlencoded",
     },
     body: "grant_type=client_credentials",
@@ -40,7 +44,10 @@ async function getSpotifyAccessToken(isOwner: boolean = false): Promise<string> 
     throw new Error(`Spotify auth failed: ${response.statusText}`);
   }
 
-  const data = (await response.json()) as { access_token: string; expires_in: number };
+  const data = (await response.json()) as {
+    access_token: string;
+    expires_in: number;
+  };
   cachedAccessToken = data.access_token;
   tokenExpirationTime = Date.now() + data.expires_in * 1000 - 60000; // Refresh 1 min before expiry
 
@@ -56,16 +63,18 @@ export interface SpotifySearchResult {
   duration_ms: number;
 }
 
-export async function searchSpotify(query: string): Promise<SpotifySearchResult[]> {
+export async function searchSpotify(
+  query: string,
+): Promise<SpotifySearchResult[]> {
   const accessToken = await getSpotifyAccessToken();
 
   const response = await fetch(
     `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&limit=20`,
     {
       headers: {
-        "Authorization": `Bearer ${accessToken}`,
+        Authorization: `Bearer ${accessToken}`,
       },
-    }
+    },
   );
 
   if (!response.ok) {
@@ -91,11 +100,14 @@ export async function searchSpotify(query: string): Promise<SpotifySearchResult[
 }
 
 export async function getTrackDetails(spotifyId: string, accessToken: string) {
-  const response = await fetch(`https://api.spotify.com/v1/tracks/${spotifyId}`, {
-    headers: {
-      "Authorization": `Bearer ${accessToken}`,
+  const response = await fetch(
+    `https://api.spotify.com/v1/tracks/${spotifyId}`,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
     },
-  });
+  );
 
   if (!response.ok) {
     throw new Error(`Failed to get track details: ${response.statusText}`);
@@ -108,21 +120,21 @@ export async function startPlayback(
   deviceId: string,
   spotifyId: string,
   accessToken: string,
-  positionMs: number = 0
+  positionMs: number = 0,
 ) {
   const response = await fetch(
     `https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`,
     {
       method: "PUT",
       headers: {
-        "Authorization": `Bearer ${accessToken}`,
+        Authorization: `Bearer ${accessToken}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
         uris: [`spotify:track:${spotifyId}`],
         position_ms: positionMs,
       }),
-    }
+    },
   );
 
   if (!response.ok) {
@@ -136,9 +148,9 @@ export async function pausePlayback(deviceId: string, accessToken: string) {
     {
       method: "PUT",
       headers: {
-        "Authorization": `Bearer ${accessToken}`,
+        Authorization: `Bearer ${accessToken}`,
       },
-    }
+    },
   );
 
   if (!response.ok) {
@@ -147,11 +159,14 @@ export async function pausePlayback(deviceId: string, accessToken: string) {
 }
 
 export async function getCurrentPlayback(accessToken: string) {
-  const response = await fetch("https://api.spotify.com/v1/me/player/currently-playing", {
-    headers: {
-      "Authorization": `Bearer ${accessToken}`,
+  const response = await fetch(
+    "https://api.spotify.com/v1/me/player/currently-playing",
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
     },
-  });
+  );
 
   if (!response.ok) {
     throw new Error(`Failed to get current playback: ${response.statusText}`);
@@ -163,7 +178,7 @@ export async function getCurrentPlayback(accessToken: string) {
 export async function getAvailableDevices(accessToken: string) {
   const response = await fetch("https://api.spotify.com/v1/me/player/devices", {
     headers: {
-      "Authorization": `Bearer ${accessToken}`,
+      Authorization: `Bearer ${accessToken}`,
     },
   });
 
@@ -171,6 +186,8 @@ export async function getAvailableDevices(accessToken: string) {
     throw new Error(`Failed to get devices: ${response.statusText}`);
   }
 
-  const data = (await response.json()) as { devices: Array<{ id: string; name: string }> };
+  const data = (await response.json()) as {
+    devices: Array<{ id: string; name: string }>;
+  };
   return data.devices;
 }

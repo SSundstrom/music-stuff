@@ -2,33 +2,18 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { authClient } from "@/components/SessionProvider";
+import { useAuthSession } from "@/hooks/useAuthSession";
 import { useGameSession } from "@/hooks/useGameSession";
 import CategoryPhase from "@/components/game/CategoryPhase";
 import SongSubmissionPhase from "@/components/game/SongSubmissionPhase";
 import TournamentPhase from "@/components/game/TournamentPhase";
 
-interface AuthSession {
-  data?: {
-    user?: {
-      id: string;
-      accessToken: string;
-    };
-  };
-}
-
 export default function GamePage() {
   const params = useParams();
-  const [authSession, setAuthSession] = useState<AuthSession | null>(null);
+  const authSession = useAuthSession();
   const sessionId = params.sessionId as string;
 
   const [currentPlayerId, setCurrentPlayerId] = useState<string | null>(null);
-
-  useEffect(() => {
-    authClient.getSession().then((session) => {
-      setAuthSession(session as AuthSession);
-    });
-  }, []);
 
   // Initialize state from localStorage only once
   const [initialized, setInitialized] = useState(false);
@@ -65,7 +50,7 @@ export default function GamePage() {
 
   if (error) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-green-500 to-green-700 p-4">
+      <div className="flex min-h-screen items-center justify-center bg-linear-to-br from-green-500 to-green-700 p-4">
         <div className="rounded-lg bg-white p-8 text-center shadow-lg">
           <p className="text-red-600">{error}</p>
         </div>
@@ -73,12 +58,12 @@ export default function GamePage() {
     );
   }
 
-  const isOwner = gameSession?.owner_id === authSession?.data?.user?.id;
+  const isOwner = gameSession?.owner_id === authSession?.user?.id;
   const currentPickerIndex = gameSession?.current_picker_index || 0;
   const currentPicker = players[currentPickerIndex];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-500 to-green-700 p-4">
+    <div className="min-h-screen bg-linear-to-br from-green-500 to-green-700 p-4">
       <div className="mx-auto max-w-4xl">
         {gameSession?.status === "category_selection" && (
           <CategoryPhase
@@ -110,7 +95,7 @@ export default function GamePage() {
             roundNumber={gameSession.current_round}
             isOwner={isOwner}
             currentPlayerId={currentPlayerId}
-            accessToken={authSession?.data?.user?.accessToken as string}
+            accessToken={authSession?.user?.accessToken as string}
           />
         )}
       </div>

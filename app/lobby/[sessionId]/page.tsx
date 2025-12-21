@@ -3,22 +3,14 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { QRCodeSVG } from "qrcode.react";
-import { authClient } from "@/components/SessionProvider";
+import { useAuthSession } from "@/hooks/useAuthSession";
 import { useGameSession } from "@/hooks/useGameSession";
 import type { Player } from "@/types/game";
-
-interface AuthSession {
-  data?: {
-    user?: {
-      id: string;
-    };
-  };
-}
 
 export default function LobbyPage() {
   const params = useParams();
   const router = useRouter();
-  const [authSession, setAuthSession] = useState<AuthSession | null>(null);
+  const authSession = useAuthSession();
   const sessionId = params.sessionId as string;
 
   const [playerName, setPlayerName] = useState("");
@@ -32,13 +24,6 @@ export default function LobbyPage() {
     setCurrentPlayerId(storedPlayerId);
   }, [sessionId]);
 
-  useEffect(() => {
-    authClient.getSession().then((session) => {
-      setAuthSession(session);
-    });
-  }, []);
-
-  // Use WebSocket-based game session hook
   const {
     session: gameSession,
     players,
@@ -48,19 +33,25 @@ export default function LobbyPage() {
     playerId: currentPlayerId,
   });
 
-  const isOwner = gameSession?.owner_id === authSession?.data?.user?.id;
+  const isOwner = gameSession?.owner_id === authSession?.user?.id;
   const isOwnerAlreadyJoined = isOwner && players.some((p) => p.is_owner);
 
   // If current user is the owner and is in the players list, save their player ID
   useEffect(() => {
-    if (gameSession?.owner_id === authSession?.data?.user?.id && !currentPlayerId) {
+    if (gameSession?.owner_id === authSession?.user?.id && !currentPlayerId) {
       const ownerPlayer = players.find((p) => p.is_owner);
       if (ownerPlayer) {
         setCurrentPlayerId(ownerPlayer.id);
         localStorage.setItem(`player_${sessionId}`, ownerPlayer.id);
       }
     }
-  }, [gameSession?.owner_id, authSession?.data?.user?.id, players, currentPlayerId, sessionId]);
+  }, [
+    gameSession?.owner_id,
+    authSession?.user?.id,
+    players,
+    currentPlayerId,
+    sessionId,
+  ]);
 
   const [joinError, setJoinError] = useState("");
 
@@ -86,7 +77,7 @@ export default function LobbyPage() {
       setCurrentPlayerId(player.id);
       localStorage.setItem(`player_${sessionId}`, player.id);
       setJoined(true);
-      // WebSocket will automatically update the players list
+      // SSE will automatically update the players list
     } catch (err) {
       setJoinError(err instanceof Error ? err.message : "An error occurred");
     } finally {
@@ -125,6 +116,8 @@ export default function LobbyPage() {
   const handleKickPlayer = async (playerId: string) => {
     if (!isOwner) return;
 
+    if (playerId === currentPlayerId) return;
+
     try {
       const response = await fetch(`/api/game/${sessionId}/kick`, {
         method: "DELETE",
@@ -142,7 +135,7 @@ export default function LobbyPage() {
   const error = joinError || sessionError;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-500 to-green-700 p-4">
+    <div className="min-h-screen bg-linear-to-br from-green-500 to-green-700 p-4">
       <div className="mx-auto max-w-2xl">
         {error && (
           <div className="mb-4 rounded-lg bg-red-100 p-4 text-red-700">
@@ -181,7 +174,11 @@ export default function LobbyPage() {
                 <p className="text-xs text-gray-600 mb-2">Or scan QR code</p>
                 <div className="bg-white p-2 rounded border border-gray-300">
                   <QRCodeSVG
-                    value={typeof window !== "undefined" ? `${window.location.origin}/lobby/${sessionId}` : `https://192.168.32.7:3000/lobby/${sessionId}`}
+                    value={
+                      typeof window !== "undefined"
+                        ? `${window.location.origin}/lobby/${sessionId}`
+                        : `https://192.168.32.7:3000/lobby/${sessionId}`
+                    }
                     size={120}
                     level="H"
                     includeMargin={true}
