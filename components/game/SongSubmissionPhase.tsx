@@ -97,7 +97,7 @@ export default function SongSubmissionPhase({
   return (
     <div className="rounded-lg bg-white p-8 shadow-lg">
       <h1 className="mb-2 text-3xl font-bold text-black">
-        Submit Songs for "{category}"
+        Submit Songs for &quot;{category}&quot;
       </h1>
       <p className="mb-6 text-lg text-gray-700">
         Find a song that fits this category

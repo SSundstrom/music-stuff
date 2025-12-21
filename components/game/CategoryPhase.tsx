@@ -66,7 +66,7 @@ export default function CategoryPhase({
       {isCurrentPicker ? (
         <div className="space-y-4">
           <p className="text-lg text-gray-700">
-            It's your turn! Choose a category.
+            It&apos;s your turn! Choose a category.
           </p>
           <input
             type="text"

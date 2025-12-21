@@ -12,15 +12,11 @@ export function generateTournamentBracket(sessionId: string, roundNumber: number
     throw new Error("Need at least 2 songs to start tournament");
   }
 
-  const matches = createBracket(sessionId, roundNumber, songs);
+  createBracket(sessionId, roundNumber, songs);
   // Matches are automatically stored in createBracket
 }
 
 function createBracket(sessionId: string, roundNumber: number, songs: Song[]): TournamentMatch[] {
-  const numSongs = songs.length;
-  const nextPowerOf2 = Math.pow(2, Math.ceil(Math.log2(numSongs)));
-  const byesNeeded = nextPowerOf2 - numSongs;
-
   const matches: TournamentMatch[] = [];
   let matchNumber = 0;
 
