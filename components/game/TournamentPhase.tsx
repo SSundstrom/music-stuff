@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import MatchDisplay from "./MatchDisplay";
 import type { TournamentMatch, Song } from "@/types/game";
 
@@ -23,9 +23,51 @@ export default function TournamentPhase({
 }: TournamentPhaseProps) {
   const [currentMatchIndex, setCurrentMatchIndex] = useState(0);
   const [error, setError] = useState("");
+  const eventSourceRef = useRef<EventSource | null>(null);
 
   // Filter matches for current round
   const matches = allMatches.filter((m) => m.round_number === roundNumber);
+
+  // Listen for match completion events
+  useEffect(() => {
+    const playerId = currentPlayerId || "guest";
+    const eventSource = new EventSource(
+      `/api/game/${sessionId}/stream?playerId=${encodeURIComponent(playerId)}`
+    );
+
+    eventSource.addEventListener("message", (event) => {
+      try {
+        const parsedEvent = JSON.parse(event.data);
+
+        if (parsedEvent.type === "match_ended") {
+          const { match_id } = parsedEvent.data;
+          const currentMatch = matches.find(
+            (m) => m.id === match_id && m.round_number === roundNumber
+          );
+          if (currentMatch) {
+            // Move to next match
+            setCurrentMatchIndex((prevIndex) => {
+              if (prevIndex < matches.length - 1) {
+                return prevIndex + 1;
+              } else {
+                // Tournament round complete
+                setError("Round complete! Advancing to next round...");
+                return prevIndex;
+              }
+            });
+          }
+        }
+      } catch (err) {
+        console.error("Failed to parse SSE message:", err);
+      }
+    });
+
+    eventSourceRef.current = eventSource;
+
+    return () => {
+      eventSource.close();
+    };
+  }, [sessionId, currentPlayerId, matches, roundNumber]);
 
   // Create a map of songs for easy lookup
   const songMap = new Map<string, Song>();
@@ -34,20 +76,6 @@ export default function TournamentPhase({
   });
 
   const currentMatch = matches[currentMatchIndex];
-
-  const handleMatchComplete = () => {
-    if (!isOwner) return;
-
-    // The match is completed server-side via voting
-    // Move to next match
-    if (currentMatchIndex < matches.length - 1) {
-      setCurrentMatchIndex(currentMatchIndex + 1);
-    } else {
-      // Tournament round complete, advance to next round
-      // This will be handled by the game logic
-      setError("Round complete! Advancing to next round...");
-    }
-  };
 
   if (!currentMatch) {
     return (
@@ -98,7 +126,6 @@ export default function TournamentPhase({
             playerId={currentPlayerId}
             isOwner={isOwner}
             sessionId={sessionId}
-            onMatchComplete={handleMatchComplete}
           />
         )}
 

@@ -1,7 +1,11 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import type { TournamentMatch, Song } from "@/types/game";
+import {
+  type TournamentMatch,
+  type Song,
+  SSEMessageSchema,
+} from "@/types/game";
 import { useSpotifyPlayer } from "../SpotifyPlayerProvider";
 
 interface MatchDisplayProps {
@@ -11,7 +15,6 @@ interface MatchDisplayProps {
   playerId: string | null;
   isOwner: boolean;
   sessionId: string;
-  onMatchComplete: (winnerId: string) => void;
 }
 
 export default function MatchDisplay({
@@ -40,7 +43,7 @@ export default function MatchDisplay({
 
     eventSource.addEventListener("message", (event) => {
       try {
-        const parsedEvent = JSON.parse(event.data);
+        const parsedEvent = SSEMessageSchema.parse(JSON.parse(event.data));
 
         if (parsedEvent.type === "game_state") {
           const { matches } = parsedEvent.data;
