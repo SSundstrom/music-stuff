@@ -7,6 +7,7 @@ import { useGameSession } from "@/hooks/useGameSession";
 import CategoryPhase from "@/components/game/CategoryPhase";
 import SongSubmissionPhase from "@/components/game/SongSubmissionPhase";
 import TournamentPhase from "@/components/game/TournamentPhase";
+import SpotifyPlayer from "@/components/SpotifyPlayer";
 
 export default function GamePage() {
   const params = useParams();
@@ -59,7 +60,9 @@ export default function GamePage() {
 
   return (
     <div className="min-h-screen bg-linear-to-br from-green-500 to-green-700 p-4">
-      <div className="mx-auto max-w-4xl">
+      <div className="mx-auto max-w-4xl space-y-4">
+        <SpotifyPlayer />
+
         {gameSession?.status === "category_selection" && (
           <CategoryPhase
             sessionId={sessionId}

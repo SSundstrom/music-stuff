@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import type { TournamentMatch, Song } from "@/types/game";
+import { useSpotifyPlayer } from "../SpotifyPlayerProvider";
 
 interface MatchDisplayProps {
   match: TournamentMatch;
@@ -21,11 +22,13 @@ export default function MatchDisplay({
   isOwner,
   sessionId,
 }: MatchDisplayProps) {
+  const { play, pause } = useSpotifyPlayer();
   const [userVote, setUserVote] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [matchState, setMatchState] = useState(match);
   const [isPlaying, setIsPlaying] = useState(false);
+  const playbackTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const eventSourceRef = useRef<EventSource | null>(null);
 
   useEffect(() => {
@@ -110,31 +113,26 @@ export default function MatchDisplay({
     setError("");
 
     try {
-      const response = await fetch(`/api/game/${sessionId}/playback`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "play",
-          match_id: match.id,
-          songId: songId,
-        }),
-      });
+      // Find the track to get Spotify ID
+      const song = songA.id === songId ? songA : songB;
 
-      if (!response.ok) {
-        const data = (await response.json()) as { error: string };
-        throw new Error(data.error);
-      }
+      // Use Web Playback SDK to play the song
+      const spotifyId = song.spotify_id || song.id;
+      await play(spotifyId);
 
       setIsPlaying(true);
 
       // Auto-pause after duration
       const duration = matchState.round_number === 1 ? 30 : 15;
-      setTimeout(() => {
+      if (playbackTimeoutRef.current) {
+        clearTimeout(playbackTimeoutRef.current);
+      }
+      playbackTimeoutRef.current = setTimeout(() => {
         setIsPlaying(false);
         handlePauseSong();
       }, duration * 1000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
+      setError(err instanceof Error ? err.message : "Failed to play song");
     } finally {
       setLoading(false);
     }
@@ -144,15 +142,21 @@ export default function MatchDisplay({
     if (!isOwner) return;
 
     try {
-      await fetch(`/api/game/${sessionId}/playback`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "pause" }),
-      });
+      await pause();
+      setIsPlaying(false);
     } catch (err) {
       console.error("Failed to pause:", err);
     }
   };
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (playbackTimeoutRef.current) {
+        clearTimeout(playbackTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const canVote =
     playerId && songA.player_id !== playerId && songB.player_id !== playerId;
@@ -178,11 +182,14 @@ export default function MatchDisplay({
         >
           <div className="mb-4">
             {songA.image_url && (
-              <img
-                src={songA.image_url}
-                alt={songA.song_name}
-                className="mb-4 h-40 w-full rounded-lg object-cover"
-              />
+              <>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={songA.image_url}
+                  alt={songA.song_name}
+                  className="mb-4 h-40 w-full rounded-lg object-cover"
+                />
+              </>
             )}
             <h3 className="text-lg font-bold text-black">{songA.song_name}</h3>
             <p className="text-base text-gray-700">{songA.artist_name}</p>
@@ -232,11 +239,14 @@ export default function MatchDisplay({
         >
           <div className="mb-4">
             {songB.image_url && (
-              <img
-                src={songB.image_url}
-                alt={songB.song_name}
-                className="mb-4 h-40 w-full rounded-lg object-cover"
-              />
+              <>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={songB.image_url}
+                  alt={songB.song_name}
+                  className="mb-4 h-40 w-full rounded-lg object-cover"
+                />
+              </>
             )}
             <h3 className="text-lg font-bold text-black">{songB.song_name}</h3>
             <p className="text-base text-gray-700">{songB.artist_name}</p>

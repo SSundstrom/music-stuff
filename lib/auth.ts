@@ -11,15 +11,25 @@ export const auth = betterAuth({
     spotify: {
       clientId: process.env.SPOTIFY_CLIENT_ID as string,
       clientSecret: process.env.SPOTIFY_CLIENT_SECRET as string,
+      scope: [
+        "streaming",
+        "user-read-email",
+        "user-read-private",
+        "user-read-playback-state",
+        "user-modify-playback-state",
+        "user-read-currently-playing",
+      ],
     },
   },
 });
 
-export async function getSpotifyAccessToken(userId: string): Promise<string | null> {
+export async function getSpotifyAccessToken(
+  userId: string,
+): Promise<string | null> {
   const account = db
     .prepare(
       `SELECT accessToken FROM account
-       WHERE userId = ? AND providerId = 'spotify'`
+       WHERE userId = ? AND providerId = 'spotify'`,
     )
     .get(userId) as { accessToken: string } | undefined;
 

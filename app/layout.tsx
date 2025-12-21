@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import SessionProvider from "@/components/SessionProvider";
+import SpotifyPlayerProvider from "@/components/SpotifyPlayerProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -25,11 +26,23 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.onSpotifyWebPlaybackSDKReady = () => {};
+            `,
+          }}
+        />
+        <script src="https://sdk.scdn.co/spotify-player.js" async></script>
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <SessionProvider>
-          {children}
+          <SpotifyPlayerProvider>
+            {children}
+          </SpotifyPlayerProvider>
         </SessionProvider>
       </body>
     </html>
