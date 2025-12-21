@@ -53,6 +53,8 @@ export default function SpotifyPlayerProvider({
 }) {
   const session = useAuthSession();
   const playerRef = useRef<Spotify.Player | null>(null);
+  const lastPositionRef = useRef<number>(0);
+  const lastTimestampRef = useRef<number>(0);
   const [state, setState] = useState<PlayerState>({
     deviceId: null,
     isReady: false,
@@ -127,6 +129,10 @@ export default function SpotifyPlayerProvider({
           const track = playbackState.track_window.current_track;
           const artists = track.artists.map((a) => a.name).join(", ");
 
+          // Update refs for continuous position tracking
+          lastPositionRef.current = playbackState.position;
+          lastTimestampRef.current = Date.now();
+
           setState((prev) => ({
             ...prev,
             isPaused: playbackState.paused,
@@ -180,6 +186,42 @@ export default function SpotifyPlayerProvider({
       }
     };
   }, [session?.user]);
+
+  // Continuous position update effect
+  useEffect(() => {
+    let intervalId: NodeJS.Timeout | null = null;
+
+    const updatePosition = () => {
+      setState((prev) => {
+        if (prev.isPaused || !prev.currentTrack) {
+          return prev;
+        }
+
+        const now = Date.now();
+        const elapsed = now - lastTimestampRef.current;
+        const newPosition = Math.min(
+          lastPositionRef.current + elapsed,
+          prev.duration,
+        );
+
+        return {
+          ...prev,
+          position: newPosition,
+        };
+      });
+    };
+
+    if (state.isReady && !state.isPaused && state.currentTrack) {
+      lastTimestampRef.current = Date.now();
+      intervalId = setInterval(updatePosition, 100);
+    }
+
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }, [state.isReady, state.isPaused, state.currentTrack]);
 
   const play = async (spotifyId: string) => {
     if (!playerRef.current || !state.deviceId) {

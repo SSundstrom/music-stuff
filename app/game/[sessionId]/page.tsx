@@ -21,11 +21,11 @@ export default function GamePage() {
     return null;
   });
 
-  // Use WebSocket-based game session hook
   const {
     session: gameSession,
     players,
     songs,
+    matches,
     loading,
     error,
   } = useGameSession({
@@ -61,7 +61,7 @@ export default function GamePage() {
   return (
     <div className="min-h-screen bg-linear-to-br from-green-500 to-green-700 p-4">
       <div className="mx-auto max-w-4xl space-y-4">
-        <SpotifyPlayer />
+        {isOwner && <SpotifyPlayer />}
 
         {gameSession?.status === "category_selection" && (
           <CategoryPhase
@@ -69,7 +69,7 @@ export default function GamePage() {
             currentPicker={currentPicker}
             isCurrentPicker={currentPlayerId === currentPicker?.id}
             onCategorySubmitted={() => {
-              // WebSocket will automatically update the game session
+              // SSE will automatically update the game session
             }}
           />
         )}
@@ -84,7 +84,7 @@ export default function GamePage() {
             submittedCount={songs.length}
             playerCount={players.length}
             onAllSubmitted={() => {
-              // WebSocket will automatically update the game session
+              // SSE will automatically update the game session
             }}
           />
         )}
@@ -95,6 +95,8 @@ export default function GamePage() {
             roundNumber={gameSession.current_round}
             isOwner={isOwner}
             currentPlayerId={currentPlayerId}
+            songs={songs}
+            matches={matches}
           />
         )}
       </div>

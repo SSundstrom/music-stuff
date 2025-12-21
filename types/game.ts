@@ -70,8 +70,8 @@ export const VoteSchema = z.object({
 
 export type Vote = z.infer<typeof VoteSchema>;
 
-// WebSocket message types
-export const WSMessageSchema = z.discriminatedUnion("type", [
+// SSE message types
+export const SSEMessageSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("player_joined"),
     data: PlayerSchema,
@@ -131,7 +131,7 @@ export const WSMessageSchema = z.discriminatedUnion("type", [
   }),
 ]);
 
-export type WSMessage = z.infer<typeof WSMessageSchema>;
+export type SSEMessage = z.infer<typeof SSEMessageSchema>;
 
 // API request/response types
 export const CreateSessionRequestSchema = z.object({

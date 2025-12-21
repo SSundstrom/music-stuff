@@ -22,7 +22,7 @@ export default function MatchDisplay({
   isOwner,
   sessionId,
 }: MatchDisplayProps) {
-  const { play, pause } = useSpotifyPlayer();
+  const { play, pause, seek } = useSpotifyPlayer();
   const [userVote, setUserVote] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -113,12 +113,17 @@ export default function MatchDisplay({
     setError("");
 
     try {
-      // Find the track to get Spotify ID
+      // Find the track to get Spotify ID and start time
       const song = songA.id === songId ? songA : songB;
 
       // Use Web Playback SDK to play the song
       const spotifyId = song.spotify_id || song.id;
       await play(spotifyId);
+
+      // Seek to the start time if specified (convert seconds to milliseconds)
+      const startTimeMs = song.start_time * 1000;
+      await new Promise((resolve) => setTimeout(resolve, 100)); // Small delay to ensure playback started
+      await seek(startTimeMs);
 
       setIsPlaying(true);
 
@@ -158,8 +163,6 @@ export default function MatchDisplay({
     };
   }, []);
 
-  const canVote =
-    playerId && songA.player_id !== playerId && songB.player_id !== playerId;
   const duration = matchState.round_number === 1 ? 30 : 15;
 
   return (
@@ -174,7 +177,7 @@ export default function MatchDisplay({
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         {/* Song A */}
         <div
-          className={`rounded-lg border-2 p-6 ${
+          className={`order-1 rounded-lg border-2 p-6 ${
             matchState.votes_a > matchState.votes_b
               ? "border-green-500 bg-green-50"
               : "border-gray-300"
@@ -208,19 +211,17 @@ export default function MatchDisplay({
             )}
 
             {/* Vote Button */}
-            {canVote && (
-              <button
-                onClick={() => handleVote(songA.id)}
-                disabled={loading}
-                className={`w-full rounded-lg px-4 py-2 font-semibold ${
-                  userVote === songA.id
-                    ? "bg-green-600 text-white"
-                    : "border-2 border-gray-300 text-black hover:border-green-600"
-                }`}
-              >
-                {userVote === songA.id ? "✓ You voted" : "Vote"}
-              </button>
-            )}
+            <button
+              onClick={() => handleVote(songA.id)}
+              disabled={loading}
+              className={`w-full rounded-lg px-4 py-2 font-semibold ${
+                userVote === songA.id
+                  ? "bg-green-600 text-white"
+                  : "border-2 border-gray-300 text-black hover:border-green-600"
+              }`}
+            >
+              {userVote === songA.id ? "✓ You voted" : "Vote"}
+            </button>
 
             {/* Vote Count */}
             <div className="text-center text-base font-semibold text-black">
@@ -231,7 +232,7 @@ export default function MatchDisplay({
 
         {/* Song B */}
         <div
-          className={`rounded-lg border-2 p-6 ${
+          className={`order-3 md:order-2 rounded-lg border-2 p-6 ${
             matchState.votes_b > matchState.votes_a
               ? "border-green-500 bg-green-50"
               : "border-gray-300"
@@ -264,20 +265,17 @@ export default function MatchDisplay({
               </button>
             )}
 
-            {/* Vote Button */}
-            {canVote && (
-              <button
-                onClick={() => handleVote(songB.id)}
-                disabled={loading}
-                className={`w-full rounded-lg px-4 py-2 font-semibold ${
-                  userVote === songB.id
-                    ? "bg-green-600 text-white"
-                    : "border-2 border-gray-300 text-black hover:border-green-600"
-                }`}
-              >
-                {userVote === songB.id ? "✓ You voted" : "Vote"}
-              </button>
-            )}
+            <button
+              onClick={() => handleVote(songB.id)}
+              disabled={loading}
+              className={`w-full rounded-lg px-4 py-2 font-semibold ${
+                userVote === songB.id
+                  ? "bg-green-600 text-white"
+                  : "border-2 border-gray-300 text-black hover:border-green-600"
+              }`}
+            >
+              {userVote === songB.id ? "✓ You voted" : "Vote"}
+            </button>
 
             {/* Vote Count */}
             <div className="text-center text-base font-semibold text-black">
@@ -285,13 +283,11 @@ export default function MatchDisplay({
             </div>
           </div>
         </div>
-      </div>
-
-      {/* VS Divider */}
-      <div className="flex items-center justify-center gap-3">
-        <div className="flex-1 border-t-2 border-gray-300" />
-        <span className="text-lg font-bold text-gray-800">VS</span>
-        <div className="flex-1 border-t-2 border-gray-300" />
+        <div className="order-2 md:order-3 md:col-span-2 flex items-center justify-center gap-3">
+          <div className="flex-1 border-t-2 border-gray-300" />
+          <span className="text-lg font-bold text-gray-800">VS</span>
+          <div className="flex-1 border-t-2 border-gray-300" />
+        </div>
       </div>
     </div>
   );

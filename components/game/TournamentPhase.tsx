@@ -1,14 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import MatchDisplay from "./MatchDisplay";
-import type { TournamentMatch, Song, Session } from "@/types/game";
+import type { TournamentMatch, Song } from "@/types/game";
 
 interface TournamentPhaseProps {
   sessionId: string;
   roundNumber: number;
   isOwner: boolean;
   currentPlayerId: string | null;
+  songs: Song[];
+  matches: TournamentMatch[];
 }
 
 export default function TournamentPhase({
@@ -16,67 +18,34 @@ export default function TournamentPhase({
   roundNumber,
   isOwner,
   currentPlayerId,
+  songs: allSongs,
+  matches: allMatches,
 }: TournamentPhaseProps) {
-  const [matches, setMatches] = useState<TournamentMatch[]>([]);
-  const [songs, setSongs] = useState<Map<string, Song>>(new Map());
   const [currentMatchIndex, setCurrentMatchIndex] = useState(0);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [gameSession, setGameSession] = useState<Session | null>(null);
+
+  // Filter matches for current round
+  const matches = allMatches.filter((m) => m.round_number === roundNumber);
+
+  // Create a map of songs for easy lookup
+  const songMap = new Map<string, Song>();
+  allSongs.forEach((song) => {
+    songMap.set(song.id, song);
+  });
 
   const currentMatch = matches[currentMatchIndex];
 
-  useEffect(() => {
-    const fetchTournamentState = async () => {
-      try {
-        const response = await fetch(`/api/game/${sessionId}`);
-        if (!response.ok) throw new Error("Failed to fetch tournament state");
-
-        const data = (await response.json()) as {
-          session: Session;
-          matches: TournamentMatch[];
-          songs: Song[];
-        };
-
-        setGameSession(data.session);
-        setMatches(data.matches.filter((m) => m.round_number === roundNumber));
-
-        // Create a map of songs for easy lookup
-        const songMap = new Map<string, Song>();
-        data.songs.forEach((song) => {
-          songMap.set(song.id, song);
-        });
-        setSongs(songMap);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "An error occurred");
-      }
-    };
-
-    const interval = setInterval(fetchTournamentState, 2000);
-    fetchTournamentState();
-    return () => clearInterval(interval);
-  }, [sessionId, roundNumber]);
-
-  const handleMatchComplete = async (winnerId: string) => {
+  const handleMatchComplete = () => {
     if (!isOwner) return;
 
-    setLoading(true);
-    setError("");
-
-    try {
-      // The match is completed server-side via voting
-      // Move to next match
-      if (currentMatchIndex < matches.length - 1) {
-        setCurrentMatchIndex(currentMatchIndex + 1);
-      } else {
-        // Tournament round complete, advance to next round
-        // This will be handled by the game logic
-        setError("Round complete! Advancing to next round...");
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
-    } finally {
-      setLoading(false);
+    // The match is completed server-side via voting
+    // Move to next match
+    if (currentMatchIndex < matches.length - 1) {
+      setCurrentMatchIndex(currentMatchIndex + 1);
+    } else {
+      // Tournament round complete, advance to next round
+      // This will be handled by the game logic
+      setError("Round complete! Advancing to next round...");
     }
   };
 
@@ -88,8 +57,12 @@ export default function TournamentPhase({
     );
   }
 
-  const songA = currentMatch.song_a_id ? songs.get(currentMatch.song_a_id) : null;
-  const songB = currentMatch.song_b_id ? songs.get(currentMatch.song_b_id) : null;
+  const songA = currentMatch?.song_a_id
+    ? songMap.get(currentMatch.song_a_id)
+    : null;
+  const songB = currentMatch?.song_b_id
+    ? songMap.get(currentMatch.song_b_id)
+    : null;
 
   return (
     <div className="space-y-6">
@@ -160,7 +133,7 @@ export default function TournamentPhase({
               </div>
               {match.status === "completed" && match.winner_id && (
                 <p className="mt-1 text-base text-gray-700">
-                  Winner: {songs.get(match.winner_id)?.song_name}
+                  Winner: {songMap.get(match.winner_id)?.song_name}
                 </p>
               )}
             </div>

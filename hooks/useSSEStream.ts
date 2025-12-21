@@ -1,11 +1,11 @@
-import { useEffect, useCallback } from "react";
-import type { WSMessage } from "@/types/game";
-import { WSMessageSchema } from "@/types/game";
+import { useEffect } from "react";
+import type { SSEMessage } from "@/types/game";
+import { SSEMessageSchema } from "@/types/game";
 
 interface UseSSEStreamOptions {
   sessionId: string;
   playerId: string | null;
-  onMessage?: (message: WSMessage) => void;
+  onMessage?: (message: SSEMessage) => void;
   onConnect?: () => void;
   onDisconnect?: () => void;
   onError?: (error: Error) => void;
@@ -41,7 +41,7 @@ export function useSSEStream({
         try {
           const rawMessage = JSON.parse(event.data as string);
           console.log("[SSE] Received message:", rawMessage.type);
-          const message = WSMessageSchema.parse(rawMessage);
+          const message = SSEMessageSchema.parse(rawMessage);
           onMessage?.(message);
         } catch (error) {
           console.error("[SSE] Failed to parse message:", error);

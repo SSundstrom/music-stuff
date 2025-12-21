@@ -1,4 +1,4 @@
-import type { WSMessage } from "@/types/game";
+import type { SSEMessage } from "@/types/game";
 
 interface SSEConnection {
   controller: ReadableStreamDefaultController<Uint8Array>;
@@ -36,7 +36,7 @@ class SSEManager {
     }
   }
 
-  broadcast(sessionId: string, message: WSMessage): void {
+  broadcast(sessionId: string, message: SSEMessage): void {
     const connections = this.sessions.get(sessionId);
     if (!connections) {
       console.log(`[SSE] No connections for session ${sessionId} to broadcast to`);
@@ -67,7 +67,7 @@ class SSEManager {
     }
   }
 
-  sendToPlayer(sessionId: string, playerId: string, message: WSMessage): void {
+  sendToPlayer(sessionId: string, playerId: string, message: SSEMessage): void {
     const connections = this.sessions.get(sessionId);
     if (!connections) return;
 

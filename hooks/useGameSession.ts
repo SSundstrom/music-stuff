@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import type { Session, Player, Song, WSMessage } from "@/types/game";
+import type { Session, Player, Song, TournamentMatch, SSEMessage } from "@/types/game";
 import { useSSEStream } from "./useSSEStream";
 
 interface UseGameSessionOptions {
@@ -11,6 +11,7 @@ interface GameSessionState {
   session: Session | null;
   players: Player[];
   songs: Song[];
+  matches: TournamentMatch[];
   loading: boolean;
   error: string;
   isConnected: boolean;
@@ -24,12 +25,13 @@ export function useGameSession({
     session: null,
     players: [],
     songs: [],
+    matches: [],
     loading: true,
     error: "",
     isConnected: false,
   });
 
-  const handleMessage = useCallback((message: WSMessage) => {
+  const handleMessage = useCallback((message: SSEMessage) => {
     setState((prevState) => {
       switch (message.type) {
         case "game_state":
@@ -39,6 +41,7 @@ export function useGameSession({
             session: message.data.session,
             players: message.data.players,
             songs: message.data.songs || [],
+            matches: message.data.matches || [],
             error: "",
           };
 
@@ -83,8 +86,21 @@ export function useGameSession({
           return prevState;
 
         case "match_ended":
-          // Match ended
-          return prevState;
+          // Match ended - update the match with winner and votes
+          return {
+            ...prevState,
+            matches: prevState.matches.map((m) =>
+              m.id === message.data.match_id
+                ? {
+                    ...m,
+                    winner_id: message.data.winner_id,
+                    votes_a: message.data.votes_a,
+                    votes_b: message.data.votes_b,
+                    status: "completed" as const,
+                  }
+                : m,
+            ),
+          };
 
         case "round_complete":
           // Round completed
@@ -144,6 +160,7 @@ export function useGameSession({
           session: Session;
           players: Player[];
           songs: Song[];
+          matches?: TournamentMatch[];
         };
 
         setState((prev) => ({
@@ -151,6 +168,7 @@ export function useGameSession({
           session: data.session,
           players: data.players,
           songs: data.songs,
+          matches: data.matches || [],
           loading: false,
           error: "",
         }));
@@ -170,6 +188,7 @@ export function useGameSession({
     session: state.session,
     players: state.players,
     songs: state.songs,
+    matches: state.matches,
     loading: state.loading,
     error: state.error,
     isConnected,

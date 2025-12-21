@@ -113,7 +113,7 @@ export default function LobbyPage() {
       });
 
       if (!response.ok) throw new Error("Failed to kick player");
-      // WebSocket will automatically update the players list
+      // SSE will automatically update the players list
     } catch (err) {
       setJoinError(err instanceof Error ? err.message : "An error occurred");
     }

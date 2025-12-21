@@ -10,12 +10,12 @@ A multiplayer song tournament game where players vote on which songs best fit ch
 - **Song Submission**: Players search and submit songs matching the category
 - **Tournament Voting**: Single-elimination tournament with blind voting
 - **Adaptive Playback**: Songs play for 30 seconds in first round, 15 seconds in later rounds
-- **Real-time Updates**: WebSocket support for live game updates
+- **Real-time Updates**: Server-Sent Events (SSE) for live game updates
 
 ## Tech Stack
 
 - **Framework**: Next.js 14+ with TypeScript
-- **Real-time**: WebSockets
+- **Real-time**: Server-Sent Events (SSE)
 - **Database**: SQLite
 - **Spotify Integration**: Spotify Web API (OAuth 2.0)
 - **Frontend**: React with Tailwind CSS
@@ -115,7 +115,7 @@ Access at `http://localhost:3000`
 │   ├── game-session.ts               # Game session logic
 │   ├── spotify.ts                    # Spotify API client
 │   ├── tournament.ts                 # Tournament logic
-│   └── websocket.ts                  # WebSocket management
+│   └── sse-manager.ts                # SSE management
 ├── types/
 │   ├── game.ts                       # Game type definitions
 │   └── next-auth.d.ts                # NextAuth type extensions
@@ -164,13 +164,13 @@ npm run test:lint
 
 ## Known Limitations
 
-- WebSocket real-time updates are simplified (polling used for development)
+- SSE real-time updates are implemented using Server-Sent Events
 - Player IDs stored in localStorage (should use sessions in production)
 - Match completion auto-advances to next (could add manual advancement)
 
 ## Future Enhancements
 
-- Full WebSocket implementation for all real-time events
+- Additional SSE events for more granular updates
 - Match result animations
 - Leaderboard and statistics
 - Persistent player ratings
