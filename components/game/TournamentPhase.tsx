@@ -9,7 +9,6 @@ interface TournamentPhaseProps {
   roundNumber: number;
   isOwner: boolean;
   currentPlayerId: string | null;
-  accessToken: string;
 }
 
 export default function TournamentPhase({
@@ -17,7 +16,6 @@ export default function TournamentPhase({
   roundNumber,
   isOwner,
   currentPlayerId,
-  accessToken,
 }: TournamentPhaseProps) {
   const [matches, setMatches] = useState<TournamentMatch[]>([]);
   const [songs, setSongs] = useState<Map<string, Song>>(new Map());

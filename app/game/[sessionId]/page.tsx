@@ -92,7 +92,6 @@ export default function GamePage() {
             roundNumber={gameSession.current_round}
             isOwner={isOwner}
             currentPlayerId={currentPlayerId}
-            accessToken={authSession?.user?.accessToken as string}
           />
         )}
       </div>

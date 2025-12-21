@@ -3,11 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --experimental-https",
+    "dev": "npm run db:init && next dev --experimental-https",
     "build": "next build",
     "start": "next start",
     "test:lint": "eslint",
-    "test:lint:fix": "eslint --fix"
+    "test:lint:fix": "eslint --fix",
+    "db:init": "node scripts/init-db.ts",
+    "db:clear": "rm -f data/better-auth.db && npm run db:init"
   },
   "dependencies": {
     "better-auth": "^1.4.7",

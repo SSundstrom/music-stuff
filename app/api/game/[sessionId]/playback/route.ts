@@ -1,5 +1,5 @@
-import { auth } from "@/lib/auth";
-import { getSession, getPlayer, getMatch, getSong } from "@/lib/game-session";
+import { auth, getSpotifyAccessToken } from "@/lib/auth";
+import { getSession, getMatch, getSong } from "@/lib/game-session";
 import { startPlayback, pausePlayback } from "@/lib/spotify";
 import { getPlaybackDuration } from "@/lib/tournament";
 
@@ -13,7 +13,17 @@ export async function POST(
       headers: request.headers,
     });
 
-    if (!session?.accessToken) {
+    if (!session?.user?.id) {
+      return new Response(JSON.stringify({ error: "Not authenticated" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    // Get the Spotify access token from the database
+    const accessToken = await getSpotifyAccessToken(session.user.id);
+
+    if (!accessToken) {
       return new Response(JSON.stringify({ error: "Not authenticated with Spotify" }), {
         status: 401,
         headers: { "Content-Type": "application/json" },
@@ -57,7 +67,7 @@ export async function POST(
     }
 
     if (body.action === "pause") {
-      await pausePlayback(deviceId, session.accessToken as string);
+      await pausePlayback(deviceId, accessToken);
 
       return new Response(
         JSON.stringify({
@@ -100,7 +110,7 @@ export async function POST(
       await startPlayback(
         deviceId,
         song.spotify_id,
-        session.accessToken as string,
+        accessToken,
         song.start_time * 1000 // Convert seconds to milliseconds
       );
 

@@ -13,12 +13,24 @@ export default function Home() {
   const [error, setError] = useState("");
 
   const handleSignIn = async () => {
-    await authClient.signIn.social({
-      provider: "spotify",
-    });
-    // Refetch session after signin completes
-    const { data: newSession } = await authClient.getSession();
-    setSession(newSession);
+    try {
+      setLoading(true);
+      setError("");
+      await authClient.signIn.social({
+        provider: "spotify",
+      });
+      // Refetch session after signin completes
+      const { data: newSession } = await authClient.getSession();
+      if (newSession?.user) {
+        // Session will auto-update via useAuthSession hook
+        // Navigate to create game after successful signin
+        router.push("/");
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to sign in");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleCreateGame = async () => {
@@ -101,19 +113,13 @@ export default function Home() {
         )}
 
         <div className="space-y-4">
-          {session === null ? (
-            <button
-              disabled
-              className="w-full rounded-lg bg-gray-400 px-4 py-3 font-semibold text-white"
-            >
-              Loading...
-            </button>
-          ) : !session?.user ? (
+          {!session?.user ? (
             <button
               onClick={handleSignIn}
-              className="w-full rounded-lg bg-green-600 px-4 py-3 font-semibold text-white hover:bg-green-700"
+              disabled={loading}
+              className="w-full rounded-lg bg-green-600 px-4 py-3 font-semibold text-white hover:bg-green-700 disabled:opacity-50"
             >
-              Sign in with Spotify
+              {loading ? "Signing in..." : "Sign in with Spotify"}
             </button>
           ) : (
             <button
