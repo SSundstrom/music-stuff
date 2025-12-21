@@ -74,12 +74,20 @@ function initializeDatabase() {
       status TEXT NOT NULL DEFAULT 'pending',
       votes_a INTEGER DEFAULT 0,
       votes_b INTEGER DEFAULT 0,
+      currently_playing_song_id TEXT,
       created_at INTEGER NOT NULL,
       FOREIGN KEY (session_id) REFERENCES sessions(id),
       FOREIGN KEY (song_a_id) REFERENCES songs(id),
       FOREIGN KEY (song_b_id) REFERENCES songs(id)
     )
   `);
+
+  // Add migration for existing databases
+  try {
+    db.exec(`ALTER TABLE tournament_matches ADD COLUMN currently_playing_song_id TEXT`);
+  } catch {
+    // Column already exists
+  }
 
   // Votes table
   db.exec(`

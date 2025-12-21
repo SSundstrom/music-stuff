@@ -54,6 +54,7 @@ export const TournamentMatchSchema = z.object({
   status: z.enum(["pending", "playing", "voting", "completed"]),
   votes_a: z.number().default(0),
   votes_b: z.number().default(0),
+  currently_playing_song_id: z.string().nullable().default(null),
   created_at: z.number(),
 });
 
@@ -127,6 +128,21 @@ export const SSEMessageSchema = z.discriminatedUnion("type", [
       players: z.array(PlayerSchema),
       songs: z.array(SongSchema),
       matches: z.array(TournamentMatchSchema),
+    }),
+  }),
+  z.object({
+    type: z.literal("playback_started"),
+    data: z.object({
+      match_id: z.string(),
+      song_id: z.string(),
+      song_name: z.string(),
+      artist_name: z.string(),
+    }),
+  }),
+  z.object({
+    type: z.literal("playback_stopped"),
+    data: z.object({
+      match_id: z.string(),
     }),
   }),
 ]);

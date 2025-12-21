@@ -1,7 +1,8 @@
 import { auth, getSpotifyAccessToken } from "@/lib/auth";
-import { getSession, getMatch, getSong } from "@/lib/game-session";
+import { getSession, getMatch, getSong, updateMatch } from "@/lib/game-session";
 import { startPlayback, pausePlayback } from "@/lib/spotify";
 import { getPlaybackDuration } from "@/lib/tournament";
+import { sseManager } from "@/lib/sse-manager";
 
 export async function POST(
   request: Request,
@@ -75,6 +76,15 @@ export async function POST(
     if (body.action === "pause") {
       await pausePlayback(deviceId, accessToken);
 
+      // Clear currently playing song
+      if (body.match_id) {
+        updateMatch(body.match_id, { currently_playing_song_id: null });
+        sseManager.broadcast(sessionId, {
+          type: "playback_stopped",
+          data: { match_id: body.match_id },
+        });
+      }
+
       return new Response(
         JSON.stringify({
           status: "paused",
@@ -118,6 +128,20 @@ export async function POST(
         accessToken,
         song.start_time * 1000, // Convert seconds to milliseconds
       );
+
+      // Update match to track currently playing song
+      updateMatch(body.match_id || "", { currently_playing_song_id: songId });
+
+      // Broadcast playback started event
+      sseManager.broadcast(sessionId, {
+        type: "playback_started",
+        data: {
+          match_id: body.match_id || "",
+          song_id: songId,
+          song_name: song.song_name,
+          artist_name: song.artist_name,
+        },
+      });
 
       const duration = getPlaybackDuration(gameSession.current_round);
 

@@ -189,6 +189,7 @@ export function createMatch(
     status: "pending",
     votes_a: 0,
     votes_b: 0,
+    currently_playing_song_id: null,
     created_at: now,
   };
 }

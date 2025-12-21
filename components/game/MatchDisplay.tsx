@@ -53,6 +53,22 @@ export default function MatchDisplay({
           if (updated) {
             setMatchState(updated);
           }
+        } else if (
+          parsedEvent.type === "playback_started" &&
+          parsedEvent.data.match_id === match.id
+        ) {
+          setMatchState((prev) => ({
+            ...prev,
+            currently_playing_song_id: parsedEvent.data.song_id,
+          }));
+        } else if (
+          parsedEvent.type === "playback_stopped" &&
+          parsedEvent.data.match_id === match.id
+        ) {
+          setMatchState((prev) => ({
+            ...prev,
+            currently_playing_song_id: null,
+          }));
         }
       } catch (err) {
         console.error("Failed to parse SSE message:", err);
@@ -180,12 +196,20 @@ export default function MatchDisplay({
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         {/* Song A */}
         <div
-          className={`order-1 rounded-lg border-2 p-6 ${
+          className={`order-1 rounded-lg border-2 p-6 relative ${
             matchState.votes_a > matchState.votes_b
               ? "border-green-500 bg-green-50"
-              : "border-gray-300"
+              : matchState.currently_playing_song_id === songA.id
+                ? "border-blue-500 bg-blue-50"
+                : "border-gray-300"
           }`}
         >
+          {matchState.currently_playing_song_id === songA.id && (
+            <div className="absolute top-2 right-2 flex items-center gap-1 rounded-full bg-blue-600 px-3 py-1 text-sm font-semibold text-white">
+              <span className="inline-block h-2 w-2 rounded-full bg-white animate-pulse" />
+              Now Playing
+            </div>
+          )}
           <div className="mb-4">
             {songA.image_url && (
               <>
@@ -235,12 +259,20 @@ export default function MatchDisplay({
 
         {/* Song B */}
         <div
-          className={`order-3 md:order-2 rounded-lg border-2 p-6 ${
+          className={`order-3 md:order-2 rounded-lg border-2 p-6 relative ${
             matchState.votes_b > matchState.votes_a
               ? "border-green-500 bg-green-50"
-              : "border-gray-300"
+              : matchState.currently_playing_song_id === songB.id
+                ? "border-blue-500 bg-blue-50"
+                : "border-gray-300"
           }`}
         >
+          {matchState.currently_playing_song_id === songB.id && (
+            <div className="absolute top-2 right-2 flex items-center gap-1 rounded-full bg-blue-600 px-3 py-1 text-sm font-semibold text-white">
+              <span className="inline-block h-2 w-2 rounded-full bg-white animate-pulse" />
+              Now Playing
+            </div>
+          )}
           <div className="mb-4">
             {songB.image_url && (
               <>
