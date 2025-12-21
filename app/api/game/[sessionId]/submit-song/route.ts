@@ -1,4 +1,4 @@
-import { getSession, addSong, getPlayer, getPlayers } from "@/lib/game-session";
+import { getSession, addSong, getPlayer } from "@/lib/game-session";
 import { SubmitSongRequestSchema } from "@/types/game";
 import { sseManager } from "@/lib/sse-manager";
 
@@ -44,20 +44,6 @@ export async function POST(
         status: 403,
         headers: { "Content-Type": "application/json" },
       });
-    }
-
-    // Check if player is the category picker (cannot submit their own song)
-    const players = getPlayers(sessionId);
-    const currentPicker = players[session.current_picker_index];
-
-    if (player.id === currentPicker.id) {
-      return new Response(
-        JSON.stringify({ error: "Category picker cannot submit a song" }),
-        {
-          status: 400,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
     }
 
     // Add song to database

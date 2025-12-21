@@ -7,14 +7,7 @@ export async function GET(
 ) {
   const { sessionId } = await params;
   const url = new URL(request.url);
-  const playerId = url.searchParams.get("playerId");
-
-  if (!playerId) {
-    return new Response(JSON.stringify({ error: "playerId query parameter required" }), {
-      status: 400,
-      headers: { "Content-Type": "application/json" },
-    });
-  }
+  const playerId = url.searchParams.get("playerId") || "guest";  // Allow guests without a playerId
 
   // Verify session exists
   const session = getSession(sessionId);
@@ -80,9 +73,11 @@ export async function GET(
   return new Response(stream, {
     headers: {
       "Content-Type": "text/event-stream",
-      "Cache-Control": "no-cache",
+      "Cache-Control": "no-cache, no-store, must-revalidate",
       "Connection": "keep-alive",
       "Access-Control-Allow-Origin": "*",
+      "X-Accel-Buffering": "no",
+      "Pragma": "no-cache",
     },
   });
 }

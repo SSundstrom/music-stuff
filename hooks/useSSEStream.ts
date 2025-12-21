@@ -20,23 +20,27 @@ export function useSSEStream({
   onError,
 }: UseSSEStreamOptions) {
   useEffect(() => {
-    if (!sessionId || !playerId) return;
+    if (!sessionId) return;
 
     let eventSource: EventSource | null = null;
 
     try {
-      eventSource = new EventSource(
-        `/api/game/${sessionId}/stream?playerId=${encodeURIComponent(playerId)}`,
-      );
+      const streamUrl = playerId
+        ? `/api/game/${sessionId}/stream?playerId=${encodeURIComponent(playerId)}`
+        : `/api/game/${sessionId}/stream`;
 
-      eventSource.addEventListener("open", () => {
-        console.log("[SSE] Connected");
+      eventSource = new EventSource(streamUrl);
+
+      // Use onopen property for immediate connection notification
+      eventSource.onopen = () => {
+        console.log("[SSE] Connection established");
         onConnect?.();
-      });
+      };
 
       eventSource.addEventListener("message", (event: MessageEvent) => {
         try {
           const rawMessage = JSON.parse(event.data as string);
+          console.log("[SSE] Received message:", rawMessage.type);
           const message = WSMessageSchema.parse(rawMessage);
           onMessage?.(message);
         } catch (error) {

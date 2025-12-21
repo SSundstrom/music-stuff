@@ -1,3 +1,4 @@
+import { auth } from "@/lib/auth";
 import { getSession, addPlayer } from "@/lib/game-session";
 import { JoinSessionRequestSchema } from "@/types/game";
 import { sseManager } from "@/lib/sse-manager";
@@ -23,8 +24,15 @@ export async function POST(
       });
     }
 
+    // Get current user to check if they're the owner
+    const authSession = await auth.api.getSession({
+      headers: request.headers,
+    });
+
+    const isOwner = authSession?.user?.id === session.owner_id;
+
     // Add player to session
-    const player = addPlayer(validated.session_id, validated.player_name, false);
+    const player = addPlayer(validated.session_id, validated.player_name, isOwner);
 
     // Broadcast player_joined message to all players in the session
     sseManager.broadcast(validated.session_id, {

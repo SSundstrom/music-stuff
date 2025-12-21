@@ -15,7 +15,6 @@ export default function LobbyPage() {
 
   const [playerName, setPlayerName] = useState("");
   const [loading, setLoading] = useState(false);
-  const [joined, setJoined] = useState(false);
   const [currentPlayerId, setCurrentPlayerId] = useState<string | null>(() => {
     if (typeof window !== "undefined") {
       return localStorage.getItem(`player_${sessionId}`);
@@ -33,20 +32,16 @@ export default function LobbyPage() {
   });
 
   const isOwner = gameSession?.owner_id === authSession?.user?.id;
-  const isOwnerAlreadyJoined = isOwner && players.some((p) => p.is_owner);
-
-  // If current user is the owner and is in the players list, save their player ID
-  useEffect(() => {
-    if (isOwner && !currentPlayerId) {
-      const ownerPlayer = players.find((p) => p.is_owner);
-      if (ownerPlayer) {
-        setCurrentPlayerId(ownerPlayer.id);
-        localStorage.setItem(`player_${sessionId}`, ownerPlayer.id);
-      }
-    }
-  }, [isOwner, currentPlayerId, players, sessionId]);
+  const hasJoined = !!currentPlayerId;
 
   const [joinError, setJoinError] = useState("");
+
+  // Auto-redirect to game page when game starts
+  useEffect(() => {
+    if (hasJoined && gameSession?.status === "category_selection") {
+      router.push(`/game/${sessionId}`);
+    }
+  }, [gameSession?.status, hasJoined, sessionId, router]);
 
   const handleJoinGame = async () => {
     if (!playerName.trim()) {
@@ -69,7 +64,6 @@ export default function LobbyPage() {
       const player = (await response.json()) as Player;
       setCurrentPlayerId(player.id);
       localStorage.setItem(`player_${sessionId}`, player.id);
-      setJoined(true);
       // SSE will automatically update the players list
     } catch (err) {
       setJoinError(err instanceof Error ? err.message : "An error occurred");
@@ -217,7 +211,7 @@ export default function LobbyPage() {
           </div>
 
           {/* Join or Start */}
-          {!joined && !isOwnerAlreadyJoined ? (
+          {!hasJoined ? (
             <div className="space-y-3">
               <input
                 type="text"
@@ -245,7 +239,7 @@ export default function LobbyPage() {
                   {loading ? "Starting..." : "Start Game"}
                 </button>
               )}
-              {!isOwner && joined && (
+              {!isOwner && hasJoined && (
                 <div className="rounded-lg bg-blue-50 p-4 text-blue-700">
                   Waiting for the owner to start the game...
                 </div>

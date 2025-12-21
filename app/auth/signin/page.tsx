@@ -7,10 +7,14 @@ export default function SignInPage() {
   const router = useRouter();
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-green-500 to-green-700">
+    <div className="flex min-h-screen items-center justify-center bg-linear-to-br from-green-500 to-green-700">
       <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-lg text-center">
-        <h1 className="mb-2 text-3xl font-bold text-black">Spotify Tournament</h1>
-        <p className="mb-8 text-gray-600">Sign in with Spotify to create a game</p>
+        <h1 className="mb-2 text-3xl font-bold text-black">
+          Spotify Tournament
+        </h1>
+        <p className="mb-8 text-gray-600">
+          Sign in with Spotify to create a game
+        </p>
 
         <button
           onClick={async () => {

@@ -24,6 +24,7 @@ export default function GamePage() {
   const {
     session: gameSession,
     players,
+    songs,
     loading,
     error,
   } = useGameSession({
@@ -33,7 +34,7 @@ export default function GamePage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-green-500 to-green-700">
+      <div className="flex min-h-screen items-center justify-center bg-linear-to-br from-green-500 to-green-700">
         <div className="text-center">
           <div className="mb-4 h-12 w-12 animate-spin rounded-full border-4 border-white border-t-transparent" />
           <p className="text-white">Loading game...</p>
@@ -77,6 +78,8 @@ export default function GamePage() {
             currentPlayerId={currentPlayerId}
             currentPickerId={currentPicker?.id}
             isOwner={isOwner}
+            submittedCount={songs.length}
+            playerCount={players.length}
             onAllSubmitted={() => {
               // WebSocket will automatically update the game session
             }}

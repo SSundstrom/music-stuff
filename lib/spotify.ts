@@ -22,8 +22,8 @@ async function getSpotifyAccessToken(
     return cachedAccessToken;
   }
 
-  const clientId = process.env.SPOTIFY_API_ID;
-  const clientSecret = process.env.SPOTIFY_API_SECRET;
+  const clientId = process.env.SPOTIFY_CLIENT_ID;
+  const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
 
   if (!clientId || !clientSecret) {
     throw new Error("Missing Spotify API credentials");

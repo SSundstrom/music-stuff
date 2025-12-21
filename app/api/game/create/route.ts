@@ -1,5 +1,5 @@
 import { auth } from "@/lib/auth";
-import { createSession, addPlayer } from "@/lib/game-session";
+import { createSession } from "@/lib/game-session";
 import { CreateSessionRequestSchema } from "@/types/game";
 
 export async function POST(request: Request) {
@@ -27,9 +27,6 @@ export async function POST(request: Request) {
 
     // Create the session
     const gameSession = createSession(session.user.id);
-
-    // Add owner as first player
-    addPlayer(gameSession.id, session.user.name || "Owner", true);
 
     return new Response(JSON.stringify(gameSession), {
       status: 201,

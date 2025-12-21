@@ -10,6 +10,8 @@ interface SongSubmissionPhaseProps {
   currentPlayerId: string | null;
   currentPickerId: string | null;
   isOwner: boolean;
+  submittedCount: number;
+  playerCount: number;
   onAllSubmitted: () => void;
 }
 
@@ -19,44 +21,22 @@ export default function SongSubmissionPhase({
   currentPlayerId,
   currentPickerId,
   isOwner,
+  submittedCount,
+  playerCount,
   onAllSubmitted,
 }: SongSubmissionPhaseProps) {
   const [submitted, setSubmitted] = useState(false);
-  const [submittedCount, setSubmittedCount] = useState(0);
-  const [playerCount, setPlayerCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const isCategoryPicker = currentPlayerId === currentPickerId;
 
+  // Check if all players have submitted
   useEffect(() => {
-    const fetchSubmissionStatus = async () => {
-      try {
-        const response = await fetch(`/api/game/${sessionId}`);
-        const data = (await response.json()) as {
-          songs: Array<{ id: string }>;
-          players: Array<{ id: string; is_owner: boolean }>;
-        };
-
-        // Count non-picker submissions
-        const nonPickerPlayers = data.players.filter(
-          (p) => p.id !== currentPickerId
-        ).length;
-        setPlayerCount(nonPickerPlayers);
-        setSubmittedCount(data.songs.length);
-
-        if (data.songs.length === nonPickerPlayers && nonPickerPlayers > 0) {
-          onAllSubmitted();
-        }
-      } catch (err) {
-        console.error("Failed to fetch submission status:", err);
-      }
-    };
-
-    const interval = setInterval(fetchSubmissionStatus, 2000);
-    fetchSubmissionStatus();
-    return () => clearInterval(interval);
-  }, [sessionId, currentPickerId, onAllSubmitted]);
+    if (submittedCount === playerCount && playerCount > 0) {
+      onAllSubmitted();
+    }
+  }, [submittedCount, playerCount, onAllSubmitted]);
 
   const handleSongSelected = async (song: SpotifySearchResult) => {
     setLoading(true);
@@ -129,11 +109,13 @@ export default function SongSubmissionPhase({
         </div>
       )}
 
-      {isCategoryPicker ? (
-        <div className="rounded-lg bg-yellow-50 p-4 text-base text-yellow-800">
-          You picked the category, so you don't submit a song this round.
+      {isCategoryPicker && (
+        <div className="mb-4 rounded-lg bg-blue-50 p-4 text-base text-blue-800">
+          You picked this category and also need to submit a song!
         </div>
-      ) : submitted ? (
+      )}
+
+      {submitted ? (
         <div className="rounded-lg bg-green-50 p-4 text-base text-green-800">
           Your song has been submitted! Waiting for others...
         </div>
