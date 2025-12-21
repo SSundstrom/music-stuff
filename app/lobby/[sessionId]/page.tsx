@@ -16,13 +16,12 @@ export default function LobbyPage() {
   const [playerName, setPlayerName] = useState("");
   const [loading, setLoading] = useState(false);
   const [joined, setJoined] = useState(false);
-  const [currentPlayerId, setCurrentPlayerId] = useState<string | null>(null);
-
-  // Get stored player ID from localStorage
-  useEffect(() => {
-    const storedPlayerId = localStorage.getItem(`player_${sessionId}`);
-    setCurrentPlayerId(storedPlayerId);
-  }, [sessionId]);
+  const [currentPlayerId, setCurrentPlayerId] = useState<string | null>(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem(`player_${sessionId}`);
+    }
+    return null;
+  });
 
   const {
     session: gameSession,
@@ -38,20 +37,14 @@ export default function LobbyPage() {
 
   // If current user is the owner and is in the players list, save their player ID
   useEffect(() => {
-    if (gameSession?.owner_id === authSession?.user?.id && !currentPlayerId) {
+    if (isOwner && !currentPlayerId) {
       const ownerPlayer = players.find((p) => p.is_owner);
       if (ownerPlayer) {
         setCurrentPlayerId(ownerPlayer.id);
         localStorage.setItem(`player_${sessionId}`, ownerPlayer.id);
       }
     }
-  }, [
-    gameSession?.owner_id,
-    authSession?.user?.id,
-    players,
-    currentPlayerId,
-    sessionId,
-  ]);
+  }, [isOwner, currentPlayerId, players, sessionId]);
 
   const [joinError, setJoinError] = useState("");
 

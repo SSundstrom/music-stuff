@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useParams } from "next/navigation";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { useGameSession } from "@/hooks/useGameSession";
@@ -13,18 +13,12 @@ export default function GamePage() {
   const authSession = useAuthSession();
   const sessionId = params.sessionId as string;
 
-  const [currentPlayerId, setCurrentPlayerId] = useState<string | null>(null);
-
-  // Initialize state from localStorage only once
-  const [initialized, setInitialized] = useState(false);
-
-  useEffect(() => {
-    if (!initialized) {
-      const storedPlayerId = localStorage.getItem(`player_${sessionId}`);
-      setCurrentPlayerId(storedPlayerId);
-      setInitialized(true);
+  const [currentPlayerId] = useState<string | null>(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem(`player_${sessionId}`);
     }
-  }, [initialized, sessionId]);
+    return null;
+  });
 
   // Use WebSocket-based game session hook
   const {
