@@ -8,7 +8,7 @@ export function createSession(ownerId: string): Session {
   const now = Date.now();
 
   const stmt = db.prepare(
-    "INSERT INTO sessions (id, owner_id, status, current_round, current_picker_index, created_at) VALUES (?, ?, ?, ?, ?, ?)"
+    "INSERT INTO sessions (id, owner_id, status, current_round, current_picker_index, created_at) VALUES (?, ?, ?, ?, ?, ?)",
   );
 
   stmt.run(sessionId, ownerId, "waiting", 1, 0, now);
@@ -21,6 +21,7 @@ export function createSession(ownerId: string): Session {
     current_round: 1,
     current_picker_index: 0,
     created_at: now,
+    winning_song_id: null,
   };
 }
 
@@ -30,7 +31,10 @@ export function getSession(sessionId: string): Session | null {
   return (stmt.get(sessionId) as Session) || null;
 }
 
-export function updateSession(sessionId: string, updates: Partial<Session>): void {
+export function updateSession(
+  sessionId: string,
+  updates: Partial<Session>,
+): void {
   const db = getDb();
 
   const fields = Object.keys(updates)
@@ -43,21 +47,29 @@ export function updateSession(sessionId: string, updates: Partial<Session>): voi
     .filter(([k]) => k !== "id" && k !== "created_at" && k !== "owner_id")
     .map(([, v]) => v);
 
-  const stmt = db.prepare(`UPDATE sessions SET ${fields.join(", ")} WHERE id = ?`);
+  const stmt = db.prepare(
+    `UPDATE sessions SET ${fields.join(", ")} WHERE id = ?`,
+  );
   stmt.run(...values, sessionId);
 }
 
-export function addPlayer(sessionId: string, name: string, isOwner: boolean = false): Player {
+export function addPlayer(
+  sessionId: string,
+  name: string,
+  isOwner: boolean = false,
+): Player {
   const db = getDb();
   const playerId = uuidv4();
   const now = Date.now();
 
   // Get join order
-  const countStmt = db.prepare("SELECT COUNT(*) as count FROM players WHERE session_id = ?");
+  const countStmt = db.prepare(
+    "SELECT COUNT(*) as count FROM players WHERE session_id = ?",
+  );
   const { count } = countStmt.get(sessionId) as { count: number };
 
   const stmt = db.prepare(
-    "INSERT INTO players (id, session_id, name, is_owner, join_order, created_at) VALUES (?, ?, ?, ?, ?, ?)"
+    "INSERT INTO players (id, session_id, name, is_owner, join_order, created_at) VALUES (?, ?, ?, ?, ?, ?)",
   );
 
   stmt.run(playerId, sessionId, name, isOwner ? 1 : 0, count, now);
@@ -75,7 +87,9 @@ export function addPlayer(sessionId: string, name: string, isOwner: boolean = fa
 
 export function getPlayers(sessionId: string): Player[] {
   const db = getDb();
-  const stmt = db.prepare("SELECT * FROM players WHERE session_id = ? ORDER BY join_order ASC");
+  const stmt = db.prepare(
+    "SELECT * FROM players WHERE session_id = ? ORDER BY join_order ASC",
+  );
   return stmt.all(sessionId) as Player[];
 }
 
@@ -89,16 +103,30 @@ export function updatePlayer(playerId: string, updates: Partial<Player>): void {
   const db = getDb();
 
   const fields = Object.keys(updates)
-    .filter((k) => k !== "id" && k !== "created_at" && k !== "session_id" && k !== "is_owner")
+    .filter(
+      (k) =>
+        k !== "id" &&
+        k !== "created_at" &&
+        k !== "session_id" &&
+        k !== "is_owner",
+    )
     .map((k) => `${k} = ?`);
 
   if (fields.length === 0) return;
 
   const values = Object.entries(updates)
-    .filter(([k]) => k !== "id" && k !== "created_at" && k !== "session_id" && k !== "is_owner")
+    .filter(
+      ([k]) =>
+        k !== "id" &&
+        k !== "created_at" &&
+        k !== "session_id" &&
+        k !== "is_owner",
+    )
     .map(([, v]) => (typeof v === "boolean" ? (v ? 1 : 0) : v));
 
-  const stmt = db.prepare(`UPDATE players SET ${fields.join(", ")} WHERE id = ?`);
+  const stmt = db.prepare(
+    `UPDATE players SET ${fields.join(", ")} WHERE id = ?`,
+  );
   stmt.run(...values, playerId);
 }
 
@@ -110,14 +138,14 @@ export function addSong(
   songName: string,
   artistName: string,
   startTime: number,
-  imageUrl: string | null = null
+  imageUrl: string | null = null,
 ): Song {
   const db = getDb();
   const songId = uuidv4();
   const now = Date.now();
 
   const stmt = db.prepare(
-    "INSERT INTO songs (id, session_id, round_number, spotify_id, player_id, start_time, song_name, artist_name, image_url, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+    "INSERT INTO songs (id, session_id, round_number, spotify_id, player_id, start_time, song_name, artist_name, image_url, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
   );
 
   stmt.run(
@@ -130,7 +158,7 @@ export function addSong(
     songName,
     artistName,
     imageUrl,
-    now
+    now,
   );
 
   return {
@@ -150,7 +178,7 @@ export function addSong(
 export function getSongs(sessionId: string, roundNumber: number): Song[] {
   const db = getDb();
   const stmt = db.prepare(
-    "SELECT * FROM songs WHERE session_id = ? AND round_number = ? ORDER BY created_at ASC"
+    "SELECT * FROM songs WHERE session_id = ? AND round_number = ? ORDER BY created_at ASC",
   );
   return stmt.all(sessionId, roundNumber) as Song[];
 }
@@ -166,17 +194,26 @@ export function createMatch(
   roundNumber: number,
   matchNumber: number,
   songAId: string | null,
-  songBId: string | null
+  songBId: string | null,
 ): TournamentMatch {
   const db = getDb();
   const matchId = uuidv4();
   const now = Date.now();
 
   const stmt = db.prepare(
-    "INSERT INTO tournament_matches (id, session_id, round_number, match_number, song_a_id, song_b_id, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+    "INSERT INTO tournament_matches (id, session_id, round_number, match_number, song_a_id, song_b_id, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
   );
 
-  stmt.run(matchId, sessionId, roundNumber, matchNumber, songAId, songBId, "pending", now);
+  stmt.run(
+    matchId,
+    sessionId,
+    roundNumber,
+    matchNumber,
+    songAId,
+    songBId,
+    "pending",
+    now,
+  );
 
   return {
     id: matchId,
@@ -194,10 +231,13 @@ export function createMatch(
   };
 }
 
-export function getMatches(sessionId: string, roundNumber: number): TournamentMatch[] {
+export function getMatches(
+  sessionId: string,
+  roundNumber: number,
+): TournamentMatch[] {
   const db = getDb();
   const stmt = db.prepare(
-    "SELECT * FROM tournament_matches WHERE session_id = ? AND round_number = ? ORDER BY match_number ASC"
+    "SELECT * FROM tournament_matches WHERE session_id = ? AND round_number = ? ORDER BY match_number ASC",
   );
   return stmt.all(sessionId, roundNumber) as TournamentMatch[];
 }
@@ -208,7 +248,10 @@ export function getMatch(matchId: string): TournamentMatch | null {
   return (stmt.get(matchId) as TournamentMatch) || null;
 }
 
-export function updateMatch(matchId: string, updates: Partial<TournamentMatch>): void {
+export function updateMatch(
+  matchId: string,
+  updates: Partial<TournamentMatch>,
+): void {
   const db = getDb();
 
   const fields = Object.keys(updates)
@@ -221,17 +264,23 @@ export function updateMatch(matchId: string, updates: Partial<TournamentMatch>):
     .filter(([k]) => k !== "id" && k !== "created_at" && k !== "session_id")
     .map(([, v]) => v);
 
-  const stmt = db.prepare(`UPDATE tournament_matches SET ${fields.join(", ")} WHERE id = ?`);
+  const stmt = db.prepare(
+    `UPDATE tournament_matches SET ${fields.join(", ")} WHERE id = ?`,
+  );
   stmt.run(...values, matchId);
 }
 
-export function addVote(matchId: string, playerId: string, songId: string): void {
+export function addVote(
+  matchId: string,
+  playerId: string,
+  songId: string,
+): void {
   const db = getDb();
   const voteId = uuidv4();
   const now = Date.now();
 
   const stmt = db.prepare(
-    "INSERT OR REPLACE INTO votes (id, match_id, player_id, song_id, created_at) VALUES (?, ?, ?, ?, ?)"
+    "INSERT OR REPLACE INTO votes (id, match_id, player_id, song_id, created_at) VALUES (?, ?, ?, ?, ?)",
   );
 
   stmt.run(voteId, matchId, playerId, songId, now);
@@ -241,28 +290,37 @@ export function addVote(matchId: string, playerId: string, songId: string): void
   if (!match) return;
 
   const voteStmt = db.prepare(
-    "SELECT COUNT(*) as count FROM votes WHERE match_id = ? AND song_id = ?"
+    "SELECT COUNT(*) as count FROM votes WHERE match_id = ? AND song_id = ?",
   );
 
   let votesA = 0;
   let votesB = 0;
 
   if (match.song_a_id) {
-    const { count } = voteStmt.get(matchId, match.song_a_id) as { count: number };
+    const { count } = voteStmt.get(matchId, match.song_a_id) as {
+      count: number;
+    };
     votesA = count;
   }
 
   if (match.song_b_id) {
-    const { count } = voteStmt.get(matchId, match.song_b_id) as { count: number };
+    const { count } = voteStmt.get(matchId, match.song_b_id) as {
+      count: number;
+    };
     votesB = count;
   }
 
   updateMatch(matchId, { votes_a: votesA, votes_b: votesB });
 }
 
-export function getPlayerVote(matchId: string, playerId: string): string | null {
+export function getPlayerVote(
+  matchId: string,
+  playerId: string,
+): string | null {
   const db = getDb();
-  const stmt = db.prepare("SELECT song_id FROM votes WHERE match_id = ? AND player_id = ?");
+  const stmt = db.prepare(
+    "SELECT song_id FROM votes WHERE match_id = ? AND player_id = ?",
+  );
   const result = stmt.get(matchId, playerId) as { song_id: string } | undefined;
   return result?.song_id || null;
 }
@@ -280,10 +338,12 @@ export function deleteSession(sessionId: string): void {
   const db = getDb();
 
   // Delete in order of dependencies
-  db.prepare("DELETE FROM votes WHERE match_id IN (SELECT id FROM tournament_matches WHERE session_id = ?)").run(
-    sessionId
+  db.prepare(
+    "DELETE FROM votes WHERE match_id IN (SELECT id FROM tournament_matches WHERE session_id = ?)",
+  ).run(sessionId);
+  db.prepare("DELETE FROM tournament_matches WHERE session_id = ?").run(
+    sessionId,
   );
-  db.prepare("DELETE FROM tournament_matches WHERE session_id = ?").run(sessionId);
   db.prepare("DELETE FROM songs WHERE session_id = ?").run(sessionId);
   db.prepare("DELETE FROM players WHERE session_id = ?").run(sessionId);
   db.prepare("DELETE FROM sessions WHERE id = ?").run(sessionId);

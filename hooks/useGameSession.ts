@@ -1,5 +1,11 @@
 import { useEffect, useState, useCallback } from "react";
-import type { Session, Player, Song, TournamentMatch, SSEMessage } from "@/types/game";
+import type {
+  Session,
+  Player,
+  Song,
+  TournamentMatch,
+  SSEMessage,
+} from "@/types/game";
 import { useSSEStream } from "./useSSEStream";
 
 interface UseGameSessionOptions {
@@ -17,10 +23,7 @@ interface GameSessionState {
   isConnected: boolean;
 }
 
-export function useGameSession({
-  sessionId,
-  playerId,
-}: UseGameSessionOptions) {
+export function useGameSession({ sessionId, playerId }: UseGameSessionOptions) {
   const [state, setState] = useState<GameSessionState>({
     session: null,
     players: [],
@@ -114,6 +117,7 @@ export function useGameSession({
               session: {
                 ...prevState.session,
                 status: "finished" as const,
+                winning_song_id: message.data.winning_song_id,
               },
             };
           }

@@ -26,6 +26,7 @@ function initializeDatabase() {
       current_round INTEGER DEFAULT 1,
       current_picker_index INTEGER DEFAULT 0,
       created_at INTEGER NOT NULL
+      winning_song_id TEXT
     )
   `);
 
@@ -84,7 +85,9 @@ function initializeDatabase() {
 
   // Add migration for existing databases
   try {
-    db.exec(`ALTER TABLE tournament_matches ADD COLUMN currently_playing_song_id TEXT`);
+    db.exec(
+      `ALTER TABLE tournament_matches ADD COLUMN currently_playing_song_id TEXT`,
+    );
   } catch {
     // Column already exists
   }

@@ -4,11 +4,18 @@ import { z } from "zod";
 export const SessionSchema = z.object({
   id: z.string(),
   owner_id: z.string(),
-  status: z.enum(["waiting", "category_selection", "song_submission", "tournament", "finished"]),
+  status: z.enum([
+    "waiting",
+    "category_selection",
+    "song_submission",
+    "tournament",
+    "finished",
+  ]),
   current_category: z.string().nullable(),
   current_round: z.number().default(1),
   current_picker_index: z.number().default(0),
   created_at: z.number(),
+  winning_song_id: z.string().nullable().default(null),
 });
 
 export type Session = z.infer<typeof SessionSchema>;
@@ -19,7 +26,10 @@ export const PlayerSchema = z.object({
   session_id: z.string(),
   name: z.string(),
   spotify_device_id: z.string().nullable(),
-  is_owner: z.boolean().or(z.number()).transform((val) => Boolean(val)),
+  is_owner: z
+    .boolean()
+    .or(z.number())
+    .transform((val) => Boolean(val)),
   join_order: z.number(),
   created_at: z.number(),
 });
