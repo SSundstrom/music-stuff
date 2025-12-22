@@ -5,7 +5,10 @@ import type { Song, TournamentMatch } from "@/types/game";
  * Generates a single-elimination tournament bracket from submitted songs
  * Handles odd numbers by creating a balanced bracket with byes
  */
-export function generateTournamentBracket(sessionId: string, roundNumber: number): void {
+export function generateTournamentBracket(
+  sessionId: string,
+  roundNumber: number,
+): void {
   const songs = getSongs(sessionId, roundNumber);
 
   if (songs.length < 2) {
@@ -16,7 +19,11 @@ export function generateTournamentBracket(sessionId: string, roundNumber: number
   // Matches are automatically stored in createBracket
 }
 
-function createBracket(sessionId: string, roundNumber: number, songs: Song[]): TournamentMatch[] {
+function createBracket(
+  sessionId: string,
+  roundNumber: number,
+  songs: Song[],
+): TournamentMatch[] {
   const matches: TournamentMatch[] = [];
   let matchNumber = 0;
 
@@ -25,7 +32,13 @@ function createBracket(sessionId: string, roundNumber: number, songs: Song[]): T
     const songA = songs[i];
     const songB = i + 1 < songs.length ? songs[i + 1] : null;
 
-    const match = createMatch(sessionId, roundNumber, matchNumber, songA.id, songB?.id || null);
+    const match = createMatch(
+      sessionId,
+      roundNumber,
+      matchNumber,
+      songA.id,
+      songB?.id || null,
+    );
     matches.push(match);
     matchNumber++;
   }
@@ -45,7 +58,7 @@ function createBracket(sessionId: string, roundNumber: number, songs: Song[]): T
  */
 export function advanceRound(
   sessionId: string,
-  currentRoundNumber: number
+  currentRoundNumber: number,
 ): { finished: boolean; winningSongId: string | null } {
   const currentMatches = getMatches(sessionId, currentRoundNumber);
 
@@ -140,28 +153,6 @@ export function determineMatchWinner(match: TournamentMatch): string {
     // Tie - random selection (could also pick based on submission order)
     return Math.random() < 0.5 ? match.song_a_id : match.song_b_id;
   }
-}
-
-/**
- * Completes a match and sets the winner
- */
-export function completeMatch(sessionId: string, matchId: string): string {
-  const matches = getMatches(sessionId, 1); // Get any round to find the match
-  const match = matches.find((m) => m.id === matchId);
-
-  if (!match) {
-    // Try other rounds
-    // In a real app, you'd need to know the round number or search all rounds
-    throw new Error("Match not found");
-  }
-
-  const winnerId = determineMatchWinner(match);
-  updateMatch(matchId, {
-    winner_id: winnerId,
-    status: "completed",
-  });
-
-  return winnerId;
 }
 
 /**

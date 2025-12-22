@@ -95,7 +95,8 @@ async function refreshSpotifyToken(
   };
 
   // Update the access token and expiration time in the database
-  const expiresAt = Date.now() + data.expires_in * 1000;
+  // Subtract 60 seconds to refresh 1 minute before actual expiry for safety
+  const expiresAt = Date.now() + data.expires_in * 1000 - 60000;
 
   db.prepare(
     `UPDATE account SET accessToken = ?, accessTokenExpiresAt = ? WHERE userId = ? AND providerId = 'spotify'`,

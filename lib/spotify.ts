@@ -1,16 +1,19 @@
+import { getSpotifyAccessToken as getSpotifyAccessTokenFromAuth } from "@/lib/auth";
+
 let cachedAccessToken: string | null = null;
 let tokenExpirationTime: number | null = null;
 
 async function getSpotifyAccessToken(
   isOwner: boolean = false,
+  userId?: string,
 ): Promise<string> {
-  // For owner, use OAuth token from session
-  if (isOwner) {
-    const session = await getServerSession(authOptions);
-    if (!session?.accessToken) {
+  // For owner, use OAuth token from database with expiration validation
+  if (isOwner && userId) {
+    const token = await getSpotifyAccessTokenFromAuth(userId);
+    if (!token) {
       throw new Error("Not authenticated with Spotify");
     }
-    return session.accessToken as string;
+    return token;
   }
 
   // For server-side operations, use Client Credentials flow
