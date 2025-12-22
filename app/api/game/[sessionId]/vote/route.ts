@@ -3,12 +3,8 @@ import {
   getPlayer,
   addVote,
   getMatch,
-  getPlayers,
-  getSongs,
-  getMatches,
 } from "@/lib/game-session";
-import { Session, VoteRequestSchema } from "@/types/game";
-import { sseManager } from "@/lib/sse-manager";
+import { VoteRequestSchema } from "@/types/game";
 import { eventBus } from "@/lib/event-bus";
 
 function errorResponse(message: string, status: number): Response {
@@ -65,25 +61,6 @@ function validateMatch(
   return match;
 }
 
-function broadcastGameState(sessionId: string, session: Session): void {
-  const players = getPlayers(sessionId);
-  const updatedSession = session || getSession(sessionId);
-  if (!updatedSession) return;
-
-  const songs = getSongs(sessionId, updatedSession.current_round);
-  const matches = getMatches(sessionId, updatedSession.current_round);
-
-  sseManager.broadcast(sessionId, {
-    type: "game_state",
-    data: {
-      session: updatedSession,
-      players,
-      songs,
-      matches,
-    },
-  });
-}
-
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ sessionId: string }> },
@@ -96,7 +73,6 @@ export async function POST(
     // Validate session
     const sessionResult = validateSession(sessionId);
     if (sessionResult instanceof Response) return sessionResult;
-    const session = sessionResult;
 
     // Validate player
     const playerId = request.headers.get("X-Player-ID");
@@ -115,15 +91,14 @@ export async function POST(
     addVote(validated.match_id, playerId!, validated.song_id);
 
     // Emit vote:cast event for async processing
+    // Don't broadcast game_state here - let the event handlers manage state broadcasts
+    // to ensure correct ordering when game finishes
     eventBus.emit("vote:cast", {
       playerId: playerId!,
       matchId: validated.match_id,
       songId: validated.song_id,
       sessionId,
     });
-
-    // Broadcast updated game state
-    broadcastGameState(sessionId, session);
 
     return successResponse({
       match_id: validated.match_id,

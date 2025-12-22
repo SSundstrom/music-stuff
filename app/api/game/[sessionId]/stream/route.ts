@@ -5,11 +5,7 @@ import {
   getSongs,
   getMatches,
 } from "@/lib/game-session";
-import { initializeEventHandlers } from "@/lib/event-handlers";
-
-// Initialize event handlers and SSE listeners on first request
-sseManager.registerEventListeners();
-initializeEventHandlers();
+import { ensureEventHandlersInitialized } from "@/lib/initialize-events";
 
 export async function GET(
   request: Request,
@@ -18,6 +14,9 @@ export async function GET(
   const { sessionId } = await params;
   const url = new URL(request.url);
   const playerId = url.searchParams.get("playerId") || "guest"; // Allow guests without a playerId
+
+  // Ensure event handlers are initialized on first request
+  ensureEventHandlersInitialized();
 
   // Verify session exists
   const session = getSession(sessionId);

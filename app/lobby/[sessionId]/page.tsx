@@ -15,12 +15,13 @@ export default function LobbyPage() {
 
   const [playerName, setPlayerName] = useState("");
   const [loading, setLoading] = useState(false);
-  const [currentPlayerId, setCurrentPlayerId] = useState<string | null>(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem(`player_${sessionId}`);
-    }
-    return null;
-  });
+  const [currentPlayerId, setCurrentPlayerId] = useState<string | null>(null);
+
+  // Load player ID from localStorage after hydration
+  useEffect(() => {
+    const storedPlayerId = localStorage.getItem(`player_${sessionId}`);
+    setCurrentPlayerId(storedPlayerId);
+  }, [sessionId]);
 
   const {
     session: gameSession,

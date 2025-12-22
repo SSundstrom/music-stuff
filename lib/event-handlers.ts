@@ -1,8 +1,11 @@
 import { eventBus } from "./event-bus";
+import { sseManager } from "./sse-manager";
 import {
   getMatch,
   getMatches,
   getPlayers,
+  getSongs,
+  getSession,
   updateMatch,
   updateSession,
 } from "./game-session";
@@ -80,6 +83,23 @@ export function initializeEventHandlers(): void {
             sessionId,
             winningSongId,
           });
+
+          // Broadcast updated game state after session is updated
+          const updatedSession = getSession(sessionId);
+          if (updatedSession) {
+            const players = getPlayers(sessionId);
+            const songs = getSongs(sessionId, updatedSession.current_round);
+            const matches = getMatches(sessionId, updatedSession.current_round);
+            sseManager.broadcast(sessionId, {
+              type: "game_state",
+              data: {
+                session: updatedSession,
+                players,
+                songs,
+                matches,
+              },
+            });
+          }
         } else {
           // Round advanced
           updateSession(sessionId, {
@@ -89,6 +109,23 @@ export function initializeEventHandlers(): void {
             sessionId,
             roundNumber: match.round_number + 1,
           });
+
+          // Broadcast updated game state after session is updated
+          const updatedSession = getSession(sessionId);
+          if (updatedSession) {
+            const players = getPlayers(sessionId);
+            const songs = getSongs(sessionId, updatedSession.current_round);
+            const matches = getMatches(sessionId, updatedSession.current_round);
+            sseManager.broadcast(sessionId, {
+              type: "game_state",
+              data: {
+                session: updatedSession,
+                players,
+                songs,
+                matches,
+              },
+            });
+          }
         }
       }
     } catch (error) {

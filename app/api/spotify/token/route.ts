@@ -7,15 +7,18 @@ export async function GET(request: Request) {
     });
 
     if (!session?.user?.id) {
+      console.log("[token] No session found");
       return new Response(JSON.stringify({ error: "Not authenticated" }), {
         status: 401,
         headers: { "Content-Type": "application/json" },
       });
     }
 
+    console.log(`[token] Getting token for user: ${session.user.id}`);
     const accessToken = await getSpotifyAccessToken(session.user.id);
 
     if (!accessToken) {
+      console.log("[token] No access token found for user");
       return new Response(
         JSON.stringify({ error: "Not authenticated with Spotify" }),
         {
@@ -25,6 +28,9 @@ export async function GET(request: Request) {
       );
     }
 
+    console.log(
+      `[token] Returning token for user ${session.user.id}, token length: ${accessToken.length}`,
+    );
     return new Response(
       JSON.stringify({
         accessToken,
@@ -36,6 +42,7 @@ export async function GET(request: Request) {
     );
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
+    console.error("[token] Error:", message);
     return new Response(JSON.stringify({ error: message }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
