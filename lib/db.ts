@@ -83,11 +83,17 @@ function initializeDatabase() {
     )
   `);
 
-  // Add migration for existing databases
+  // Add migrations for existing databases
   try {
     db.exec(
       `ALTER TABLE tournament_matches ADD COLUMN currently_playing_song_id TEXT`,
     );
+  } catch {
+    // Column already exists
+  }
+
+  try {
+    db.exec(`ALTER TABLE sessions ADD COLUMN winning_song_id TEXT`);
   } catch {
     // Column already exists
   }
