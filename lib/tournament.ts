@@ -1,4 +1,4 @@
-import { createMatch, getSongs, getMatches, updateMatch } from "./game-session";
+import { createMatch, getSongs, getMatches } from "./game-session";
 import type { Song, TournamentMatch } from "@/types/game";
 
 /**
@@ -89,7 +89,7 @@ export function advanceRound(
       artist_name: "",
       image_url: null,
       created_at: 0,
-    } as unknown as Song);
+    } as Song);
   }
 
   // If only 1 winner, tournament is finished

@@ -78,7 +78,10 @@ export function initializeEventHandlers(): void {
 
         if (finished && winningSongId) {
           // Tournament finished
-          updateSession(sessionId, { status: "finished" });
+          updateSession(sessionId, {
+            status: "finished",
+            winning_song_id: winningSongId,
+          });
           eventBus.emit("game:finished", {
             sessionId,
             winningSongId,

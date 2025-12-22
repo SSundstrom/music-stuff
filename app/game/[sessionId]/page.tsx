@@ -103,17 +103,41 @@ export default function GamePage() {
           />
         )}
 
-        {gameSession?.status === "finished" && (
-          <div className="rounded-lg bg-white p-8 shadow-lg text-center">
-            <h1 className="mb-4 text-4xl font-bold text-green-600">
-              🎉 Tournament Complete!
-            </h1>
-            <p className="text-lg text-gray-700">
-              The tournament has finished. The winning song will be displayed
-              soon.
-            </p>
-          </div>
-        )}
+        {gameSession?.status === "finished" && (() => {
+          const winningSong = songs.find(
+            (song) => song.id === gameSession.winning_song_id
+          );
+          return (
+            <div className="rounded-lg bg-white p-8 shadow-lg text-center">
+              <h1 className="mb-4 text-4xl font-bold text-green-600">
+                🎉 Tournament Complete!
+              </h1>
+              {winningSong ? (
+                <div className="space-y-4">
+                  {winningSong.image_url && (
+                    <img
+                      src={winningSong.image_url}
+                      alt={winningSong.song_name}
+                      className="mx-auto h-48 w-48 rounded-lg object-cover shadow"
+                    />
+                  )}
+                  <div>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {winningSong.song_name}
+                    </p>
+                    <p className="text-lg text-gray-600">
+                      by {winningSong.artist_name}
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-lg text-gray-700">
+                  Tournament winner determined!
+                </p>
+              )}
+            </div>
+          );
+        })()}
       </div>
     </div>
   );

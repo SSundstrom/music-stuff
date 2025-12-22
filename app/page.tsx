@@ -68,18 +68,7 @@ export default function Home() {
 
     try {
       // Try to join the session
-      const response = await fetch(`/api/game/${joinCode}/join`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ player_name: "Player" }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Invalid session code");
-      }
-
-      const player = (await response.json()) as { session_id: string };
-      router.push(`/lobby/${player.session_id}`);
+      router.push(`/lobby/${joinCode}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
