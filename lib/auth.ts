@@ -34,7 +34,7 @@ export async function getSpotifyAccessToken(
     .get(userId) as
     | {
         accessToken: string;
-        accessTokenExpiresAt: number;
+        accessTokenExpiresAt: string | number | null;
         refreshToken: string;
       }
     | undefined;
@@ -44,14 +44,20 @@ export async function getSpotifyAccessToken(
     return null;
   }
 
+  // Convert ISO string to timestamp if needed
+  const expiresAtMs =
+    typeof account.accessTokenExpiresAt === "string"
+      ? new Date(account.accessTokenExpiresAt).getTime()
+      : (account.accessTokenExpiresAt ?? 0);
+
   const now = Date.now();
-  const timeUntilExpiry = account.accessTokenExpiresAt - now;
+  const timeUntilExpiry = expiresAtMs - now;
   console.log(
     `[auth] Token status for user ${userId}: expires in ${Math.round(timeUntilExpiry / 1000)}s`,
   );
 
   // Check if token has expired
-  if (account.accessTokenExpiresAt && now >= account.accessTokenExpiresAt) {
+  if (expiresAtMs && now >= expiresAtMs) {
     console.log(
       `[auth] Token expired for user ${userId}, attempting refresh...`,
     );
@@ -94,9 +100,7 @@ async function refreshSpotifyToken(
     throw new Error("Missing Spotify API credentials");
   }
 
-  console.log(
-    `[auth] Refreshing Spotify token for user ${userId}...`,
-  );
+  console.log(`[auth] Refreshing Spotify token for user ${userId}...`);
 
   const encoded = Buffer.from(`${clientId}:${clientSecret}`).toString("base64");
 
@@ -128,19 +132,22 @@ async function refreshSpotifyToken(
 
   // Update the access token and expiration time in the database
   // Subtract 60 seconds to refresh 1 minute before actual expiry for safety
-  const expiresAt = Date.now() + data.expires_in * 1000 - 60000;
+  const expiresAtMs = Date.now() + data.expires_in * 1000 - 60000;
+  const expiresAtISO = new Date(expiresAtMs).toISOString();
 
   // Update the access token and expiration time, and refresh token if Spotify provided a new one
   if (data.refresh_token) {
     console.log(`[auth] Spotify provided new refresh token, updating database`);
     db.prepare(
       `UPDATE account SET accessToken = ?, accessTokenExpiresAt = ?, refreshToken = ? WHERE userId = ? AND providerId = 'spotify'`,
-    ).run(data.access_token, expiresAt, data.refresh_token, userId);
+    ).run(data.access_token, expiresAtISO, data.refresh_token, userId);
   } else {
-    console.log(`[auth] No new refresh token from Spotify, keeping existing one`);
+    console.log(
+      `[auth] No new refresh token from Spotify, keeping existing one`,
+    );
     db.prepare(
       `UPDATE account SET accessToken = ?, accessTokenExpiresAt = ? WHERE userId = ? AND providerId = 'spotify'`,
-    ).run(data.access_token, expiresAt, userId);
+    ).run(data.access_token, expiresAtISO, userId);
   }
 
   console.log(`[auth] Token updated in database for user ${userId}`);
