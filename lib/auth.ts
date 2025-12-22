@@ -31,18 +31,23 @@ export async function getSpotifyAccessToken(
       `SELECT accessToken, accessTokenExpiresAt, refreshToken FROM account
        WHERE userId = ? AND providerId = 'spotify'`,
     )
-    .get(userId) as {
-    accessToken: string;
-    accessTokenExpiresAt: number;
-    refreshToken: string;
-  } | undefined;
+    .get(userId) as
+    | {
+        accessToken: string;
+        accessTokenExpiresAt: number;
+        refreshToken: string;
+      }
+    | undefined;
 
   if (!account) {
     return null;
   }
 
   // Check if token has expired
-  if (account.accessTokenExpiresAt && Date.now() >= account.accessTokenExpiresAt) {
+  if (
+    account.accessTokenExpiresAt &&
+    Date.now() >= account.accessTokenExpiresAt
+  ) {
     // Token has expired, try to refresh it
     if (!account.refreshToken) {
       return null;

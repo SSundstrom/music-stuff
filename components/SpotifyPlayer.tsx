@@ -9,6 +9,7 @@ export default function SpotifyPlayer() {
     return (
       <div className="flex items-center justify-center">
         <div className="h-6 w-6 animate-spin rounded-full border-2 border-gray-700 border-t-green-500" />
+        <p>Spotify loading</p>
       </div>
     );
   }
@@ -39,7 +40,7 @@ export default function SpotifyPlayer() {
       {/* Play/Pause Button */}
       <button
         onClick={state.isPaused ? resume : pause}
-        className="w-8 h-8 rounded-full bg-green-500 hover:bg-green-400 text-white flex items-center justify-center transition-colors flex-shrink-0"
+        className="w-8 h-8 rounded-full bg-green-500 hover:bg-green-400 text-white flex items-center justify-center transition-colors shrink-0"
         aria-label={state.isPaused ? "Play" : "Pause"}
       >
         {state.isPaused ? (
@@ -51,11 +52,7 @@ export default function SpotifyPlayer() {
             <path d="M8 5v14l11-7z" />
           </svg>
         ) : (
-          <svg
-            className="w-4 h-4"
-            fill="currentColor"
-            viewBox="0 0 24 24"
-          >
+          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
             <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
           </svg>
         )}

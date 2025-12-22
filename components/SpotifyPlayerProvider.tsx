@@ -87,8 +87,18 @@ export default function SpotifyPlayerProvider({
           getOAuthToken: (callback) => {
             // Fetch the access token from the server when the SDK needs it
             fetch("/api/spotify/token")
-              .then((res) => res.json())
+              .then((res) => {
+                if (!res.ok) {
+                  throw new Error(
+                    `Failed to get token: ${res.status} ${res.statusText}`,
+                  );
+                }
+                return res.json();
+              })
               .then((data) => {
+                if (!data.accessToken) {
+                  throw new Error("No access token in response");
+                }
                 callback(data.accessToken);
               })
               .catch((err) => {
