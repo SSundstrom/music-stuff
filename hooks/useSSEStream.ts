@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import type { SSEMessage } from "@/types/game";
 import { SSEMessageSchema } from "@/types/game";
 
@@ -19,6 +19,8 @@ export function useSSEStream({
   onDisconnect,
   onError,
 }: UseSSEStreamOptions) {
+  const [isConnected, setIsConnected] = useState(false);
+
   useEffect(() => {
     if (!sessionId) return;
 
@@ -34,6 +36,7 @@ export function useSSEStream({
       // Use onopen property for immediate connection notification
       eventSource.onopen = () => {
         console.log("[SSE] Connection established");
+        setIsConnected(true);
         onConnect?.();
       };
 
@@ -55,6 +58,7 @@ export function useSSEStream({
 
       eventSource.addEventListener("error", () => {
         console.error("[SSE] Connection error");
+        setIsConnected(false);
         eventSource?.close();
         onDisconnect?.();
       });
@@ -66,12 +70,13 @@ export function useSSEStream({
 
     return () => {
       if (eventSource) {
+        setIsConnected(false);
         eventSource.close();
       }
     };
   }, [sessionId, playerId, onMessage, onConnect, onDisconnect, onError]);
 
   return {
-    isConnected: true, // EventSource manages connection state internally
+    isConnected,
   };
 }

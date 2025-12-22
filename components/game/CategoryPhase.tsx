@@ -7,14 +7,12 @@ interface CategoryPhaseProps {
   sessionId: string;
   currentPicker: Player | undefined;
   isCurrentPicker: boolean;
-  onCategorySubmitted: () => void;
 }
 
 export default function CategoryPhase({
   sessionId,
   currentPicker,
   isCurrentPicker,
-  onCategorySubmitted,
 }: CategoryPhaseProps) {
   const [category, setCategory] = useState("");
   const [loading, setLoading] = useState(false);
@@ -42,7 +40,6 @@ export default function CategoryPhase({
       }
 
       setCategory("");
-      onCategorySubmitted();
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {

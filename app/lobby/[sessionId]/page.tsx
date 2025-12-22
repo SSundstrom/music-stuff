@@ -26,6 +26,7 @@ export default function LobbyPage() {
     session: gameSession,
     players,
     error: sessionError,
+    isConnected,
   } = useGameSession({
     sessionId,
     playerId: currentPlayerId,
@@ -123,6 +124,12 @@ export default function LobbyPage() {
 
   return (
     <div className="min-h-screen bg-linear-to-br from-green-500 to-green-700 p-4">
+      {!isConnected && (
+        <div className="mb-4 rounded-lg bg-red-500 px-4 py-2 text-white flex items-center gap-2">
+          <span className="text-lg">🔌</span>
+          <span className="font-semibold">Connection lost - reconnecting...</span>
+        </div>
+      )}
       <div className="mx-auto max-w-2xl">
         {error && (
           <div className="mb-4 rounded-lg bg-red-100 p-4 text-red-700">

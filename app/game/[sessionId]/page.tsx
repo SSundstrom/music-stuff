@@ -28,6 +28,7 @@ export default function GamePage() {
     matches,
     loading,
     error,
+    isConnected,
   } = useGameSession({
     sessionId,
     playerId: currentPlayerId,
@@ -60,6 +61,12 @@ export default function GamePage() {
 
   return (
     <div className="min-h-screen bg-linear-to-br from-green-500 to-green-700 p-4">
+      {!isConnected && (
+        <div className="mb-4 rounded-lg bg-red-500 px-4 py-2 text-white flex items-center gap-2">
+          <span className="text-lg">🔌</span>
+          <span className="font-semibold">Connection lost - reconnecting...</span>
+        </div>
+      )}
       <div className="mx-auto max-w-4xl space-y-4">
         {isOwner && <SpotifyPlayer />}
 
@@ -68,9 +75,6 @@ export default function GamePage() {
             sessionId={sessionId}
             currentPicker={currentPicker}
             isCurrentPicker={currentPlayerId === currentPicker?.id}
-            onCategorySubmitted={() => {
-              // SSE will automatically update the game session
-            }}
           />
         )}
 
