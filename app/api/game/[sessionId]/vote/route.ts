@@ -9,7 +9,7 @@ import {
   updateMatch,
   updateSession,
 } from "@/lib/game-session";
-import { VoteRequestSchema } from "@/types/game";
+import { Session, VoteRequestSchema } from "@/types/game";
 import { sseManager } from "@/lib/sse-manager";
 import { determineMatchWinner, advanceRound } from "@/lib/tournament";
 import { getDb } from "@/lib/db";
@@ -28,7 +28,7 @@ function successResponse(data: unknown, status: number = 200): Response {
   });
 }
 
-function validateSession(sessionId: string): ReturnType<typeof getSession> | Response {
+function validateSession(sessionId: string): Session | Response {
   const session = getSession(sessionId);
   if (!session) {
     return errorResponse("Session not found", 404);
@@ -36,7 +36,10 @@ function validateSession(sessionId: string): ReturnType<typeof getSession> | Res
   return session;
 }
 
-function validatePlayer(playerId: string | null, sessionId: string): ReturnType<typeof getPlayer> | Response {
+function validatePlayer(
+  playerId: string | null,
+  sessionId: string,
+): ReturnType<typeof getPlayer> | Response {
   if (!playerId) {
     return errorResponse("Player ID required", 401);
   }
@@ -68,7 +71,7 @@ function validateMatch(
 function getVoteCount(matchId: string): number {
   const db = getDb();
   const stmt = db.prepare(
-    "SELECT COUNT(DISTINCT player_id) as vote_count FROM votes WHERE match_id = ?"
+    "SELECT COUNT(DISTINCT player_id) as vote_count FROM votes WHERE match_id = ?",
   );
   const result = stmt.get(matchId) as { vote_count: number };
   return result.vote_count;
@@ -91,7 +94,7 @@ function broadcastMatchEnded(
   });
 }
 
-function broadcastGameState(sessionId: string, session: unknown): void {
+function broadcastGameState(sessionId: string, session: Session): void {
   const players = getPlayers(sessionId);
   const updatedSession = session || getSession(sessionId);
   if (!updatedSession) return;
@@ -128,14 +131,19 @@ async function handleMatchCompletion(
   const currentSession = getSession(sessionId);
   if (!currentSession) return;
 
-  const currentRoundMatches = getMatches(sessionId, currentSession.current_round);
-  const allMatchesCompleted = currentRoundMatches.every((m) => m.status === "completed");
+  const currentRoundMatches = getMatches(
+    sessionId,
+    currentSession.current_round,
+  );
+  const allMatchesCompleted = currentRoundMatches.every(
+    (m) => m.status === "completed",
+  );
 
   if (!allMatchesCompleted) return;
 
   const { finished, winningSongId } = advanceRound(
     sessionId,
-    currentSession.current_round
+    currentSession.current_round,
   );
 
   if (finished && winningSongId) {
@@ -175,7 +183,11 @@ export async function POST(
     if (playerResult instanceof Response) return playerResult;
 
     // Validate match and song
-    const matchResult = validateMatch(validated.match_id, sessionId, validated.song_id);
+    const matchResult = validateMatch(
+      validated.match_id,
+      sessionId,
+      validated.song_id,
+    );
     if (matchResult instanceof Response) return matchResult;
 
     // Record vote
