@@ -25,7 +25,7 @@ function initializeDatabase() {
       current_category TEXT,
       current_round INTEGER DEFAULT 1,
       current_picker_index INTEGER DEFAULT 0,
-      created_at INTEGER NOT NULL
+      created_at INTEGER NOT NULL,
       winning_song_id TEXT
     )
   `);

@@ -64,7 +64,9 @@ export default function GamePage() {
       {!isConnected && (
         <div className="mb-4 rounded-lg bg-red-500 px-4 py-2 text-white flex items-center gap-2">
           <span className="text-lg">🔌</span>
-          <span className="font-semibold">Connection lost - reconnecting...</span>
+          <span className="font-semibold">
+            Connection lost - reconnecting...
+          </span>
         </div>
       )}
       <div className="mx-auto max-w-4xl space-y-4">
@@ -83,13 +85,10 @@ export default function GamePage() {
             sessionId={sessionId}
             category={gameSession.current_category || ""}
             currentPlayerId={currentPlayerId}
-            currentPickerId={currentPicker?.id}
             isOwner={isOwner}
+            // TODO: Uppdateras automatiskt?
             submittedCount={songs.length}
             playerCount={players.length}
-            onAllSubmitted={() => {
-              // SSE will automatically update the game session
-            }}
           />
         )}
 
@@ -110,7 +109,8 @@ export default function GamePage() {
               🎉 Tournament Complete!
             </h1>
             <p className="text-lg text-gray-700">
-              The tournament has finished. The winning song will be displayed soon.
+              The tournament has finished. The winning song will be displayed
+              soon.
             </p>
           </div>
         )}

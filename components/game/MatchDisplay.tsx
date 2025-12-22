@@ -1,11 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import {
-  type TournamentMatch,
-  type Song,
-  SSEMessageSchema,
-} from "@/types/game";
+import { type TournamentMatch, type Song, SSEMessageSchema } from "@/types/game";
 import { useSpotifyPlayer } from "../SpotifyPlayerProvider";
 
 interface MatchDisplayProps {
@@ -29,13 +25,13 @@ export default function MatchDisplay({
   const [userVote, setUserVote] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [matchState, setMatchState] = useState(match);
   const [isPlaying, setIsPlaying] = useState(false);
   const playbackTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const eventSourceRef = useRef<EventSource | null>(null);
 
   useEffect(() => {
-    // Connect to SSE stream with playerId
+    // Keep SSE connection alive - match state updates come from parent props
+    // but we need the connection active to allow server to broadcast to this client
     const playerId_ = playerId || "guest";
     const eventSource = new EventSource(
       `/api/game/${sessionId}/stream?playerId=${encodeURIComponent(playerId_)}`,
@@ -44,32 +40,10 @@ export default function MatchDisplay({
     eventSource.addEventListener("message", (event) => {
       try {
         const parsedEvent = SSEMessageSchema.parse(JSON.parse(event.data));
-
-        if (parsedEvent.type === "game_state") {
-          const { matches } = parsedEvent.data;
-          const updated = matches.find(
-            (m: TournamentMatch) => m.id === match.id,
-          );
-          if (updated) {
-            setMatchState(updated);
-          }
-        } else if (
-          parsedEvent.type === "playback_started" &&
-          parsedEvent.data.match_id === match.id
-        ) {
-          setMatchState((prev) => ({
-            ...prev,
-            currently_playing_song_id: parsedEvent.data.song_id,
-          }));
-        } else if (
-          parsedEvent.type === "playback_stopped" &&
-          parsedEvent.data.match_id === match.id
-        ) {
-          setMatchState((prev) => ({
-            ...prev,
-            currently_playing_song_id: null,
-          }));
-        }
+        // We don't manage state here - just keep connection alive
+        // State updates come from parent props via useGameSession hook
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const _unused = parsedEvent;
       } catch (err) {
         console.error("Failed to parse SSE message:", err);
       }
@@ -147,7 +121,7 @@ export default function MatchDisplay({
       setIsPlaying(true);
 
       // Auto-pause after duration
-      const duration = matchState.round_number === 1 ? 30 : 15;
+      const duration = match.round_number === 1 ? 30 : 15;
       if (playbackTimeoutRef.current) {
         clearTimeout(playbackTimeoutRef.current);
       }
@@ -182,7 +156,7 @@ export default function MatchDisplay({
     };
   }, []);
 
-  const duration = matchState.round_number === 1 ? 30 : 15;
+  const duration = match.round_number === 1 ? 30 : 15;
 
   return (
     <div className="space-y-6">
@@ -197,14 +171,14 @@ export default function MatchDisplay({
         {/* Song A */}
         <div
           className={`order-1 rounded-lg border-2 p-6 relative ${
-            matchState.votes_a > matchState.votes_b
+            match.votes_a > match.votes_b
               ? "border-green-500 bg-green-50"
-              : matchState.currently_playing_song_id === songA.id
+              : match.currently_playing_song_id === songA.id
                 ? "border-blue-500 bg-blue-50"
                 : "border-gray-300"
           }`}
         >
-          {matchState.currently_playing_song_id === songA.id && (
+          {match.currently_playing_song_id === songA.id && (
             <div className="absolute top-2 right-2 flex items-center gap-1 rounded-full bg-blue-600 px-3 py-1 text-sm font-semibold text-white">
               <span className="inline-block h-2 w-2 rounded-full bg-white animate-pulse" />
               Now Playing
@@ -252,7 +226,7 @@ export default function MatchDisplay({
 
             {/* Vote Count */}
             <div className="text-center text-base font-semibold text-black">
-              Votes: {matchState.votes_a}
+              Votes: {match.votes_a}
             </div>
           </div>
         </div>
@@ -260,14 +234,14 @@ export default function MatchDisplay({
         {/* Song B */}
         <div
           className={`order-3 md:order-2 rounded-lg border-2 p-6 relative ${
-            matchState.votes_b > matchState.votes_a
+            match.votes_b > match.votes_a
               ? "border-green-500 bg-green-50"
-              : matchState.currently_playing_song_id === songB.id
+              : match.currently_playing_song_id === songB.id
                 ? "border-blue-500 bg-blue-50"
                 : "border-gray-300"
           }`}
         >
-          {matchState.currently_playing_song_id === songB.id && (
+          {match.currently_playing_song_id === songB.id && (
             <div className="absolute top-2 right-2 flex items-center gap-1 rounded-full bg-blue-600 px-3 py-1 text-sm font-semibold text-white">
               <span className="inline-block h-2 w-2 rounded-full bg-white animate-pulse" />
               Now Playing
@@ -314,7 +288,7 @@ export default function MatchDisplay({
 
             {/* Vote Count */}
             <div className="text-center text-base font-semibold text-black">
-              Votes: {matchState.votes_b}
+              Votes: {match.votes_b}
             </div>
           </div>
         </div>

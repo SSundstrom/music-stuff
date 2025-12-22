@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import MatchDisplay from "./MatchDisplay";
 import type { TournamentMatch, Song } from "@/types/game";
 
@@ -22,52 +22,26 @@ export default function TournamentPhase({
   matches: allMatches,
 }: TournamentPhaseProps) {
   const [currentMatchIndex, setCurrentMatchIndex] = useState(0);
-  const [error, setError] = useState("");
-  const eventSourceRef = useRef<EventSource | null>(null);
 
   // Filter matches for current round
   const matches = allMatches.filter((m) => m.round_number === roundNumber);
 
-  // Listen for match completion events
+  // Auto-advance to next match when current match completes
   useEffect(() => {
-    const playerId = currentPlayerId || "guest";
-    const eventSource = new EventSource(
-      `/api/game/${sessionId}/stream?playerId=${encodeURIComponent(playerId)}`
-    );
+    const currentMatch = matches[currentMatchIndex];
+    if (!currentMatch) return;
 
-    eventSource.addEventListener("message", (event) => {
-      try {
-        const parsedEvent = JSON.parse(event.data);
-
-        if (parsedEvent.type === "match_ended") {
-          const { match_id } = parsedEvent.data;
-          const currentMatch = matches.find(
-            (m) => m.id === match_id && m.round_number === roundNumber
-          );
-          if (currentMatch) {
-            // Move to next match
-            setCurrentMatchIndex((prevIndex) => {
-              if (prevIndex < matches.length - 1) {
-                return prevIndex + 1;
-              } else {
-                // Tournament round complete
-                setError("Round complete! Advancing to next round...");
-                return prevIndex;
-              }
-            });
-          }
-        }
-      } catch (err) {
-        console.error("Failed to parse SSE message:", err);
+    // Check if current match is completed
+    if (currentMatch.status === "completed") {
+      // If there are more matches, auto-advance after a short delay
+      if (currentMatchIndex < matches.length - 1) {
+        const timer = setTimeout(() => {
+          setCurrentMatchIndex((prev) => prev + 1);
+        }, 1000);
+        return () => clearTimeout(timer);
       }
-    });
-
-    eventSourceRef.current = eventSource;
-
-    return () => {
-      eventSource.close();
-    };
-  }, [sessionId, currentPlayerId, matches, roundNumber]);
+    }
+  }, [matches, currentMatchIndex]);
 
   // Create a map of songs for easy lookup
   const songMap = new Map<string, Song>();
@@ -111,12 +85,6 @@ export default function TournamentPhase({
             </p>
           </div>
         </div>
-
-        {error && (
-          <div className="mb-4 rounded-lg bg-red-100 p-4 text-base text-red-800">
-            {error}
-          </div>
-        )}
 
         {currentMatch.status !== "completed" && songA && songB && (
           <MatchDisplay

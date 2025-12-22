@@ -1,44 +1,32 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import SongSearcher from "./SongSearcher";
-import type { SpotifySearchResult } from "@/lib/spotify";
+import { SongSelection } from "./types";
+import { SubmitSongRequest } from "@/types/game";
 
 interface SongSubmissionPhaseProps {
   sessionId: string;
   category: string;
   currentPlayerId: string | null;
-  currentPickerId: string | null;
   isOwner: boolean;
   submittedCount: number;
   playerCount: number;
-  onAllSubmitted: () => void;
 }
 
 export default function SongSubmissionPhase({
   sessionId,
   category,
   currentPlayerId,
-  currentPickerId,
   isOwner,
   submittedCount,
   playerCount,
-  onAllSubmitted,
 }: SongSubmissionPhaseProps) {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const isCategoryPicker = currentPlayerId === currentPickerId;
-
-  // Check if all players have submitted
-  useEffect(() => {
-    if (submittedCount === playerCount && playerCount > 0) {
-      onAllSubmitted();
-    }
-  }, [submittedCount, playerCount, onAllSubmitted]);
-
-  const handleSongSelected = async (song: SpotifySearchResult) => {
+  const handleSongSelected = async (song: SongSelection) => {
     setLoading(true);
     setError("");
 
@@ -53,9 +41,9 @@ export default function SongSubmissionPhase({
           spotify_id: song.id,
           song_name: song.name,
           artist_name: song.artists[0]?.name || "Unknown",
-          start_time: 0,
+          start_time: song.startTimeS,
           image_url: song.images[0]?.url || null,
-        }),
+        } satisfies SubmitSongRequest),
       });
 
       if (!response.ok) {
@@ -85,8 +73,6 @@ export default function SongSubmissionPhase({
         const data = (await response.json()) as { error: string };
         throw new Error(data.error);
       }
-
-      onAllSubmitted();
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
@@ -109,19 +95,16 @@ export default function SongSubmissionPhase({
         </div>
       )}
 
-      {isCategoryPicker && (
-        <div className="mb-4 rounded-lg bg-blue-50 p-4 text-base text-blue-800">
-          You picked this category and also need to submit a song!
-        </div>
-      )}
-
       {submitted ? (
         <div className="rounded-lg bg-green-50 p-4 text-base text-green-800">
           Your song has been submitted! Waiting for others...
         </div>
       ) : (
         <div className="mb-6">
-          <SongSearcher onSongSelected={handleSongSelected} disabled={loading} />
+          <SongSearcher
+            onSongSelected={handleSongSelected}
+            disabled={loading}
+          />
         </div>
       )}
 

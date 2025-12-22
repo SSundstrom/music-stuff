@@ -3,8 +3,12 @@ import {
   getPlayer,
   addVote,
   getMatch,
+  getPlayers,
+  getSongs,
+  getMatches,
 } from "@/lib/game-session";
 import { VoteRequestSchema } from "@/types/game";
+import { sseManager } from "@/lib/sse-manager";
 import { eventBus } from "@/lib/event-bus";
 
 function errorResponse(message: string, status: number): Response {
@@ -61,6 +65,21 @@ function validateMatch(
   return match;
 }
 
+function broadcastMatchVotes(sessionId: string, matchId: string): void {
+  const match = getMatch(matchId);
+  if (!match) return;
+
+  sseManager.broadcast(sessionId, {
+    type: "game_state",
+    data: {
+      session: getSession(sessionId)!,
+      players: getPlayers(sessionId),
+      songs: getSongs(sessionId, match.round_number),
+      matches: getMatches(sessionId, match.round_number),
+    },
+  });
+}
+
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ sessionId: string }> },
@@ -90,9 +109,11 @@ export async function POST(
     // Record vote
     addVote(validated.match_id, playerId!, validated.song_id);
 
+    // Broadcast updated vote counts to all clients
+    broadcastMatchVotes(sessionId, validated.match_id);
+
     // Emit vote:cast event for async processing
-    // Don't broadcast game_state here - let the event handlers manage state broadcasts
-    // to ensure correct ordering when game finishes
+    // Event handlers will determine if the match/round/game is complete
     eventBus.emit("vote:cast", {
       playerId: playerId!,
       matchId: validated.match_id,

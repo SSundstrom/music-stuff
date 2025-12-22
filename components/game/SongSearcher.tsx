@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from "react";
 import type { SpotifySearchResult } from "@/lib/spotify";
+import { SongSelection } from "./types";
 
 interface SongSearcherProps {
-  onSongSelected: (song: SpotifySearchResult) => void;
+  onSongSelected: (song: SongSelection) => void;
   disabled?: boolean;
 }
 
@@ -30,7 +31,7 @@ export default function SongSearcher({
 
       try {
         const response = await fetch(
-          `/api/spotify/search?q=${encodeURIComponent(query)}`
+          `/api/spotify/search?q=${encodeURIComponent(query)}`,
         );
         if (!response.ok) throw new Error("Search failed");
 
@@ -53,6 +54,7 @@ export default function SongSearcher({
       ...song,
       preview_url: song.preview_url,
       duration_ms: song.duration_ms,
+      startTimeS: selectedTime,
     });
   };
 
@@ -70,7 +72,9 @@ export default function SongSearcher({
         {error && <p className="mt-2 text-base text-red-600">{error}</p>}
       </div>
 
-      {loading && <p className="text-center text-lg text-gray-700">Searching...</p>}
+      {loading && (
+        <p className="text-center text-lg text-gray-700">Searching...</p>
+      )}
 
       {results.length > 0 && (
         <div className="space-y-2 max-h-96 overflow-y-auto">
@@ -81,7 +85,9 @@ export default function SongSearcher({
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1">
-                  <p className="text-base font-semibold text-black">{song.name}</p>
+                  <p className="text-base font-semibold text-black">
+                    {song.name}
+                  </p>
                   <p className="text-base text-gray-700">
                     {song.artists[0]?.name || "Unknown"}
                   </p>
@@ -100,11 +106,7 @@ export default function SongSearcher({
 
               {song.preview_url && (
                 <div className="mt-2">
-                  <audio
-                    src={song.preview_url}
-                    controls
-                    className="w-full"
-                  />
+                  <audio src={song.preview_url} controls className="w-full" />
                 </div>
               )}
 
