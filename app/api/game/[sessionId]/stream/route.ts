@@ -5,6 +5,11 @@ import {
   getSongs,
   getMatches,
 } from "@/lib/game-session";
+import { initializeEventHandlers } from "@/lib/event-handlers";
+
+// Initialize event handlers and SSE listeners on first request
+sseManager.registerEventListeners();
+initializeEventHandlers();
 
 export async function GET(
   request: Request,

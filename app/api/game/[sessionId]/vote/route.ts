@@ -6,13 +6,10 @@ import {
   getPlayers,
   getSongs,
   getMatches,
-  updateMatch,
-  updateSession,
 } from "@/lib/game-session";
 import { Session, VoteRequestSchema } from "@/types/game";
 import { sseManager } from "@/lib/sse-manager";
-import { determineMatchWinner, advanceRound } from "@/lib/tournament";
-import { getDb } from "@/lib/db";
+import { eventBus } from "@/lib/event-bus";
 
 function errorResponse(message: string, status: number): Response {
   return new Response(JSON.stringify({ error: message }), {
@@ -68,32 +65,6 @@ function validateMatch(
   return match;
 }
 
-function getVoteCount(matchId: string): number {
-  const db = getDb();
-  const stmt = db.prepare(
-    "SELECT COUNT(DISTINCT player_id) as vote_count FROM votes WHERE match_id = ?",
-  );
-  const result = stmt.get(matchId) as { vote_count: number };
-  return result.vote_count;
-}
-
-function broadcastMatchEnded(
-  sessionId: string,
-  matchId: string,
-  winnerId: string,
-): void {
-  const completedMatch = getMatch(matchId);
-  sseManager.broadcast(sessionId, {
-    type: "match_ended",
-    data: {
-      match_id: matchId,
-      winner_id: winnerId,
-      votes_a: completedMatch?.votes_a || 0,
-      votes_b: completedMatch?.votes_b || 0,
-    },
-  });
-}
-
 function broadcastGameState(sessionId: string, session: Session): void {
   const players = getPlayers(sessionId);
   const updatedSession = session || getSession(sessionId);
@@ -111,56 +82,6 @@ function broadcastGameState(sessionId: string, session: Session): void {
       matches,
     },
   });
-}
-
-async function handleMatchCompletion(
-  sessionId: string,
-  matchId: string,
-): Promise<void> {
-  const updatedMatch = getMatch(matchId);
-  if (!updatedMatch) return;
-
-  const winnerId = determineMatchWinner(updatedMatch);
-  updateMatch(matchId, {
-    winner_id: winnerId,
-    status: "completed",
-  });
-
-  broadcastMatchEnded(sessionId, matchId, winnerId);
-
-  const currentSession = getSession(sessionId);
-  if (!currentSession) return;
-
-  const currentRoundMatches = getMatches(
-    sessionId,
-    currentSession.current_round,
-  );
-  const allMatchesCompleted = currentRoundMatches.every(
-    (m) => m.status === "completed",
-  );
-
-  if (!allMatchesCompleted) return;
-
-  const { finished, winningSongId } = advanceRound(
-    sessionId,
-    currentSession.current_round,
-  );
-
-  if (finished && winningSongId) {
-    updateSession(sessionId, { status: "finished" });
-    sseManager.broadcast(sessionId, {
-      type: "game_winner",
-      data: { winning_song_id: winningSongId },
-    });
-  } else {
-    updateSession(sessionId, {
-      current_round: currentSession.current_round + 1,
-    });
-    sseManager.broadcast(sessionId, {
-      type: "round_complete",
-      data: { round_number: currentSession.current_round },
-    });
-  }
 }
 
 export async function POST(
@@ -193,13 +114,13 @@ export async function POST(
     // Record vote
     addVote(validated.match_id, playerId!, validated.song_id);
 
-    // Check if all players have voted and handle match completion
-    const players = getPlayers(sessionId);
-    const voteCount = getVoteCount(validated.match_id);
-
-    if (voteCount === players.length) {
-      await handleMatchCompletion(sessionId, validated.match_id);
-    }
+    // Emit vote:cast event for async processing
+    eventBus.emit("vote:cast", {
+      playerId: playerId!,
+      matchId: validated.match_id,
+      songId: validated.song_id,
+      sessionId,
+    });
 
     // Broadcast updated game state
     broadcastGameState(sessionId, session);
