@@ -63,6 +63,7 @@ export async function GET(
       }, 30000);
     },
     cancel() {
+      sseManager.removeConnection(sessionId, ctrl);
       if (keepaliveInterval) {
         clearInterval(keepaliveInterval);
       }
