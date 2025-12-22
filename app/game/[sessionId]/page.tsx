@@ -103,6 +103,17 @@ export default function GamePage() {
             matches={matches}
           />
         )}
+
+        {gameSession?.status === "finished" && (
+          <div className="rounded-lg bg-white p-8 shadow-lg text-center">
+            <h1 className="mb-4 text-4xl font-bold text-green-600">
+              🎉 Tournament Complete!
+            </h1>
+            <p className="text-lg text-gray-700">
+              The tournament has finished. The winning song will be displayed soon.
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

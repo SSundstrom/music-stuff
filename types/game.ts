@@ -111,14 +111,12 @@ export const SSEMessageSchema = z.discriminatedUnion("type", [
     type: z.literal("round_complete"),
     data: z.object({
       round_number: z.number(),
-      next_category_picker: PlayerSchema.nullable(),
     }),
   }),
   z.object({
     type: z.literal("game_winner"),
     data: z.object({
-      song_id: z.string(),
-      song: SongSchema,
+      winning_song_id: z.string(),
     }),
   }),
   z.object({

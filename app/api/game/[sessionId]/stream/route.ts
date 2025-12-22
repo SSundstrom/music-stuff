@@ -1,5 +1,10 @@
 import { sseManager } from "@/lib/sse-manager";
-import { getSession, getPlayers, getSongs, getMatches } from "@/lib/game-session";
+import {
+  getSession,
+  getPlayers,
+  getSongs,
+  getMatches,
+} from "@/lib/game-session";
 
 export async function GET(
   request: Request,
@@ -7,7 +12,7 @@ export async function GET(
 ) {
   const { sessionId } = await params;
   const url = new URL(request.url);
-  const playerId = url.searchParams.get("playerId") || "guest";  // Allow guests without a playerId
+  const playerId = url.searchParams.get("playerId") || "guest"; // Allow guests without a playerId
 
   // Verify session exists
   const session = getSession(sessionId);
@@ -20,9 +25,11 @@ export async function GET(
 
   // Create a ReadableStream for SSE that stays open
   let keepaliveInterval: NodeJS.Timeout | null = null;
+  let controller: ReadableStreamDefaultController<Uint8Array> | null = null;
 
   const stream = new ReadableStream({
     start(ctrl) {
+      controller = ctrl;
       // Send initial game state
       const players = getPlayers(sessionId);
       const songs = getSongs(sessionId, session.current_round);
@@ -47,7 +54,9 @@ export async function GET(
         if (keepaliveInterval) {
           clearInterval(keepaliveInterval);
         }
-        console.log(`[SSE] Connection cleaned up for session ${sessionId}, player ${playerId}`);
+        console.log(
+          `[SSE] Connection cleaned up for session ${sessionId}, player ${playerId}`,
+        );
       });
 
       // Send keepalive comment every 30 seconds to keep connection alive
@@ -63,11 +72,15 @@ export async function GET(
       }, 30000);
     },
     cancel() {
-      sseManager.removeConnection(sessionId, ctrl);
+      if (controller) {
+        sseManager.removeConnection(sessionId, controller);
+      }
       if (keepaliveInterval) {
         clearInterval(keepaliveInterval);
       }
-      console.log(`[SSE] Stream cancelled for session ${sessionId}, player ${playerId}`);
+      console.log(
+        `[SSE] Stream cancelled for session ${sessionId}, player ${playerId}`,
+      );
     },
   });
 
@@ -75,10 +88,10 @@ export async function GET(
     headers: {
       "Content-Type": "text/event-stream",
       "Cache-Control": "no-cache, no-store, must-revalidate",
-      "Connection": "keep-alive",
+      Connection: "keep-alive",
       "Access-Control-Allow-Origin": "*",
       "X-Accel-Buffering": "no",
-      "Pragma": "no-cache",
+      Pragma: "no-cache",
     },
   });
 }

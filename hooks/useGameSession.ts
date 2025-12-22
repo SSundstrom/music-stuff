@@ -103,20 +103,20 @@ export function useGameSession({
           };
 
         case "round_complete":
-          // Round completed
+          // Round completed - the session will be updated via game_state event
+          return prevState;
+
+        case "game_winner":
+          // Game winner announced
           if (prevState.session) {
             return {
               ...prevState,
               session: {
                 ...prevState.session,
-                current_round: message.data.round_number + 1,
+                status: "finished" as const,
               },
             };
           }
-          return prevState;
-
-        case "game_winner":
-          // Game winner announced
           return prevState;
 
         default:
