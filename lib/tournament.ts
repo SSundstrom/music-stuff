@@ -1,125 +1,142 @@
-import { createMatch, getSongs, getMatches } from "./game-session";
-import type { Song, TournamentMatch } from "@/types/game";
+import { createMatch, getSongs, updateTournament } from "./game-session";
+import type { Song, TournamentMatch, Tournament } from "@/types/game";
 
 /**
- * Generates a single-elimination tournament bracket from submitted songs
- * Handles odd numbers by creating a balanced bracket with byes
+ * Initializes tournament with single-elimination format
+ * Selects 2 random undefeated songs for the first match
  */
-export function generateTournamentBracket(
+export function initializeTournament(
   tournamentId: string,
-  roundNumber: number,
-): void {
-  const songs = getSongs(tournamentId, roundNumber);
+): TournamentMatch {
+  // Get all submitted songs (round 0 is submission phase)
+  const allSongs = getSongs(tournamentId, 0);
 
-  if (songs.length < 2) {
+  if (allSongs.length < 2) {
     throw new Error("Need at least 2 songs to start tournament");
   }
 
-  createBracket(tournamentId, roundNumber, songs);
-  // Matches are automatically stored in createBracket
-}
+  // Select 2 random songs
+  const selectedSongs = getRandomUndefeatedSongs(allSongs, [], 2);
 
-function createBracket(
-  tournamentId: string,
-  roundNumber: number,
-  songs: Song[],
-): TournamentMatch[] {
-  const matches: TournamentMatch[] = [];
-  let matchNumber = 0;
+  // Create first match
+  const match = createMatch(
+    tournamentId,
+    0, // no longer using round_number for tracking
+    0, // no longer using match_number for tracking
+    selectedSongs[0].id,
+    selectedSongs[1].id,
+  );
 
-  // Create initial matches
-  for (let i = 0; i < songs.length; i += 2) {
-    const songA = songs[i];
-    const songB = i + 1 < songs.length ? songs[i + 1] : null;
-
-    const match = createMatch(
-      tournamentId,
-      roundNumber,
-      matchNumber,
-      songA.id,
-      songB?.id || null,
-    );
-    matches.push(match);
-    matchNumber++;
-  }
-
-  // Handle odd number of songs (add bye matches if needed)
-  if (songs.length % 2 === 1) {
-    // Last song already paired with null, which represents a bye
-    // The song will automatically advance
-  }
-
-  return matches;
+  return match;
 }
 
 /**
- * Advances winners from completed matches to the next round
- * Returns true if tournament is finished (1 winner remaining)
+ * Gets undefeated songs that haven't been played yet
+ * For initial match: all songs
+ * For subsequent matches: all songs except eliminated ones
  */
-export function advanceRound(
+function getUndefeatedSongs(
+  songs: Song[],
+  eliminatedIds: string[],
+): Song[] {
+  return songs.filter((song) => !eliminatedIds.includes(song.id));
+}
+
+/**
+ * Selects N random songs from a list
+ */
+function getRandomUndefeatedSongs(
+  availableSongs: Song[],
+  eliminatedIds: string[],
+  count: number,
+): Song[] {
+  const undefeated = getUndefeatedSongs(availableSongs, eliminatedIds);
+
+  if (undefeated.length < count) {
+    throw new Error(
+      `Not enough undefeated songs. Need ${count}, have ${undefeated.length}`,
+    );
+  }
+
+  // Shuffle and pick first N
+  const shuffled = [...undefeated].sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, count);
+}
+
+/**
+ * Creates the next match in single-elimination tournament
+ * Requires one song to be undefeated (the winner from previous match)
+ * Selects a new random undefeated song to face it
+ */
+export function getNextMatch(
   tournamentId: string,
-  currentRoundNumber: number,
+  allSongs: Song[],
+  lastWinnerId: string,
+  eliminatedIds: string[],
+): TournamentMatch {
+  // Get available songs (not eliminated and not the previous winner)
+  const availableForNewOpponent = getUndefeatedSongs(allSongs, eliminatedIds).filter(
+    (song) => song.id !== lastWinnerId,
+  );
+
+  if (availableForNewOpponent.length === 0) {
+    throw new Error("No undefeated songs available for next match");
+  }
+
+  // Pick random opponent
+  const opponent =
+    availableForNewOpponent[
+      Math.floor(Math.random() * availableForNewOpponent.length)
+    ];
+
+  // Create match between winner and new opponent
+  const match = createMatch(tournamentId, 0, 0, lastWinnerId, opponent.id);
+
+  return match;
+}
+
+/**
+ * Processes match completion in single-elimination tournament
+ * Eliminates the loser, checks if tournament is over
+ * Returns tournament state after elimination
+ */
+export function advanceToNextMatch(
+  tournamentId: string,
+  match: TournamentMatch,
+  tournamentRecord: Tournament,
 ): { finished: boolean; winningSongId: string | null } {
-  const currentMatches = getMatches(tournamentId, currentRoundNumber);
-
-  // Check if all matches are completed
-  const allCompleted = currentMatches.every((m) => m.status === "completed");
-  if (!allCompleted) {
-    throw new Error("Not all matches in current round are completed");
+  if (!match.winner_id) {
+    throw new Error(`Match ${match.id} completed but has no winner`);
   }
 
-  // Collect winners
-  const winners: Song[] = [];
+  // Determine loser
+  const loserId =
+    match.song_a_id === match.winner_id ? match.song_b_id : match.song_a_id;
 
-  for (const match of currentMatches) {
-    if (!match.winner_id) {
-      throw new Error(`Match ${match.id} completed but has no winner`);
-    }
-
-    // Winner could be from song_a or song_b, or if one is null (bye), that song wins
-    const winningSong = match.winner_id;
-    winners.push({
-      id: winningSong,
-      tournament_id: tournamentId,
-      round_number: currentRoundNumber,
-      spotify_id: "",
-      player_id: "",
-      start_time: 0,
-      song_name: "",
-      artist_name: "",
-      image_url: null,
-      created_at: 0,
-    } as Song);
+  if (!loserId) {
+    throw new Error("Cannot determine loser from match");
   }
 
-  // If only 1 winner, tournament is finished
-  if (winners.length === 1) {
+  // Update eliminated songs
+  const eliminatedIds = JSON.parse(tournamentRecord.eliminated_song_ids || "[]");
+  eliminatedIds.push(loserId);
+
+  // Get all songs to count undefeated
+  const allSongs = getSongs(tournamentId, 0);
+  const undefeatedSongs = getUndefeatedSongs(allSongs, eliminatedIds);
+
+  // If only 1 undefeated song remains, tournament is finished
+  if (undefeatedSongs.length === 1) {
     return {
       finished: true,
-      winningSongId: winners[0].id,
+      winningSongId: undefeatedSongs[0].id,
     };
   }
 
-  // Otherwise, create bracket for next round
-  const nextRoundNumber = currentRoundNumber + 1;
-
-  // Import getSongs at top to get full song details
-  const fullWinners = currentMatches
-    .filter((m) => m.winner_id)
-    .map((m) => {
-      // Return the actual song object for next bracket
-      // This is simplified; in practice you'd fetch the song details
-      return m.winner_id;
-    });
-
-  let matchNumber = 0;
-  for (let i = 0; i < fullWinners.length; i += 2) {
-    const songA = fullWinners[i];
-    const songB = i + 1 < fullWinners.length ? fullWinners[i + 1] : null;
-
-    createMatch(tournamentId, nextRoundNumber, matchNumber, songA, songB);
-    matchNumber++;
-  }
+  // Update tournament with new eliminated list
+  updateTournament(tournamentId, {
+    eliminated_song_ids: JSON.stringify(eliminatedIds),
+  });
 
   return {
     finished: false,

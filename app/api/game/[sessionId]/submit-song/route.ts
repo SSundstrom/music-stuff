@@ -54,11 +54,11 @@ export async function POST(
       });
     }
 
-    // Add song to database
+    // Add song to database (using round_number 0 for all submissions)
     const song = addSong(
       tournament.id,
       playerId,
-      tournament.current_round,
+      0,
       validated.spotify_id,
       validated.song_name,
       validated.artist_name,

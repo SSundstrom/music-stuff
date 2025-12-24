@@ -36,6 +36,7 @@ function initializeDatabase() {
       current_round INTEGER DEFAULT 1,
       current_picker_index INTEGER DEFAULT 0,
       winning_song_id TEXT,
+      eliminated_song_ids TEXT DEFAULT '[]',
       created_at INTEGER NOT NULL,
       FOREIGN KEY (session_id) REFERENCES sessions(id)
     )

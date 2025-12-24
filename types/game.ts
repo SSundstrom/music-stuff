@@ -25,6 +25,7 @@ export const TournamentSchema = z.object({
   current_round: z.number().default(1),
   current_picker_index: z.number().default(0),
   winning_song_id: z.string().nullable().default(null),
+  eliminated_song_ids: z.string().default("[]"), // JSON-serialized array
   created_at: z.number(),
 });
 
@@ -66,8 +67,8 @@ export type Song = z.infer<typeof SongSchema>;
 export const TournamentMatchSchema = z.object({
   id: z.string(),
   tournament_id: z.string(),
-  round_number: z.number(),
-  match_number: z.number(),
+  round_number: z.number().default(0), // kept for backwards compatibility, not used
+  match_number: z.number().default(0), // kept for backwards compatibility, not used
   song_a_id: z.string().nullable(),
   song_b_id: z.string().nullable(),
   winner_id: z.string().nullable(),

@@ -82,8 +82,8 @@ function broadcastMatchVotes(sessionId: string, matchId: string, tournamentId: s
       session,
       tournament,
       players: getPlayers(sessionId),
-      songs: getSongs(tournamentId, match.round_number),
-      matches: getMatches(tournamentId, match.round_number),
+      songs: getSongs(tournamentId, 0),
+      matches: getMatches(tournamentId, 0),
     },
   } satisfies SSEMessage);
 }

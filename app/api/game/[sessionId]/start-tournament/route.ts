@@ -1,5 +1,5 @@
 import { getSession, getActiveTournament, updateTournament, getSongs, getPlayers, getMatches } from "@/lib/game-session";
-import { generateTournamentBracket } from "@/lib/tournament";
+import { initializeTournament } from "@/lib/tournament";
 import { sseManager } from "@/lib/sse-manager";
 import type { SSEMessage } from "@/types/game";
 
@@ -34,7 +34,7 @@ export async function POST(
     }
 
     // Get submitted songs
-    const songs = getSongs(tournament.id, tournament.current_round);
+    const songs = getSongs(tournament.id, 0);
 
     if (songs.length < 2) {
       return new Response(
@@ -46,8 +46,8 @@ export async function POST(
       );
     }
 
-    // Generate bracket
-    generateTournamentBracket(tournament.id, tournament.current_round);
+    // Initialize tournament with first match
+    initializeTournament(tournament.id);
 
     // Update tournament status
     updateTournament(tournament.id, {
@@ -58,7 +58,7 @@ export async function POST(
     const updatedTournament = getActiveTournament(sessionId);
     if (updatedTournament) {
       const players = getPlayers(sessionId);
-      const matches = getMatches(tournament.id, updatedTournament.current_round);
+      const matches = getMatches(tournament.id, 0);
 
       sseManager.broadcast(sessionId, {
         type: "game_state",
@@ -76,7 +76,7 @@ export async function POST(
       JSON.stringify({
         status: "tournament",
         songs_submitted: songs.length,
-        message: "Tournament bracket generated",
+        message: "Tournament initialized with first match",
       }),
       {
         status: 200,
