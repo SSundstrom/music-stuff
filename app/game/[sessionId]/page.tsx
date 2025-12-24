@@ -21,8 +21,11 @@ export default function GamePage() {
     return null;
   });
 
+  const [initializingTournament, setInitializingTournament] = useState(false);
+
   const {
     session: gameSession,
+    tournament,
     players,
     songs,
     matches,
@@ -56,7 +59,7 @@ export default function GamePage() {
   }
 
   const isOwner = gameSession?.owner_id === authSession?.user?.id;
-  const currentPickerIndex = gameSession?.current_picker_index || 0;
+  const currentPickerIndex = tournament?.current_picker_index || 0;
   const currentPicker = players[currentPickerIndex];
 
   return (
@@ -72,72 +75,116 @@ export default function GamePage() {
       <div className="mx-auto max-w-4xl space-y-4">
         {isOwner && <SpotifyPlayer />}
 
-        {gameSession?.status === "category_selection" && (
-          <CategoryPhase
-            sessionId={sessionId}
-            currentPicker={currentPicker}
-            isCurrentPicker={currentPlayerId === currentPicker?.id}
-          />
-        )}
+        {!tournament ? (
+          <div className="rounded-lg bg-white p-8 shadow-lg text-center">
+            <h2 className="mb-4 text-2xl font-bold text-gray-900">
+              Ready to start?
+            </h2>
+            <p className="text-gray-600 mb-6">
+              Waiting for the tournament to begin. The owner will select a
+              category to start.
+            </p>
+            {isOwner && (
+              <button
+                onClick={async () => {
+                  setInitializingTournament(true);
+                  try {
+                    const response = await fetch(
+                      `/api/game/${sessionId}/tournament/init`,
+                      {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                      },
+                    );
 
-        {gameSession?.status === "song_submission" && (
-          <SongSubmissionPhase
-            sessionId={sessionId}
-            category={gameSession.current_category || ""}
-            currentPlayerId={currentPlayerId}
-            isOwner={isOwner}
-            // TODO: Uppdateras automatiskt?
-            submittedCount={songs.length}
-            playerCount={players.length}
-          />
-        )}
+                    if (!response.ok)
+                      throw new Error("Failed to initialize tournament");
+                    // Tournament should be created and SSE will update the page
+                  } catch (err) {
+                    console.error(err);
+                    setInitializingTournament(false);
+                  }
+                }}
+                disabled={initializingTournament}
+                className="rounded-lg bg-green-600 px-6 py-3 font-semibold text-white hover:bg-green-700 disabled:opacity-50"
+              >
+                {initializingTournament
+                  ? "Initializing..."
+                  : "Start Tournament"}
+              </button>
+            )}
+          </div>
+        ) : (
+          <>
+            {tournament.status === "category_selection" && (
+              <CategoryPhase
+                sessionId={sessionId}
+                currentPicker={currentPicker}
+                isCurrentPicker={currentPlayerId === currentPicker?.id}
+              />
+            )}
 
-        {gameSession?.status === "tournament" && (
-          <TournamentPhase
-            sessionId={sessionId}
-            roundNumber={gameSession.current_round}
-            isOwner={isOwner}
-            currentPlayerId={currentPlayerId}
-            songs={songs}
-            matches={matches}
-          />
-        )}
+            {tournament.status === "song_submission" && (
+              <SongSubmissionPhase
+                sessionId={sessionId}
+                category={tournament.category || ""}
+                currentPlayerId={currentPlayerId}
+                isOwner={isOwner}
+                // TODO: Uppdateras automatiskt?
+                submittedCount={songs.length}
+                playerCount={players.length}
+              />
+            )}
 
-        {gameSession?.status === "finished" && (() => {
-          const winningSong = songs.find(
-            (song) => song.id === gameSession.winning_song_id
-          );
-          return (
-            <div className="rounded-lg bg-white p-8 shadow-lg text-center">
-              <h1 className="mb-4 text-4xl font-bold text-green-600">
-                🎉 Tournament Complete!
-              </h1>
-              {winningSong ? (
-                <div className="space-y-4">
-                  {winningSong.image_url && (
-                    <img
-                      src={winningSong.image_url}
-                      alt={winningSong.song_name}
-                      className="mx-auto h-48 w-48 rounded-lg object-cover shadow"
-                    />
-                  )}
-                  <div>
-                    <p className="text-2xl font-bold text-gray-900">
-                      {winningSong.song_name}
-                    </p>
-                    <p className="text-lg text-gray-600">
-                      by {winningSong.artist_name}
-                    </p>
+            {tournament.status === "tournament" && (
+              <TournamentPhase
+                sessionId={sessionId}
+                roundNumber={tournament.current_round}
+                isOwner={isOwner}
+                currentPlayerId={currentPlayerId}
+                songs={songs}
+                matches={matches}
+              />
+            )}
+
+            {tournament.status === "finished" &&
+              (() => {
+                const winningSong = songs.find(
+                  (song) => song.id === tournament.winning_song_id,
+                );
+                return (
+                  <div className="rounded-lg bg-white p-8 shadow-lg text-center">
+                    <h1 className="mb-4 text-4xl font-bold text-green-600">
+                      🎉 Tournament Complete!
+                    </h1>
+                    {winningSong ? (
+                      <div className="space-y-4">
+                        {winningSong.image_url && (
+                          <img
+                            src={winningSong.image_url}
+                            alt={winningSong.song_name}
+                            className="mx-auto h-48 w-48 rounded-lg object-cover shadow"
+                          />
+                        )}
+                        <div>
+                          <p className="text-2xl font-bold text-gray-900">
+                            {winningSong.song_name}
+                          </p>
+                          <p className="text-lg text-gray-600">
+                            by {winningSong.artist_name}
+                          </p>
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-lg text-gray-700">
+                        Tournament winner determined!
+                      </p>
+                    )}
                   </div>
-                </div>
-              ) : (
-                <p className="text-lg text-gray-700">
-                  Tournament winner determined!
-                </p>
-              )}
-            </div>
-          );
-        })()}
+                );
+              })()}
+          </>
+        )}
       </div>
     </div>
   );

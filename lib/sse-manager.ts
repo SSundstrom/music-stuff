@@ -133,7 +133,7 @@ class SSEManager {
             votes_a: match.votes_a,
             votes_b: match.votes_b,
           },
-        });
+        } satisfies SSEMessage);
       }
     });
 
@@ -145,7 +145,7 @@ class SSEManager {
         data: {
           round_number: roundNumber,
         },
-      });
+      } satisfies SSEMessage);
     });
 
     // Listen to game:finished event and broadcast game_winner
@@ -156,7 +156,7 @@ class SSEManager {
         data: {
           winning_song_id: winningSongId,
         },
-      });
+      } satisfies SSEMessage);
     });
   }
 }

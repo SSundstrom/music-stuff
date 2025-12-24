@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { getSession, getPlayer, deletePlayer } from "@/lib/game-session";
 import { sseManager } from "@/lib/sse-manager";
+import type { SSEMessage } from "@/types/game";
 
 export async function DELETE(
   request: Request,
@@ -50,7 +51,7 @@ export async function DELETE(
     sseManager.broadcast(sessionId, {
       type: "player_left",
       data: { player_id: playerId },
-    });
+    } satisfies SSEMessage);
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,

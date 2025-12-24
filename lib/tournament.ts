@@ -6,21 +6,21 @@ import type { Song, TournamentMatch } from "@/types/game";
  * Handles odd numbers by creating a balanced bracket with byes
  */
 export function generateTournamentBracket(
-  sessionId: string,
+  tournamentId: string,
   roundNumber: number,
 ): void {
-  const songs = getSongs(sessionId, roundNumber);
+  const songs = getSongs(tournamentId, roundNumber);
 
   if (songs.length < 2) {
     throw new Error("Need at least 2 songs to start tournament");
   }
 
-  createBracket(sessionId, roundNumber, songs);
+  createBracket(tournamentId, roundNumber, songs);
   // Matches are automatically stored in createBracket
 }
 
 function createBracket(
-  sessionId: string,
+  tournamentId: string,
   roundNumber: number,
   songs: Song[],
 ): TournamentMatch[] {
@@ -33,7 +33,7 @@ function createBracket(
     const songB = i + 1 < songs.length ? songs[i + 1] : null;
 
     const match = createMatch(
-      sessionId,
+      tournamentId,
       roundNumber,
       matchNumber,
       songA.id,
@@ -57,10 +57,10 @@ function createBracket(
  * Returns true if tournament is finished (1 winner remaining)
  */
 export function advanceRound(
-  sessionId: string,
+  tournamentId: string,
   currentRoundNumber: number,
 ): { finished: boolean; winningSongId: string | null } {
-  const currentMatches = getMatches(sessionId, currentRoundNumber);
+  const currentMatches = getMatches(tournamentId, currentRoundNumber);
 
   // Check if all matches are completed
   const allCompleted = currentMatches.every((m) => m.status === "completed");
@@ -80,7 +80,7 @@ export function advanceRound(
     const winningSong = match.winner_id;
     winners.push({
       id: winningSong,
-      session_id: sessionId,
+      tournament_id: tournamentId,
       round_number: currentRoundNumber,
       spotify_id: "",
       player_id: "",
@@ -117,7 +117,7 @@ export function advanceRound(
     const songA = fullWinners[i];
     const songB = i + 1 < fullWinners.length ? fullWinners[i + 1] : null;
 
-    createMatch(sessionId, nextRoundNumber, matchNumber, songA, songB);
+    createMatch(tournamentId, nextRoundNumber, matchNumber, songA, songB);
     matchNumber++;
   }
 

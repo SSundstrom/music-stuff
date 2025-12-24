@@ -6,11 +6,13 @@ import {
   getPlayers,
   getSongs,
   getSession,
+  getTournament,
   updateMatch,
-  updateSession,
+  updateTournament,
 } from "./game-session";
 import { determineMatchWinner, advanceRound } from "./tournament";
 import { getDb } from "./db";
+import type { SSEMessage } from "@/types/game";
 
 let initialized = false;
 
@@ -21,7 +23,7 @@ export function initializeEventHandlers(): void {
   eventBus.on("vote:cast", async (data) => {
     console.log(`[vote:cast]: ${JSON.stringify(data)}`);
     try {
-      const { sessionId, matchId } = data;
+      const { sessionId, tournamentId, matchId } = data;
 
       // Check if all players have voted
       const db = getDb();
@@ -38,6 +40,7 @@ export function initializeEventHandlers(): void {
         eventBus.emit("match:completed", {
           matchId,
           sessionId,
+          tournamentId,
         });
       }
     } catch (error) {
@@ -49,7 +52,7 @@ export function initializeEventHandlers(): void {
   eventBus.on("match:completed", async (data) => {
     console.log(`[match:completed]: ${JSON.stringify(data)}`);
     try {
-      const { sessionId, matchId } = data;
+      const { sessionId, tournamentId, matchId } = data;
 
       const match = getMatch(matchId);
       if (!match) return;
@@ -64,7 +67,7 @@ export function initializeEventHandlers(): void {
       });
 
       // Check if all matches in the current round are completed
-      const currentMatches = getMatches(sessionId, match.round_number);
+      const currentMatches = getMatches(tournamentId, match.round_number);
       const allMatchesCompleted = currentMatches.every(
         (m) => m.status === "completed",
       );
@@ -72,62 +75,68 @@ export function initializeEventHandlers(): void {
       if (allMatchesCompleted) {
         // All matches completed, advance to next round
         const { finished, winningSongId } = advanceRound(
-          sessionId,
+          tournamentId,
           match.round_number,
         );
 
         if (finished && winningSongId) {
           // Tournament finished
-          updateSession(sessionId, {
+          updateTournament(tournamentId, {
             status: "finished",
             winning_song_id: winningSongId,
           });
           eventBus.emit("game:finished", {
             sessionId,
+            tournamentId,
             winningSongId,
           });
 
-          // Broadcast updated game state after session is updated
-          const updatedSession = getSession(sessionId);
-          if (updatedSession) {
+          // Broadcast updated game state after tournament is updated
+          const session = getSession(sessionId);
+          const tournament = getTournament(tournamentId);
+          if (session && tournament) {
             const players = getPlayers(sessionId);
-            const songs = getSongs(sessionId, updatedSession.current_round);
-            const matches = getMatches(sessionId, updatedSession.current_round);
+            const songs = getSongs(tournamentId, tournament.current_round);
+            const matches = getMatches(tournamentId, tournament.current_round);
             sseManager.broadcast(sessionId, {
               type: "game_state",
               data: {
-                session: updatedSession,
+                session,
+                tournament,
                 players,
                 songs,
                 matches,
               },
-            });
+            } satisfies SSEMessage);
           }
         } else {
           // Round advanced
-          updateSession(sessionId, {
+          updateTournament(tournamentId, {
             current_round: match.round_number + 1,
           });
           eventBus.emit("round:advanced", {
             sessionId,
+            tournamentId,
             roundNumber: match.round_number + 1,
           });
 
-          // Broadcast updated game state after session is updated
-          const updatedSession = getSession(sessionId);
-          if (updatedSession) {
+          // Broadcast updated game state after tournament is updated
+          const session = getSession(sessionId);
+          const tournament = getTournament(tournamentId);
+          if (session && tournament) {
             const players = getPlayers(sessionId);
-            const songs = getSongs(sessionId, updatedSession.current_round);
-            const matches = getMatches(sessionId, updatedSession.current_round);
+            const songs = getSongs(tournamentId, tournament.current_round);
+            const matches = getMatches(tournamentId, tournament.current_round);
             sseManager.broadcast(sessionId, {
               type: "game_state",
               data: {
-                session: updatedSession,
+                session,
+                tournament,
                 players,
                 songs,
                 matches,
               },
-            });
+            } satisfies SSEMessage);
           }
         }
       }

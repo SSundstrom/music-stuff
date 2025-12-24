@@ -5,20 +5,24 @@ export interface VoteCastEvent {
   matchId: string;
   songId: string;
   sessionId: string;
+  tournamentId: string;
 }
 
 export interface MatchCompletedEvent {
   matchId: string;
   sessionId: string;
+  tournamentId: string;
 }
 
 export interface RoundAdvancedEvent {
   sessionId: string;
+  tournamentId: string;
   roundNumber: number;
 }
 
 export interface GameFinishedEvent {
   sessionId: string;
+  tournamentId: string;
   winningSongId: string;
 }
 

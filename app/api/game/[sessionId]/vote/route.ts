@@ -1,5 +1,6 @@
 import {
   getSession,
+  getActiveTournament,
   getPlayer,
   addVote,
   getMatch,
@@ -7,7 +8,7 @@ import {
   getSongs,
   getMatches,
 } from "@/lib/game-session";
-import { VoteRequestSchema } from "@/types/game";
+import { VoteRequestSchema, type Session, type SSEMessage } from "@/types/game";
 import { sseManager } from "@/lib/sse-manager";
 import { eventBus } from "@/lib/event-bus";
 
@@ -50,11 +51,11 @@ function validatePlayer(
 
 function validateMatch(
   matchId: string,
-  sessionId: string,
+  tournamentId: string,
   songId: string,
 ): ReturnType<typeof getMatch> | Response {
   const match = getMatch(matchId);
-  if (!match || match.session_id !== sessionId) {
+  if (!match || match.tournament_id !== tournamentId) {
     return errorResponse("Match not found", 404);
   }
 
@@ -65,19 +66,26 @@ function validateMatch(
   return match;
 }
 
-function broadcastMatchVotes(sessionId: string, matchId: string): void {
+function broadcastMatchVotes(sessionId: string, matchId: string, tournamentId: string): void {
   const match = getMatch(matchId);
   if (!match) return;
+
+  const session = getSession(sessionId);
+  if (!session) return;
+
+  const tournament = getActiveTournament(sessionId);
+  if (!tournament) return;
 
   sseManager.broadcast(sessionId, {
     type: "game_state",
     data: {
-      session: getSession(sessionId)!,
+      session,
+      tournament,
       players: getPlayers(sessionId),
-      songs: getSongs(sessionId, match.round_number),
-      matches: getMatches(sessionId, match.round_number),
+      songs: getSongs(tournamentId, match.round_number),
+      matches: getMatches(tournamentId, match.round_number),
     },
-  });
+  } satisfies SSEMessage);
 }
 
 export async function POST(
@@ -93,6 +101,12 @@ export async function POST(
     const sessionResult = validateSession(sessionId);
     if (sessionResult instanceof Response) return sessionResult;
 
+    // Get active tournament
+    const tournament = getActiveTournament(sessionId);
+    if (!tournament) {
+      return errorResponse("No active tournament found", 404);
+    }
+
     // Validate player
     const playerId = request.headers.get("X-Player-ID");
     const playerResult = validatePlayer(playerId, sessionId);
@@ -101,7 +115,7 @@ export async function POST(
     // Validate match and song
     const matchResult = validateMatch(
       validated.match_id,
-      sessionId,
+      tournament.id,
       validated.song_id,
     );
     if (matchResult instanceof Response) return matchResult;
@@ -110,7 +124,7 @@ export async function POST(
     addVote(validated.match_id, playerId!, validated.song_id);
 
     // Broadcast updated vote counts to all clients
-    broadcastMatchVotes(sessionId, validated.match_id);
+    broadcastMatchVotes(sessionId, validated.match_id, tournament.id);
 
     // Emit vote:cast event for async processing
     // Event handlers will determine if the match/round/game is complete
@@ -119,6 +133,7 @@ export async function POST(
       matchId: validated.match_id,
       songId: validated.song_id,
       sessionId,
+      tournamentId: tournament.id,
     });
 
     return successResponse({

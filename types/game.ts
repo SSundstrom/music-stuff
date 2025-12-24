@@ -1,9 +1,20 @@
 import { z } from "zod";
 
-// Session types
+// Session types - container for multiple tournaments
 export const SessionSchema = z.object({
   id: z.string(),
   owner_id: z.string(),
+  status: z.enum(["active", "archived"]),
+  created_at: z.number(),
+});
+
+export type Session = z.infer<typeof SessionSchema>;
+
+// Tournament types - individual category tournaments within a session
+export const TournamentSchema = z.object({
+  id: z.string(),
+  session_id: z.string(),
+  category: z.string(),
   status: z.enum([
     "waiting",
     "category_selection",
@@ -11,14 +22,13 @@ export const SessionSchema = z.object({
     "tournament",
     "finished",
   ]),
-  current_category: z.string().nullable(),
   current_round: z.number().default(1),
   current_picker_index: z.number().default(0),
-  created_at: z.number(),
   winning_song_id: z.string().nullable().default(null),
+  created_at: z.number(),
 });
 
-export type Session = z.infer<typeof SessionSchema>;
+export type Tournament = z.infer<typeof TournamentSchema>;
 
 // Player types
 export const PlayerSchema = z.object({
@@ -39,7 +49,7 @@ export type Player = z.infer<typeof PlayerSchema>;
 // Song types
 export const SongSchema = z.object({
   id: z.string(),
-  session_id: z.string(),
+  tournament_id: z.string(),
   round_number: z.number(),
   spotify_id: z.string(),
   player_id: z.string(),
@@ -55,7 +65,7 @@ export type Song = z.infer<typeof SongSchema>;
 // Tournament match types
 export const TournamentMatchSchema = z.object({
   id: z.string(),
-  session_id: z.string(),
+  tournament_id: z.string(),
   round_number: z.number(),
   match_number: z.number(),
   song_a_id: z.string().nullable(),
@@ -133,6 +143,7 @@ export const SSEMessageSchema = z.discriminatedUnion("type", [
     type: z.literal("game_state"),
     data: z.object({
       session: SessionSchema,
+      tournament: TournamentSchema.nullish(),
       players: z.array(PlayerSchema),
       songs: z.array(SongSchema),
       matches: z.array(TournamentMatchSchema),

@@ -1,7 +1,11 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { type TournamentMatch, type Song, SSEMessageSchema } from "@/types/game";
+import {
+  type TournamentMatch,
+  type Song,
+  SSEMessageSchema,
+} from "@/types/game";
 import { useSpotifyPlayer } from "../SpotifyPlayerProvider";
 
 interface MatchDisplayProps {
@@ -184,20 +188,6 @@ export default function MatchDisplay({
               Now Playing
             </div>
           )}
-          <div className="mb-4">
-            {songA.image_url && (
-              <>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={songA.image_url}
-                  alt={songA.song_name}
-                  className="mb-4 h-40 w-full rounded-lg object-cover"
-                />
-              </>
-            )}
-            <h3 className="text-lg font-bold text-black">{songA.song_name}</h3>
-            <p className="text-base text-gray-700">{songA.artist_name}</p>
-          </div>
 
           <div className="space-y-3">
             {/* Play Button (Owner only) */}
@@ -247,20 +237,6 @@ export default function MatchDisplay({
               Now Playing
             </div>
           )}
-          <div className="mb-4">
-            {songB.image_url && (
-              <>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={songB.image_url}
-                  alt={songB.song_name}
-                  className="mb-4 h-40 w-full rounded-lg object-cover"
-                />
-              </>
-            )}
-            <h3 className="text-lg font-bold text-black">{songB.song_name}</h3>
-            <p className="text-base text-gray-700">{songB.artist_name}</p>
-          </div>
 
           <div className="space-y-3">
             {/* Play Button (Owner only) */}

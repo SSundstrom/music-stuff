@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth";
 import { getSession, addPlayer } from "@/lib/game-session";
-import { JoinSessionRequestSchema } from "@/types/game";
+import { JoinSessionRequestSchema, type SSEMessage } from "@/types/game";
 import { sseManager } from "@/lib/sse-manager";
 
 export async function POST(
@@ -38,7 +38,7 @@ export async function POST(
     sseManager.broadcast(validated.session_id, {
       type: "player_joined",
       data: player,
-    });
+    } satisfies SSEMessage);
 
     return new Response(JSON.stringify(player), {
       status: 201,

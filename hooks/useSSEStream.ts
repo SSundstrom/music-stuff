@@ -44,8 +44,13 @@ export function useSSEStream({
         try {
           const rawMessage = JSON.parse(event.data as string);
           console.log("[SSE] Received message:", rawMessage.type);
-          const message = SSEMessageSchema.parse(rawMessage);
-          onMessage?.(message);
+          const message = SSEMessageSchema.safeParse(rawMessage);
+          if (!message.success) {
+            console.dir(rawMessage, { depth: null });
+            console.error(message.error);
+            return;
+          }
+          onMessage?.(message.data);
         } catch (error) {
           console.error("[SSE] Failed to parse message:", error);
           onError?.(
@@ -63,7 +68,10 @@ export function useSSEStream({
         onDisconnect?.();
       });
     } catch (error) {
-      const err = error instanceof Error ? error : new Error("Failed to connect to SSE stream");
+      const err =
+        error instanceof Error
+          ? error
+          : new Error("Failed to connect to SSE stream");
       console.error("[SSE] Connection failed:", err);
       onError?.(err);
     }

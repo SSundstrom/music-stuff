@@ -1,15 +1,23 @@
 import { auth, getSpotifyAccessToken } from "@/lib/auth";
-import { getSession, getMatch, getSong, updateMatch } from "@/lib/game-session";
+import { getSession, getActiveTournament, getMatch, getSong, updateMatch } from "@/lib/game-session";
 import { startPlayback, pausePlayback } from "@/lib/spotify";
 import { getPlaybackDuration } from "@/lib/tournament";
 import { sseManager } from "@/lib/sse-manager";
+import type { SSEMessage } from "@/types/game";
 
 export async function POST(
   request: Request,
-  { params }: { params: Promise<{ sessionId: string; songId: string }> },
+  { params }: { params: Promise<{ sessionId: string }> },
 ) {
   try {
-    const { sessionId, songId } = await params;
+    const { sessionId } = await params;
+    const body = (await request.json()) as {
+      action: "play" | "pause";
+      match_id?: string;
+      song_id?: string;
+      device_id?: string;
+    };
+    const songId = body.song_id;
     const session = await auth.api.getSession({
       headers: request.headers,
     });
@@ -53,12 +61,6 @@ export async function POST(
       );
     }
 
-    const body = (await request.json()) as {
-      action: "play" | "pause";
-      match_id?: string;
-      device_id?: string;
-    };
-
     // Note: In a real implementation, would fetch from database properly
     // For now, we'll work with the device_id provided
     const deviceId = body.device_id;
@@ -82,7 +84,7 @@ export async function POST(
         sseManager.broadcast(sessionId, {
           type: "playback_stopped",
           data: { match_id: body.match_id },
-        });
+        } satisfies SSEMessage);
       }
 
       return new Response(
@@ -141,9 +143,17 @@ export async function POST(
           song_name: song.song_name,
           artist_name: song.artist_name,
         },
-      });
+      } satisfies SSEMessage);
 
-      const duration = getPlaybackDuration(gameSession.current_round);
+      const tournament = getActiveTournament(sessionId);
+      if (!tournament) {
+        return new Response(JSON.stringify({ error: "No active tournament found" }), {
+          status: 404,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+
+      const duration = getPlaybackDuration(tournament.current_round);
 
       return new Response(
         JSON.stringify({

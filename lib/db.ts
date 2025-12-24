@@ -16,21 +16,32 @@ export function getDb(): Database.Database {
 function initializeDatabase() {
   if (!db) return;
 
-  // Sessions table
+  // Sessions table - container for multiple tournaments
   db.exec(`
     CREATE TABLE IF NOT EXISTS sessions (
       id TEXT PRIMARY KEY,
       owner_id TEXT NOT NULL,
-      status TEXT NOT NULL DEFAULT 'waiting',
-      current_category TEXT,
-      current_round INTEGER DEFAULT 1,
-      current_picker_index INTEGER DEFAULT 0,
-      created_at INTEGER NOT NULL,
-      winning_song_id TEXT
+      status TEXT NOT NULL DEFAULT 'active',
+      created_at INTEGER NOT NULL
     )
   `);
 
-  // Players table
+  // Tournaments table - individual category tournaments within a session
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS tournaments (
+      id TEXT PRIMARY KEY,
+      session_id TEXT NOT NULL,
+      category TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'waiting',
+      current_round INTEGER DEFAULT 1,
+      current_picker_index INTEGER DEFAULT 0,
+      winning_song_id TEXT,
+      created_at INTEGER NOT NULL,
+      FOREIGN KEY (session_id) REFERENCES sessions(id)
+    )
+  `);
+
+  // Players table - players join a session, participate in all tournaments
   db.exec(`
     CREATE TABLE IF NOT EXISTS players (
       id TEXT PRIMARY KEY,
@@ -44,11 +55,11 @@ function initializeDatabase() {
     )
   `);
 
-  // Songs table
+  // Songs table - songs are submitted per tournament
   db.exec(`
     CREATE TABLE IF NOT EXISTS songs (
       id TEXT PRIMARY KEY,
-      session_id TEXT NOT NULL,
+      tournament_id TEXT NOT NULL,
       round_number INTEGER NOT NULL,
       spotify_id TEXT NOT NULL,
       player_id TEXT NOT NULL,
@@ -57,16 +68,16 @@ function initializeDatabase() {
       artist_name TEXT NOT NULL,
       image_url TEXT,
       created_at INTEGER NOT NULL,
-      FOREIGN KEY (session_id) REFERENCES sessions(id),
+      FOREIGN KEY (tournament_id) REFERENCES tournaments(id),
       FOREIGN KEY (player_id) REFERENCES players(id)
     )
   `);
 
-  // Tournament matches table
+  // Tournament matches table - matches are per tournament
   db.exec(`
     CREATE TABLE IF NOT EXISTS tournament_matches (
       id TEXT PRIMARY KEY,
-      session_id TEXT NOT NULL,
+      tournament_id TEXT NOT NULL,
       round_number INTEGER NOT NULL,
       match_number INTEGER NOT NULL,
       song_a_id TEXT,
@@ -77,26 +88,11 @@ function initializeDatabase() {
       votes_b INTEGER DEFAULT 0,
       currently_playing_song_id TEXT,
       created_at INTEGER NOT NULL,
-      FOREIGN KEY (session_id) REFERENCES sessions(id),
+      FOREIGN KEY (tournament_id) REFERENCES tournaments(id),
       FOREIGN KEY (song_a_id) REFERENCES songs(id),
       FOREIGN KEY (song_b_id) REFERENCES songs(id)
     )
   `);
-
-  // Add migrations for existing databases
-  try {
-    db.exec(
-      `ALTER TABLE tournament_matches ADD COLUMN currently_playing_song_id TEXT`,
-    );
-  } catch {
-    // Column already exists
-  }
-
-  try {
-    db.exec(`ALTER TABLE sessions ADD COLUMN winning_song_id TEXT`);
-  } catch {
-    // Column already exists
-  }
 
   // Votes table
   db.exec(`
@@ -115,11 +111,13 @@ function initializeDatabase() {
 
   // Create indexes for common queries
   db.exec(`
+    CREATE INDEX IF NOT EXISTS idx_sessions_owner ON sessions(owner_id);
+    CREATE INDEX IF NOT EXISTS idx_tournaments_session ON tournaments(session_id);
     CREATE INDEX IF NOT EXISTS idx_players_session ON players(session_id);
-    CREATE INDEX IF NOT EXISTS idx_songs_session ON songs(session_id);
-    CREATE INDEX IF NOT EXISTS idx_songs_round ON songs(session_id, round_number);
-    CREATE INDEX IF NOT EXISTS idx_matches_session ON tournament_matches(session_id);
-    CREATE INDEX IF NOT EXISTS idx_matches_round ON tournament_matches(session_id, round_number);
+    CREATE INDEX IF NOT EXISTS idx_songs_tournament ON songs(tournament_id);
+    CREATE INDEX IF NOT EXISTS idx_songs_round ON songs(tournament_id, round_number);
+    CREATE INDEX IF NOT EXISTS idx_matches_tournament ON tournament_matches(tournament_id);
+    CREATE INDEX IF NOT EXISTS idx_matches_round ON tournament_matches(tournament_id, round_number);
     CREATE INDEX IF NOT EXISTS idx_votes_match ON votes(match_id);
   `);
 }

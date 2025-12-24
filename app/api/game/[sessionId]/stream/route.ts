@@ -1,11 +1,13 @@
 import { sseManager } from "@/lib/sse-manager";
 import {
   getSession,
+  getActiveTournament,
   getPlayers,
   getSongs,
   getMatches,
 } from "@/lib/game-session";
 import { ensureEventHandlersInitialized } from "@/lib/initialize-events";
+import type { SSEMessage } from "@/types/game";
 
 export async function GET(
   request: Request,
@@ -35,19 +37,21 @@ export async function GET(
     start(ctrl) {
       controller = ctrl;
       // Send initial game state
+      const tournament = getActiveTournament(sessionId);
       const players = getPlayers(sessionId);
-      const songs = getSongs(sessionId, session.current_round);
-      const matches = getMatches(sessionId, session.current_round);
+      const songs = tournament ? getSongs(tournament.id, tournament.current_round) : [];
+      const matches = tournament ? getMatches(tournament.id, tournament.current_round) : [];
 
       const initialState = {
         type: "game_state",
         data: {
           session,
+          tournament,
           players,
           songs,
           matches,
         },
-      };
+      } satisfies SSEMessage;
 
       const encoder = new TextEncoder();
       const message = `data: ${JSON.stringify(initialState)}\n\n`;

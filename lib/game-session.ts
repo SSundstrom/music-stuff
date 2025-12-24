@@ -1,6 +1,14 @@
 import { getDb } from "./db";
 import { v4 as uuidv4 } from "uuid";
-import type { Session, Player, Song, TournamentMatch } from "@/types/game";
+import type {
+  Session,
+  Tournament,
+  Player,
+  Song,
+  TournamentMatch,
+} from "@/types/game";
+
+// Session functions
 
 export function createSession(ownerId: string): Session {
   const db = getDb();
@@ -8,20 +16,16 @@ export function createSession(ownerId: string): Session {
   const now = Date.now();
 
   const stmt = db.prepare(
-    "INSERT INTO sessions (id, owner_id, status, current_round, current_picker_index, created_at) VALUES (?, ?, ?, ?, ?, ?)",
+    "INSERT INTO sessions (id, owner_id, status, created_at) VALUES (?, ?, ?, ?)",
   );
 
-  stmt.run(sessionId, ownerId, "waiting", 1, 0, now);
+  stmt.run(sessionId, ownerId, "active", now);
 
   return {
     id: sessionId,
     owner_id: ownerId,
-    status: "waiting",
-    current_category: null,
-    current_round: 1,
-    current_picker_index: 0,
+    status: "active",
     created_at: now,
-    winning_song_id: null,
   };
 }
 
@@ -51,6 +55,90 @@ export function updateSession(
     `UPDATE sessions SET ${fields.join(", ")} WHERE id = ?`,
   );
   stmt.run(...values, sessionId);
+}
+
+// Tournament functions
+
+export function createTournament(
+  sessionId: string,
+  category: string,
+): Tournament {
+  const db = getDb();
+  const tournamentId = uuidv4();
+  const now = Date.now();
+
+  const stmt = db.prepare(
+    "INSERT INTO tournaments (id, session_id, category, status, current_round, current_picker_index, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+  );
+
+  stmt.run(tournamentId, sessionId, category, "waiting", 1, 0, now);
+
+  return {
+    id: tournamentId,
+    session_id: sessionId,
+    category,
+    status: "waiting",
+    current_round: 1,
+    current_picker_index: 0,
+    winning_song_id: null,
+    created_at: now,
+  };
+}
+
+export function getTournament(tournamentId: string): Tournament | null {
+  const db = getDb();
+  const stmt = db.prepare("SELECT * FROM tournaments WHERE id = ?");
+  return (stmt.get(tournamentId) as Tournament) || null;
+}
+
+export function getTournamentsBySession(sessionId: string): Tournament[] {
+  const db = getDb();
+  const stmt = db.prepare(
+    "SELECT * FROM tournaments WHERE session_id = ? ORDER BY created_at ASC",
+  );
+  return stmt.all(sessionId) as Tournament[];
+}
+
+export function getActiveTournament(sessionId: string): Tournament | null {
+  const db = getDb();
+  const stmt = db.prepare(
+    "SELECT * FROM tournaments WHERE session_id = ? AND status != 'finished' ORDER BY created_at DESC LIMIT 1",
+  );
+  return (stmt.get(sessionId) as Tournament) || null;
+}
+
+export function updateTournament(
+  tournamentId: string,
+  updates: Partial<Tournament>,
+): void {
+  const db = getDb();
+
+  const fields = Object.keys(updates)
+    .filter(
+      (k) =>
+        k !== "id" &&
+        k !== "created_at" &&
+        k !== "session_id" &&
+        k !== "category",
+    )
+    .map((k) => `${k} = ?`);
+
+  if (fields.length === 0) return;
+
+  const values = Object.entries(updates)
+    .filter(
+      ([k]) =>
+        k !== "id" &&
+        k !== "created_at" &&
+        k !== "session_id" &&
+        k !== "category",
+    )
+    .map(([, v]) => v);
+
+  const stmt = db.prepare(
+    `UPDATE tournaments SET ${fields.join(", ")} WHERE id = ?`,
+  );
+  stmt.run(...values, tournamentId);
 }
 
 export function addPlayer(
@@ -131,7 +219,7 @@ export function updatePlayer(playerId: string, updates: Partial<Player>): void {
 }
 
 export function addSong(
-  sessionId: string,
+  tournamentId: string,
   playerId: string,
   roundNumber: number,
   spotifyId: string,
@@ -145,12 +233,12 @@ export function addSong(
   const now = Date.now();
 
   const stmt = db.prepare(
-    "INSERT INTO songs (id, session_id, round_number, spotify_id, player_id, start_time, song_name, artist_name, image_url, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+    "INSERT INTO songs (id, tournament_id, round_number, spotify_id, player_id, start_time, song_name, artist_name, image_url, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
   );
 
   stmt.run(
     songId,
-    sessionId,
+    tournamentId,
     roundNumber,
     spotifyId,
     playerId,
@@ -163,7 +251,7 @@ export function addSong(
 
   return {
     id: songId,
-    session_id: sessionId,
+    tournament_id: tournamentId,
     round_number: roundNumber,
     spotify_id: spotifyId,
     player_id: playerId,
@@ -175,12 +263,12 @@ export function addSong(
   };
 }
 
-export function getSongs(sessionId: string, roundNumber: number): Song[] {
+export function getSongs(tournamentId: string, roundNumber: number): Song[] {
   const db = getDb();
   const stmt = db.prepare(
-    "SELECT * FROM songs WHERE session_id = ? AND round_number = ? ORDER BY created_at ASC",
+    "SELECT * FROM songs WHERE tournament_id = ? AND round_number = ? ORDER BY created_at ASC",
   );
-  return stmt.all(sessionId, roundNumber) as Song[];
+  return stmt.all(tournamentId, roundNumber) as Song[];
 }
 
 export function getSong(songId: string): Song | null {
@@ -190,7 +278,7 @@ export function getSong(songId: string): Song | null {
 }
 
 export function createMatch(
-  sessionId: string,
+  tournamentId: string,
   roundNumber: number,
   matchNumber: number,
   songAId: string | null,
@@ -201,12 +289,12 @@ export function createMatch(
   const now = Date.now();
 
   const stmt = db.prepare(
-    "INSERT INTO tournament_matches (id, session_id, round_number, match_number, song_a_id, song_b_id, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+    "INSERT INTO tournament_matches (id, tournament_id, round_number, match_number, song_a_id, song_b_id, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
   );
 
   stmt.run(
     matchId,
-    sessionId,
+    tournamentId,
     roundNumber,
     matchNumber,
     songAId,
@@ -217,7 +305,7 @@ export function createMatch(
 
   return {
     id: matchId,
-    session_id: sessionId,
+    tournament_id: tournamentId,
     round_number: roundNumber,
     match_number: matchNumber,
     song_a_id: songAId,
@@ -232,14 +320,14 @@ export function createMatch(
 }
 
 export function getMatches(
-  sessionId: string,
+  tournamentId: string,
   roundNumber: number,
 ): TournamentMatch[] {
   const db = getDb();
   const stmt = db.prepare(
-    "SELECT * FROM tournament_matches WHERE session_id = ? AND round_number = ? ORDER BY match_number ASC",
+    "SELECT * FROM tournament_matches WHERE tournament_id = ? AND round_number = ? ORDER BY match_number ASC",
   );
-  return stmt.all(sessionId, roundNumber) as TournamentMatch[];
+  return stmt.all(tournamentId, roundNumber) as TournamentMatch[];
 }
 
 export function getMatch(matchId: string): TournamentMatch | null {
@@ -255,13 +343,13 @@ export function updateMatch(
   const db = getDb();
 
   const fields = Object.keys(updates)
-    .filter((k) => k !== "id" && k !== "created_at" && k !== "session_id")
+    .filter((k) => k !== "id" && k !== "created_at" && k !== "tournament_id")
     .map((k) => `${k} = ?`);
 
   if (fields.length === 0) return;
 
   const values = Object.entries(updates)
-    .filter(([k]) => k !== "id" && k !== "created_at" && k !== "session_id")
+    .filter(([k]) => k !== "id" && k !== "created_at" && k !== "tournament_id")
     .map(([, v]) => v);
 
   const stmt = db.prepare(
@@ -334,17 +422,32 @@ export function deletePlayer(playerId: string): void {
   db.prepare("DELETE FROM players WHERE id = ?").run(playerId);
 }
 
-export function deleteSession(sessionId: string): void {
+export function deleteTournament(tournamentId: string): void {
   const db = getDb();
 
   // Delete in order of dependencies
   db.prepare(
-    "DELETE FROM votes WHERE match_id IN (SELECT id FROM tournament_matches WHERE session_id = ?)",
-  ).run(sessionId);
-  db.prepare("DELETE FROM tournament_matches WHERE session_id = ?").run(
-    sessionId,
+    "DELETE FROM votes WHERE match_id IN (SELECT id FROM tournament_matches WHERE tournament_id = ?)",
+  ).run(tournamentId);
+  db.prepare("DELETE FROM tournament_matches WHERE tournament_id = ?").run(
+    tournamentId,
   );
-  db.prepare("DELETE FROM songs WHERE session_id = ?").run(sessionId);
+  db.prepare("DELETE FROM songs WHERE tournament_id = ?").run(tournamentId);
+  db.prepare("DELETE FROM tournaments WHERE id = ?").run(tournamentId);
+}
+
+export function deleteSession(sessionId: string): void {
+  const db = getDb();
+
+  // Get all tournaments in this session and delete them
+  const tournaments = getTournamentsBySession(sessionId);
+  for (const tournament of tournaments) {
+    deleteTournament(tournament.id);
+  }
+
+  // Delete players
   db.prepare("DELETE FROM players WHERE session_id = ?").run(sessionId);
+
+  // Delete session
   db.prepare("DELETE FROM sessions WHERE id = ?").run(sessionId);
 }

@@ -1,6 +1,7 @@
-import { getSession, updateSession, getSongs, getPlayers, getMatches } from "@/lib/game-session";
+import { getSession, getActiveTournament, updateTournament, getSongs, getPlayers, getMatches } from "@/lib/game-session";
 import { generateTournamentBracket } from "@/lib/tournament";
 import { sseManager } from "@/lib/sse-manager";
+import type { SSEMessage } from "@/types/game";
 
 export async function POST(
   request: Request,
@@ -17,7 +18,15 @@ export async function POST(
       });
     }
 
-    if (session.status !== "song_submission") {
+    const tournament = getActiveTournament(sessionId);
+    if (!tournament) {
+      return new Response(JSON.stringify({ error: "No active tournament found" }), {
+        status: 404,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    if (tournament.status !== "song_submission") {
       return new Response(JSON.stringify({ error: "Not in song submission phase" }), {
         status: 400,
         headers: { "Content-Type": "application/json" },
@@ -25,7 +34,7 @@ export async function POST(
     }
 
     // Get submitted songs
-    const songs = getSongs(sessionId, session.current_round);
+    const songs = getSongs(tournament.id, tournament.current_round);
 
     if (songs.length < 2) {
       return new Response(
@@ -38,28 +47,29 @@ export async function POST(
     }
 
     // Generate bracket
-    generateTournamentBracket(sessionId, session.current_round);
+    generateTournamentBracket(tournament.id, tournament.current_round);
 
-    // Update session status
-    updateSession(sessionId, {
+    // Update tournament status
+    updateTournament(tournament.id, {
       status: "tournament",
     });
 
     // Broadcast updated game state to all players
-    const updatedSession = getSession(sessionId);
-    if (updatedSession) {
+    const updatedTournament = getActiveTournament(sessionId);
+    if (updatedTournament) {
       const players = getPlayers(sessionId);
-      const matches = getMatches(sessionId, updatedSession.current_round);
+      const matches = getMatches(tournament.id, updatedTournament.current_round);
 
       sseManager.broadcast(sessionId, {
         type: "game_state",
         data: {
-          session: updatedSession,
+          session,
+          tournament: updatedTournament,
           players,
           songs,
           matches,
         },
-      });
+      } satisfies SSEMessage);
     }
 
     return new Response(

@@ -25,6 +25,7 @@ export default function LobbyPage() {
 
   const {
     session: gameSession,
+    tournament,
     players,
     error: sessionError,
     isConnected,
@@ -40,10 +41,10 @@ export default function LobbyPage() {
 
   // Auto-redirect to game page when game starts
   useEffect(() => {
-    if (hasJoined && gameSession?.status === "category_selection") {
+    if (hasJoined && tournament?.status === "category_selection") {
       router.push(`/game/${sessionId}`);
     }
-  }, [gameSession?.status, hasJoined, sessionId, router]);
+  }, [tournament?.status, hasJoined, sessionId, router]);
 
   const handleJoinGame = async () => {
     if (!playerName.trim()) {
@@ -81,15 +82,7 @@ export default function LobbyPage() {
     setJoinError("");
 
     try {
-      // Move to category selection phase
-      const response = await fetch(`/api/game/${sessionId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "category_selection" }),
-      });
-
-      if (!response.ok) throw new Error("Failed to start game");
-
+      // Just redirect to game page - category selection happens there
       router.push(`/game/${sessionId}`);
     } catch (err) {
       setJoinError(err instanceof Error ? err.message : "An error occurred");

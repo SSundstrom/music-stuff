@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import type {
   Session,
+  Tournament,
   Player,
   Song,
   TournamentMatch,
@@ -15,6 +16,7 @@ interface UseGameSessionOptions {
 
 interface GameSessionState {
   session: Session | null;
+  tournament: Tournament | null;
   players: Player[];
   songs: Song[];
   matches: TournamentMatch[];
@@ -26,6 +28,7 @@ interface GameSessionState {
 export function useGameSession({ sessionId, playerId }: UseGameSessionOptions) {
   const [state, setState] = useState<GameSessionState>({
     session: null,
+    tournament: null,
     players: [],
     songs: [],
     matches: [],
@@ -42,6 +45,7 @@ export function useGameSession({ sessionId, playerId }: UseGameSessionOptions) {
           return {
             ...prevState,
             session: message.data.session,
+            tournament: message.data.tournament || null,
             players: message.data.players,
             songs: message.data.songs || [],
             matches: message.data.matches || [],
@@ -65,16 +69,7 @@ export function useGameSession({ sessionId, playerId }: UseGameSessionOptions) {
           };
 
         case "category_announced":
-          // Update current category
-          if (prevState.session) {
-            return {
-              ...prevState,
-              session: {
-                ...prevState.session,
-                current_category: message.data.category,
-              },
-            };
-          }
+          // Category announced - full state update comes via game_state event
           return prevState;
 
         case "song_submitted":
@@ -110,17 +105,7 @@ export function useGameSession({ sessionId, playerId }: UseGameSessionOptions) {
           return prevState;
 
         case "game_winner":
-          // Game winner announced
-          if (prevState.session) {
-            return {
-              ...prevState,
-              session: {
-                ...prevState.session,
-                status: "finished" as const,
-                winning_song_id: message.data.winning_song_id,
-              },
-            };
-          }
+          // Game winner announced - tournament status is updated via game_state event
           return prevState;
 
         default:
@@ -162,6 +147,7 @@ export function useGameSession({ sessionId, playerId }: UseGameSessionOptions) {
 
         const data = (await response.json()) as {
           session: Session;
+          tournament?: Tournament;
           players: Player[];
           songs: Song[];
           matches?: TournamentMatch[];
@@ -170,6 +156,7 @@ export function useGameSession({ sessionId, playerId }: UseGameSessionOptions) {
         setState((prev) => ({
           ...prev,
           session: data.session,
+          tournament: data.tournament || null,
           players: data.players,
           songs: data.songs,
           matches: data.matches || [],
@@ -190,6 +177,7 @@ export function useGameSession({ sessionId, playerId }: UseGameSessionOptions) {
 
   return {
     session: state.session,
+    tournament: state.tournament,
     players: state.players,
     songs: state.songs,
     matches: state.matches,

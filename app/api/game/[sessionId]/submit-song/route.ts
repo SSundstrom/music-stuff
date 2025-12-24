@@ -1,5 +1,5 @@
-import { getSession, addSong, getPlayer } from "@/lib/game-session";
-import { SubmitSongRequestSchema } from "@/types/game";
+import { getSession, getActiveTournament, addSong, getPlayer } from "@/lib/game-session";
+import { SubmitSongRequestSchema, type SSEMessage } from "@/types/game";
 import { sseManager } from "@/lib/sse-manager";
 
 export async function POST(
@@ -18,7 +18,15 @@ export async function POST(
       });
     }
 
-    if (session.status !== "song_submission") {
+    const tournament = getActiveTournament(sessionId);
+    if (!tournament) {
+      return new Response(JSON.stringify({ error: "No active tournament found" }), {
+        status: 404,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    if (tournament.status !== "song_submission") {
       return new Response(JSON.stringify({ error: "Not in song submission phase" }), {
         status: 400,
         headers: { "Content-Type": "application/json" },
@@ -48,9 +56,9 @@ export async function POST(
 
     // Add song to database
     const song = addSong(
-      sessionId,
+      tournament.id,
       playerId,
-      session.current_round,
+      tournament.current_round,
       validated.spotify_id,
       validated.song_name,
       validated.artist_name,
@@ -62,7 +70,7 @@ export async function POST(
     sseManager.broadcast(sessionId, {
       type: "song_submitted",
       data: song,
-    });
+    } satisfies SSEMessage);
 
     return new Response(JSON.stringify(song), {
       status: 201,

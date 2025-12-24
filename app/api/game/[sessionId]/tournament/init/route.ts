@@ -1,6 +1,6 @@
 import { getSession, createTournament, updateTournament, getPlayers, getSongs, getMatches } from "@/lib/game-session";
-import { SubmitCategoryRequestSchema, type SSEMessage } from "@/types/game";
 import { sseManager } from "@/lib/sse-manager";
+import type { SSEMessage } from "@/types/game";
 
 export async function POST(
   request: Request,
@@ -8,8 +8,6 @@ export async function POST(
 ) {
   try {
     const { sessionId } = await params;
-    const body = await request.json();
-    const validated = SubmitCategoryRequestSchema.parse(body);
 
     const session = getSession(sessionId);
     if (!session) {
@@ -19,40 +17,26 @@ export async function POST(
       });
     }
 
-    // Get current picker
-    const players = getPlayers(sessionId);
-    const currentPickerIndex = 0; // For now, start with first player
-    const currentPicker = players[currentPickerIndex];
+    // Create a new tournament in waiting status
+    const tournament = createTournament(sessionId, "");
 
-    if (!currentPicker) {
-      return new Response(JSON.stringify({ error: "No valid picker found" }), {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
-
-    // Create a new tournament with this category
-    const tournament = createTournament(sessionId, validated.category);
-
-    // Move tournament to song submission phase
+    // Update tournament to category_selection status so players can select a category
     updateTournament(tournament.id, {
-      status: "song_submission",
-      current_picker_index: currentPickerIndex,
+      status: "category_selection",
+      current_picker_index: 0,
     });
 
-    // Broadcast category_announced and game_state to all players
+    // Get players to set initial picker
+    const players = getPlayers(sessionId);
+
+    // Broadcast updated game state to all players
     const updatedTournament = {
       ...tournament,
-      status: "song_submission" as const,
-      current_picker_index: currentPickerIndex,
+      status: "category_selection" as const,
+      current_picker_index: 0,
     };
     const songs = getSongs(tournament.id, updatedTournament.current_round);
     const matches = getMatches(tournament.id, updatedTournament.current_round);
-
-    sseManager.broadcast(sessionId, {
-      type: "category_announced",
-      data: { category: validated.category },
-    } satisfies SSEMessage);
 
     sseManager.broadcast(sessionId, {
       type: "game_state",
@@ -68,9 +52,7 @@ export async function POST(
     return new Response(
       JSON.stringify({
         tournament_id: tournament.id,
-        category: validated.category,
-        picker_id: currentPicker.id,
-        picker_name: currentPicker.name,
+        message: "Tournament initialized",
       }),
       {
         status: 200,
