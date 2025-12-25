@@ -23,8 +23,8 @@ export default function TournamentPhase({
 }: TournamentPhaseProps) {
   const [currentMatchIndex, setCurrentMatchIndex] = useState(0);
 
-  // Filter matches for current round
-  const matches = allMatches.filter((m) => m.round_number === roundNumber);
+  // Use all matches for the tournament
+  const matches = allMatches;
 
   // Auto-advance to next match when current match completes
   useEffect(() => {

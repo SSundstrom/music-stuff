@@ -124,8 +124,8 @@ export default function MatchDisplay({
 
       setIsPlaying(true);
 
-      // Auto-pause after duration
-      const duration = match.round_number === 1 ? 30 : 15;
+      // Auto-pause after duration (default to 30 seconds)
+      const duration = 30;
       if (playbackTimeoutRef.current) {
         clearTimeout(playbackTimeoutRef.current);
       }
@@ -160,7 +160,7 @@ export default function MatchDisplay({
     };
   }, []);
 
-  const duration = match.round_number === 1 ? 30 : 15;
+  const duration = 30; // Default duration in seconds
 
   return (
     <div className="space-y-6">
