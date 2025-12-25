@@ -67,8 +67,6 @@ export type Song = z.infer<typeof SongSchema>;
 export const TournamentMatchSchema = z.object({
   id: z.string(),
   tournament_id: z.string(),
-  round_number: z.number().default(0), // kept for backwards compatibility, not used
-  match_number: z.number().default(0), // kept for backwards compatibility, not used
   song_a_id: z.string().nullable(),
   song_b_id: z.string().nullable(),
   winner_id: z.string().nullable(),
@@ -92,80 +90,116 @@ export const VoteSchema = z.object({
 
 export type Vote = z.infer<typeof VoteSchema>;
 
-// SSE message types
+// SSE message schemas - individual types
+export const PlayerJoinedSchema = z.object({
+  type: z.literal("player_joined"),
+  data: PlayerSchema,
+});
+
+export const PlayerLeftSchema = z.object({
+  type: z.literal("player_left"),
+  data: z.object({ player_id: z.string() }),
+});
+
+export const CategoryAnnouncedSchema = z.object({
+  type: z.literal("category_announced"),
+  data: z.object({ category: z.string() }),
+});
+
+export const SongSubmittedSchema = z.object({
+  type: z.literal("song_submitted"),
+  data: SongSchema,
+});
+
+export const MatchStartedSchema = z.object({
+  type: z.literal("match_started"),
+  data: z.object({
+    match_id: z.string(),
+    song_a: SongSchema.nullable(),
+    song_b: SongSchema.nullable(),
+    duration_seconds: z.number(),
+  }),
+});
+
+export const MatchEndedSchema = z.object({
+  type: z.literal("match_ended"),
+  data: z.object({
+    match_id: z.string(),
+    winner_id: z.string(),
+    votes_a: z.number(),
+    votes_b: z.number(),
+  }),
+});
+
+export const RoundCompleteSchema = z.object({
+  type: z.literal("round_complete"),
+  data: z.object({
+    round_number: z.number(),
+  }),
+});
+
+export const GameWinnerSchema = z.object({
+  type: z.literal("game_winner"),
+  data: z.object({
+    winning_song_id: z.string(),
+  }),
+});
+
+export const GameStateSchema = z.object({
+  type: z.literal("game_state"),
+  data: z.object({
+    session: SessionSchema,
+    tournament: TournamentSchema.nullish(),
+    players: z.array(PlayerSchema),
+    songs: z.array(SongSchema),
+    matches: z.array(TournamentMatchSchema),
+  }),
+});
+
+export const PlaybackStartedSchema = z.object({
+  type: z.literal("playback_started"),
+  data: z.object({
+    match_id: z.string(),
+    song_id: z.string(),
+    song_name: z.string(),
+    artist_name: z.string(),
+  }),
+});
+
+export const PlaybackStoppedSchema = z.object({
+  type: z.literal("playback_stopped"),
+  data: z.object({
+    match_id: z.string(),
+  }),
+});
+
+// Combined SSE message schema
 export const SSEMessageSchema = z.discriminatedUnion("type", [
-  z.object({
-    type: z.literal("player_joined"),
-    data: PlayerSchema,
-  }),
-  z.object({
-    type: z.literal("player_left"),
-    data: z.object({ player_id: z.string() }),
-  }),
-  z.object({
-    type: z.literal("category_announced"),
-    data: z.object({ category: z.string() }),
-  }),
-  z.object({
-    type: z.literal("song_submitted"),
-    data: SongSchema,
-  }),
-  z.object({
-    type: z.literal("match_started"),
-    data: z.object({
-      match_id: z.string(),
-      song_a: SongSchema.nullable(),
-      song_b: SongSchema.nullable(),
-      duration_seconds: z.number(),
-    }),
-  }),
-  z.object({
-    type: z.literal("match_ended"),
-    data: z.object({
-      match_id: z.string(),
-      winner_id: z.string(),
-      votes_a: z.number(),
-      votes_b: z.number(),
-    }),
-  }),
-  z.object({
-    type: z.literal("round_complete"),
-    data: z.object({
-      round_number: z.number(),
-    }),
-  }),
-  z.object({
-    type: z.literal("game_winner"),
-    data: z.object({
-      winning_song_id: z.string(),
-    }),
-  }),
-  z.object({
-    type: z.literal("game_state"),
-    data: z.object({
-      session: SessionSchema,
-      tournament: TournamentSchema.nullish(),
-      players: z.array(PlayerSchema),
-      songs: z.array(SongSchema),
-      matches: z.array(TournamentMatchSchema),
-    }),
-  }),
-  z.object({
-    type: z.literal("playback_started"),
-    data: z.object({
-      match_id: z.string(),
-      song_id: z.string(),
-      song_name: z.string(),
-      artist_name: z.string(),
-    }),
-  }),
-  z.object({
-    type: z.literal("playback_stopped"),
-    data: z.object({
-      match_id: z.string(),
-    }),
-  }),
+  PlayerJoinedSchema,
+  PlayerLeftSchema,
+  CategoryAnnouncedSchema,
+  SongSubmittedSchema,
+  MatchStartedSchema,
+  MatchEndedSchema,
+  RoundCompleteSchema,
+  GameWinnerSchema,
+  GameStateSchema,
+  PlaybackStartedSchema,
+  PlaybackStoppedSchema,
 ]);
+
+// SSE message types
+export type PlayerJoinedMessage = z.infer<typeof PlayerJoinedSchema>;
+export type PlayerLeftMessage = z.infer<typeof PlayerLeftSchema>;
+export type CategoryAnnouncedMessage = z.infer<typeof CategoryAnnouncedSchema>;
+export type SongSubmittedMessage = z.infer<typeof SongSubmittedSchema>;
+export type MatchStartedMessage = z.infer<typeof MatchStartedSchema>;
+export type MatchEndedMessage = z.infer<typeof MatchEndedSchema>;
+export type RoundCompleteMessage = z.infer<typeof RoundCompleteSchema>;
+export type GameWinnerMessage = z.infer<typeof GameWinnerSchema>;
+export type GameStateMessage = z.infer<typeof GameStateSchema>;
+export type PlaybackStartedMessage = z.infer<typeof PlaybackStartedSchema>;
+export type PlaybackStoppedMessage = z.infer<typeof PlaybackStoppedSchema>;
 
 export type SSEMessage = z.infer<typeof SSEMessageSchema>;
 
