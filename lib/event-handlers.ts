@@ -9,9 +9,9 @@ import {
   getTournament,
   updateMatch,
   updateTournament,
+  getMatchVoteCount,
 } from "./game-session";
 import { determineMatchWinner, advanceToNextMatch, getNextMatch } from "./tournament";
-import { getDb } from "./db";
 import type { SSEMessage } from "@/types/game";
 
 let initialized = false;
@@ -26,14 +26,8 @@ export function initializeEventHandlers(): void {
       const { sessionId, tournamentId, matchId } = data;
 
       // Check if all players have voted
-      const db = getDb();
-      const stmt = db.prepare(
-        "SELECT COUNT(DISTINCT player_id) as vote_count FROM votes WHERE match_id = ?",
-      );
-      const result = stmt.get(matchId) as { vote_count: number };
-      const voteCount = result.vote_count;
-
-      const players = getPlayers(sessionId);
+      const voteCount = await getMatchVoteCount(matchId);
+      const players = await getPlayers(sessionId);
 
       if (voteCount === players.length) {
         // All players have voted, emit match:completed event
@@ -54,17 +48,17 @@ export function initializeEventHandlers(): void {
     try {
       const { sessionId, tournamentId, matchId } = data;
 
-      const match = getMatch(matchId);
+      const match = await getMatch(matchId);
       if (!match) return;
 
-      const tournament = getTournament(tournamentId);
+      const tournament = await getTournament(tournamentId);
       if (!tournament) return;
 
       // Determine the winner
       const winnerId = determineMatchWinner(match);
 
       // Update match with winner
-      updateMatch(matchId, {
+      await updateMatch(matchId, {
         winner_id: winnerId,
         status: "completed",
       });
@@ -78,7 +72,7 @@ export function initializeEventHandlers(): void {
 
       if (finished && winningSongId) {
         // Tournament finished
-        updateTournament(tournamentId, {
+        await updateTournament(tournamentId, {
           status: "finished",
           winning_song_id: winningSongId,
         });
@@ -89,12 +83,14 @@ export function initializeEventHandlers(): void {
         });
 
         // Broadcast updated game state after tournament is updated
-        const session = getSession(sessionId);
-        const updatedTournament = getTournament(tournamentId);
+        const session = await getSession(sessionId);
+        const updatedTournament = await getTournament(tournamentId);
         if (session && updatedTournament) {
-          const players = getPlayers(sessionId);
-          const songs = getSongs(tournamentId, 0);
-          const matches = getMatches(tournamentId, 0);
+          const [players, songs, matches] = await Promise.all([
+            getPlayers(sessionId),
+            getSongs(tournamentId, 0),
+            getMatches(tournamentId, 0),
+          ]);
           sseManager.broadcast(sessionId, {
             type: "game_state",
             data: {
@@ -108,25 +104,23 @@ export function initializeEventHandlers(): void {
         }
       } else {
         // Continue tournament with next match
-        const allSongs = getSongs(tournamentId, 0);
+        const allSongs = await getSongs(tournamentId, 0);
         const eliminatedIds = JSON.parse(tournament.eliminated_song_ids || "[]");
 
         try {
-          const nextMatch = getNextMatch(tournamentId, allSongs, winnerId, eliminatedIds);
-
-          eventBus.emit("match:ready", {
-            sessionId,
-            tournamentId,
-            matchId: nextMatch.id,
-          });
+          // Creates next match in the tournament
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const _nextMatch = getNextMatch(tournamentId, allSongs, winnerId, eliminatedIds);
 
           // Broadcast updated game state
-          const session = getSession(sessionId);
-          const updatedTournament = getTournament(tournamentId);
+          const session = await getSession(sessionId);
+          const updatedTournament = await getTournament(tournamentId);
           if (session && updatedTournament) {
-            const players = getPlayers(sessionId);
-            const songs = getSongs(tournamentId, 0);
-            const matches = getMatches(tournamentId, 0);
+            const [players, songs, matches] = await Promise.all([
+              getPlayers(sessionId),
+              getSongs(tournamentId, 0),
+              getMatches(tournamentId, 0),
+            ]);
             sseManager.broadcast(sessionId, {
               type: "game_state",
               data: {

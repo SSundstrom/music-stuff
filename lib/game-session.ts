@@ -1,4 +1,4 @@
-import { getDb } from "./db";
+import { prisma } from "./db-prisma";
 import { v4 as uuidv4 } from "uuid";
 import type {
   Session,
@@ -10,215 +10,270 @@ import type {
 
 // Session functions
 
-export function createSession(ownerId: string): Session {
-  const db = getDb();
+export async function createSession(ownerId: string): Promise<Session> {
   const sessionId = uuidv4();
   const now = Date.now();
 
-  const stmt = db.prepare(
-    "INSERT INTO sessions (id, owner_id, status, created_at) VALUES (?, ?, ?, ?)",
-  );
-
-  stmt.run(sessionId, ownerId, "active", now);
+  const result = await prisma.session.create({
+    data: {
+      id: sessionId,
+      owner_id: ownerId,
+      status: "active",
+      created_at: now,
+    },
+  });
 
   return {
-    id: sessionId,
-    owner_id: ownerId,
-    status: "active",
-    created_at: now,
+    id: result.id,
+    owner_id: result.owner_id,
+    status: result.status as "active" | "archived",
+    created_at: result.created_at,
   };
 }
 
-export function getSession(sessionId: string): Session | null {
-  const db = getDb();
-  const stmt = db.prepare("SELECT * FROM sessions WHERE id = ?");
-  return (stmt.get(sessionId) as Session) || null;
+export async function getSession(sessionId: string): Promise<Session | null> {
+  const result = await prisma.session.findUnique({
+    where: { id: sessionId },
+  });
+
+  return result
+    ? {
+        id: result.id,
+        owner_id: result.owner_id,
+        status: result.status as "active" | "archived",
+        created_at: result.created_at,
+      }
+    : null;
 }
 
-export function updateSession(
+export async function updateSession(
   sessionId: string,
   updates: Partial<Session>,
-): void {
-  const db = getDb();
+): Promise<void> {
+  const dataToUpdate: Record<string, string> = {};
 
-  const fields = Object.keys(updates)
-    .filter((k) => k !== "id" && k !== "created_at" && k !== "owner_id")
-    .map((k) => `${k} = ?`);
+  if (updates.status !== undefined) dataToUpdate.status = updates.status;
 
-  if (fields.length === 0) return;
+  if (Object.keys(dataToUpdate).length === 0) return;
 
-  const values = Object.entries(updates)
-    .filter(([k]) => k !== "id" && k !== "created_at" && k !== "owner_id")
-    .map(([, v]) => v);
-
-  const stmt = db.prepare(
-    `UPDATE sessions SET ${fields.join(", ")} WHERE id = ?`,
-  );
-  stmt.run(...values, sessionId);
+  await prisma.session.update({
+    where: { id: sessionId },
+    data: dataToUpdate,
+  });
 }
 
 // Tournament functions
 
-export function createTournament(
+export async function createTournament(
   sessionId: string,
   category: string,
-): Tournament {
-  const db = getDb();
+): Promise<Tournament> {
   const tournamentId = uuidv4();
   const now = Date.now();
 
-  const stmt = db.prepare(
-    "INSERT INTO tournaments (id, session_id, category, status, current_round, current_picker_index, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
-  );
-
-  stmt.run(tournamentId, sessionId, category, "waiting", 1, 0, now);
+  const result = await prisma.tournament.create({
+    data: {
+      id: tournamentId,
+      session_id: sessionId,
+      category,
+      status: "waiting",
+      current_round: 1,
+      current_picker_index: 0,
+      created_at: now,
+    },
+  });
 
   return {
-    id: tournamentId,
-    session_id: sessionId,
-    category,
-    status: "waiting",
-    current_round: 1,
-    current_picker_index: 0,
-    winning_song_id: null,
-    created_at: now,
+    id: result.id,
+    session_id: result.session_id,
+    category: result.category,
+    status: result.status,
+    current_round: result.current_round,
+    current_picker_index: result.current_picker_index,
+    winning_song_id: result.winning_song_id,
+    created_at: result.created_at,
   };
 }
 
-export function getTournament(tournamentId: string): Tournament | null {
-  const db = getDb();
-  const stmt = db.prepare("SELECT * FROM tournaments WHERE id = ?");
-  return (stmt.get(tournamentId) as Tournament) || null;
+export async function getTournament(
+  tournamentId: string,
+): Promise<Tournament | null> {
+  const result = await prisma.tournament.findUnique({
+    where: { id: tournamentId },
+  });
+
+  return result
+    ? {
+        id: result.id,
+        session_id: result.session_id,
+        category: result.category,
+        status: result.status,
+        current_round: result.current_round,
+        current_picker_index: result.current_picker_index,
+        winning_song_id: result.winning_song_id,
+        created_at: result.created_at,
+      }
+    : null;
 }
 
-export function getTournamentsBySession(sessionId: string): Tournament[] {
-  const db = getDb();
-  const stmt = db.prepare(
-    "SELECT * FROM tournaments WHERE session_id = ? ORDER BY created_at ASC",
-  );
-  return stmt.all(sessionId) as Tournament[];
+export async function getTournamentsBySession(
+  sessionId: string,
+): Promise<Tournament[]> {
+  const results = await prisma.tournament.findMany({
+    where: { session_id: sessionId },
+    orderBy: { created_at: "asc" },
+  });
+
+  return results.map((result) => ({
+    id: result.id,
+    session_id: result.session_id,
+    category: result.category,
+    status: result.status,
+    current_round: result.current_round,
+    current_picker_index: result.current_picker_index,
+    winning_song_id: result.winning_song_id,
+    created_at: result.created_at,
+  }));
 }
 
-export function getActiveTournament(sessionId: string): Tournament | null {
-  const db = getDb();
-  const stmt = db.prepare(
-    "SELECT * FROM tournaments WHERE session_id = ? AND status != 'finished' ORDER BY created_at DESC LIMIT 1",
-  );
-  return (stmt.get(sessionId) as Tournament) || null;
+export async function getActiveTournament(
+  sessionId: string,
+): Promise<Tournament | null> {
+  const result = await prisma.tournament.findFirst({
+    where: {
+      session_id: sessionId,
+      status: { not: "finished" },
+    },
+    orderBy: { created_at: "desc" },
+  });
+
+  return result
+    ? {
+        id: result.id,
+        session_id: result.session_id,
+        category: result.category,
+        status: result.status,
+        current_round: result.current_round,
+        current_picker_index: result.current_picker_index,
+        winning_song_id: result.winning_song_id,
+        created_at: result.created_at,
+      }
+    : null;
 }
 
-export function updateTournament(
+export async function updateTournament(
   tournamentId: string,
   updates: Partial<Tournament>,
-): void {
-  const db = getDb();
+): Promise<void> {
+  const dataToUpdate: Record<string, string | number | null> = {};
 
-  const fields = Object.keys(updates)
-    .filter(
-      (k) =>
-        k !== "id" &&
-        k !== "created_at" &&
-        k !== "session_id" &&
-        k !== "category",
-    )
-    .map((k) => `${k} = ?`);
+  if (updates.status !== undefined) dataToUpdate.status = updates.status;
+  if (updates.current_round !== undefined)
+    dataToUpdate.current_round = updates.current_round;
+  if (updates.current_picker_index !== undefined)
+    dataToUpdate.current_picker_index = updates.current_picker_index;
+  if (updates.winning_song_id !== undefined)
+    dataToUpdate.winning_song_id = updates.winning_song_id;
+  if (updates.eliminated_song_ids !== undefined)
+    dataToUpdate.eliminated_song_ids = updates.eliminated_song_ids;
 
-  if (fields.length === 0) return;
+  if (Object.keys(dataToUpdate).length === 0) return;
 
-  const values = Object.entries(updates)
-    .filter(
-      ([k]) =>
-        k !== "id" &&
-        k !== "created_at" &&
-        k !== "session_id" &&
-        k !== "category",
-    )
-    .map(([, v]) => v);
-
-  const stmt = db.prepare(
-    `UPDATE tournaments SET ${fields.join(", ")} WHERE id = ?`,
-  );
-  stmt.run(...values, tournamentId);
+  await prisma.tournament.update({
+    where: { id: tournamentId },
+    data: dataToUpdate,
+  });
 }
 
-export function addPlayer(
+export async function addPlayer(
   sessionId: string,
   name: string,
   isOwner: boolean = false,
-): Player {
-  const db = getDb();
+): Promise<Player> {
   const playerId = uuidv4();
   const now = Date.now();
 
   // Get join order
-  const countStmt = db.prepare(
-    "SELECT COUNT(*) as count FROM players WHERE session_id = ?",
-  );
-  const { count } = countStmt.get(sessionId) as { count: number };
+  const count = await prisma.player.count({
+    where: { session_id: sessionId },
+  });
 
-  const stmt = db.prepare(
-    "INSERT INTO players (id, session_id, name, is_owner, join_order, created_at) VALUES (?, ?, ?, ?, ?, ?)",
-  );
-
-  stmt.run(playerId, sessionId, name, isOwner ? 1 : 0, count, now);
+  const result = await prisma.player.create({
+    data: {
+      id: playerId,
+      session_id: sessionId,
+      name,
+      is_owner: isOwner ? 1 : 0,
+      join_order: count,
+      created_at: now,
+    },
+  });
 
   return {
-    id: playerId,
-    session_id: sessionId,
-    name,
-    spotify_device_id: null,
-    is_owner: isOwner,
-    join_order: count,
-    created_at: now,
+    id: result.id,
+    session_id: result.session_id,
+    name: result.name,
+    spotify_device_id: result.spotify_device_id,
+    is_owner: result.is_owner === 1,
+    join_order: result.join_order,
+    created_at: result.created_at,
   };
 }
 
-export function getPlayers(sessionId: string): Player[] {
-  const db = getDb();
-  const stmt = db.prepare(
-    "SELECT * FROM players WHERE session_id = ? ORDER BY join_order ASC",
-  );
-  return stmt.all(sessionId) as Player[];
+export async function getPlayers(sessionId: string): Promise<Player[]> {
+  const results = await prisma.player.findMany({
+    where: { session_id: sessionId },
+    orderBy: { join_order: "asc" },
+  });
+
+  return results.map((result) => ({
+    id: result.id,
+    session_id: result.session_id,
+    name: result.name,
+    spotify_device_id: result.spotify_device_id,
+    is_owner: result.is_owner === 1,
+    join_order: result.join_order,
+    created_at: result.created_at,
+  }));
 }
 
-export function getPlayer(playerId: string): Player | null {
-  const db = getDb();
-  const stmt = db.prepare("SELECT * FROM players WHERE id = ?");
-  return (stmt.get(playerId) as Player) || null;
+export async function getPlayer(playerId: string): Promise<Player | null> {
+  const result = await prisma.player.findUnique({
+    where: { id: playerId },
+  });
+
+  return result
+    ? {
+        id: result.id,
+        session_id: result.session_id,
+        name: result.name,
+        spotify_device_id: result.spotify_device_id,
+        is_owner: result.is_owner === 1,
+        join_order: result.join_order,
+        created_at: result.created_at,
+      }
+    : null;
 }
 
-export function updatePlayer(playerId: string, updates: Partial<Player>): void {
-  const db = getDb();
+export async function updatePlayer(
+  playerId: string,
+  updates: Partial<Player>,
+): Promise<void> {
+  const dataToUpdate: Record<string, string | number | boolean | null> = {};
 
-  const fields = Object.keys(updates)
-    .filter(
-      (k) =>
-        k !== "id" &&
-        k !== "created_at" &&
-        k !== "session_id" &&
-        k !== "is_owner",
-    )
-    .map((k) => `${k} = ?`);
+  if (updates.name !== undefined) dataToUpdate.name = updates.name;
+  if (updates.spotify_device_id !== undefined)
+    dataToUpdate.spotify_device_id = updates.spotify_device_id;
 
-  if (fields.length === 0) return;
+  if (Object.keys(dataToUpdate).length === 0) return;
 
-  const values = Object.entries(updates)
-    .filter(
-      ([k]) =>
-        k !== "id" &&
-        k !== "created_at" &&
-        k !== "session_id" &&
-        k !== "is_owner",
-    )
-    .map(([, v]) => (typeof v === "boolean" ? (v ? 1 : 0) : v));
-
-  const stmt = db.prepare(
-    `UPDATE players SET ${fields.join(", ")} WHERE id = ?`,
-  );
-  stmt.run(...values, playerId);
+  await prisma.player.update({
+    where: { id: playerId },
+    data: dataToUpdate,
+  });
 }
 
-export function addSong(
+export async function addSong(
   tournamentId: string,
   playerId: string,
   roundNumber: number,
@@ -227,227 +282,286 @@ export function addSong(
   artistName: string,
   startTime: number,
   imageUrl: string | null = null,
-): Song {
-  const db = getDb();
+): Promise<Song> {
   const songId = uuidv4();
   const now = Date.now();
 
-  const stmt = db.prepare(
-    "INSERT INTO songs (id, tournament_id, round_number, spotify_id, player_id, start_time, song_name, artist_name, image_url, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-  );
-
-  stmt.run(
-    songId,
-    tournamentId,
-    roundNumber,
-    spotifyId,
-    playerId,
-    startTime,
-    songName,
-    artistName,
-    imageUrl,
-    now,
-  );
+  const result = await prisma.song.create({
+    data: {
+      id: songId,
+      tournament_id: tournamentId,
+      round_number: roundNumber,
+      spotify_id: spotifyId,
+      player_id: playerId,
+      start_time: startTime,
+      song_name: songName,
+      artist_name: artistName,
+      image_url: imageUrl,
+      created_at: now,
+    },
+  });
 
   return {
-    id: songId,
-    tournament_id: tournamentId,
-    round_number: roundNumber,
-    spotify_id: spotifyId,
-    player_id: playerId,
-    start_time: startTime,
-    song_name: songName,
-    artist_name: artistName,
-    image_url: imageUrl,
-    created_at: now,
+    id: result.id,
+    tournament_id: result.tournament_id,
+    round_number: result.round_number,
+    spotify_id: result.spotify_id,
+    player_id: result.player_id,
+    start_time: result.start_time,
+    song_name: result.song_name,
+    artist_name: result.artist_name,
+    image_url: result.image_url,
+    created_at: result.created_at,
   };
 }
 
-export function getSongs(tournamentId: string, roundNumber: number): Song[] {
-  const db = getDb();
-  const stmt = db.prepare(
-    "SELECT * FROM songs WHERE tournament_id = ? AND round_number = ? ORDER BY created_at ASC",
-  );
-  return stmt.all(tournamentId, roundNumber) as Song[];
+export async function getSongs(
+  tournamentId: string,
+  roundNumber: number,
+): Promise<Song[]> {
+  const results = await prisma.song.findMany({
+    where: { tournament_id: tournamentId, round_number: roundNumber },
+    orderBy: { created_at: "asc" },
+  });
+
+  return results.map((result) => ({
+    id: result.id,
+    tournament_id: result.tournament_id,
+    round_number: result.round_number,
+    spotify_id: result.spotify_id,
+    player_id: result.player_id,
+    start_time: result.start_time,
+    song_name: result.song_name,
+    artist_name: result.artist_name,
+    image_url: result.image_url,
+    created_at: result.created_at,
+  }));
 }
 
-export function getSong(songId: string): Song | null {
-  const db = getDb();
-  const stmt = db.prepare("SELECT * FROM songs WHERE id = ?");
-  return (stmt.get(songId) as Song) || null;
+export async function getSong(songId: string): Promise<Song | null> {
+  const result = await prisma.song.findUnique({
+    where: { id: songId },
+  });
+
+  return result
+    ? {
+        id: result.id,
+        tournament_id: result.tournament_id,
+        round_number: result.round_number,
+        spotify_id: result.spotify_id,
+        player_id: result.player_id,
+        start_time: result.start_time,
+        song_name: result.song_name,
+        artist_name: result.artist_name,
+        image_url: result.image_url,
+        created_at: result.created_at,
+      }
+    : null;
 }
 
-export function createMatch(
+export async function createMatch(
   tournamentId: string,
   roundNumber: number,
   matchNumber: number,
   songAId: string | null,
   songBId: string | null,
-): TournamentMatch {
-  const db = getDb();
+): Promise<TournamentMatch> {
   const matchId = uuidv4();
   const now = Date.now();
 
-  const stmt = db.prepare(
-    "INSERT INTO tournament_matches (id, tournament_id, round_number, match_number, song_a_id, song_b_id, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-  );
-
-  stmt.run(
-    matchId,
-    tournamentId,
-    roundNumber,
-    matchNumber,
-    songAId,
-    songBId,
-    "pending",
-    now,
-  );
+  const result = await prisma.tournamentMatch.create({
+    data: {
+      id: matchId,
+      tournament_id: tournamentId,
+      round_number: roundNumber,
+      match_number: matchNumber,
+      song_a_id: songAId,
+      song_b_id: songBId,
+      status: "pending",
+      created_at: now,
+    },
+  });
 
   return {
-    id: matchId,
-    tournament_id: tournamentId,
-    round_number: roundNumber,
-    match_number: matchNumber,
-    song_a_id: songAId,
-    song_b_id: songBId,
-    winner_id: null,
-    status: "pending",
-    votes_a: 0,
-    votes_b: 0,
-    currently_playing_song_id: null,
-    created_at: now,
+    id: result.id,
+    tournament_id: result.tournament_id,
+    round_number: result.round_number,
+    match_number: result.match_number,
+    song_a_id: result.song_a_id,
+    song_b_id: result.song_b_id,
+    winner_id: result.winner_id,
+    status: result.status,
+    votes_a: result.votes_a,
+    votes_b: result.votes_b,
+    currently_playing_song_id: result.currently_playing_song_id,
+    created_at: result.created_at,
   };
 }
 
-export function getMatches(
+export async function getMatches(
   tournamentId: string,
   roundNumber: number,
-): TournamentMatch[] {
-  const db = getDb();
-  const stmt = db.prepare(
-    "SELECT * FROM tournament_matches WHERE tournament_id = ? AND round_number = ? ORDER BY match_number ASC",
-  );
-  return stmt.all(tournamentId, roundNumber) as TournamentMatch[];
+): Promise<TournamentMatch[]> {
+  const results = await prisma.tournamentMatch.findMany({
+    where: { tournament_id: tournamentId, round_number: roundNumber },
+    orderBy: { match_number: "asc" },
+  });
+
+  return results.map((result) => ({
+    id: result.id,
+    tournament_id: result.tournament_id,
+    round_number: result.round_number,
+    match_number: result.match_number,
+    song_a_id: result.song_a_id,
+    song_b_id: result.song_b_id,
+    winner_id: result.winner_id,
+    status: result.status,
+    votes_a: result.votes_a,
+    votes_b: result.votes_b,
+    currently_playing_song_id: result.currently_playing_song_id,
+    created_at: result.created_at,
+  }));
 }
 
-export function getMatch(matchId: string): TournamentMatch | null {
-  const db = getDb();
-  const stmt = db.prepare("SELECT * FROM tournament_matches WHERE id = ?");
-  return (stmt.get(matchId) as TournamentMatch) || null;
+export async function getMatch(
+  matchId: string,
+): Promise<TournamentMatch | null> {
+  const result = await prisma.tournamentMatch.findUnique({
+    where: { id: matchId },
+  });
+
+  return result
+    ? {
+        id: result.id,
+        tournament_id: result.tournament_id,
+        round_number: result.round_number,
+        match_number: result.match_number,
+        song_a_id: result.song_a_id,
+        song_b_id: result.song_b_id,
+        winner_id: result.winner_id,
+        status: result.status,
+        votes_a: result.votes_a,
+        votes_b: result.votes_b,
+        currently_playing_song_id: result.currently_playing_song_id,
+        created_at: result.created_at,
+      }
+    : null;
 }
 
-export function updateMatch(
+export async function updateMatch(
   matchId: string,
   updates: Partial<TournamentMatch>,
-): void {
-  const db = getDb();
+): Promise<void> {
+  const dataToUpdate: Record<
+    string,
+    string | number | boolean | null | undefined
+  > = {};
 
-  const fields = Object.keys(updates)
-    .filter((k) => k !== "id" && k !== "created_at" && k !== "tournament_id")
-    .map((k) => `${k} = ?`);
+  if (updates.round_number !== undefined)
+    dataToUpdate.round_number = updates.round_number;
+  if (updates.match_number !== undefined)
+    dataToUpdate.match_number = updates.match_number;
+  if (updates.song_a_id !== undefined)
+    dataToUpdate.song_a_id = updates.song_a_id;
+  if (updates.song_b_id !== undefined)
+    dataToUpdate.song_b_id = updates.song_b_id;
+  if (updates.winner_id !== undefined)
+    dataToUpdate.winner_id = updates.winner_id;
+  if (updates.status !== undefined) dataToUpdate.status = updates.status;
+  if (updates.votes_a !== undefined) dataToUpdate.votes_a = updates.votes_a;
+  if (updates.votes_b !== undefined) dataToUpdate.votes_b = updates.votes_b;
+  if (updates.currently_playing_song_id !== undefined)
+    dataToUpdate.currently_playing_song_id = updates.currently_playing_song_id;
 
-  if (fields.length === 0) return;
+  if (Object.keys(dataToUpdate).length === 0) return;
 
-  const values = Object.entries(updates)
-    .filter(([k]) => k !== "id" && k !== "created_at" && k !== "tournament_id")
-    .map(([, v]) => v);
-
-  const stmt = db.prepare(
-    `UPDATE tournament_matches SET ${fields.join(", ")} WHERE id = ?`,
-  );
-  stmt.run(...values, matchId);
+  await prisma.tournamentMatch.update({
+    where: { id: matchId },
+    data: dataToUpdate,
+  });
 }
 
-export function addVote(
+export async function addVote(
   matchId: string,
   playerId: string,
   songId: string,
-): void {
-  const db = getDb();
+): Promise<void> {
   const voteId = uuidv4();
   const now = Date.now();
 
-  const stmt = db.prepare(
-    "INSERT OR REPLACE INTO votes (id, match_id, player_id, song_id, created_at) VALUES (?, ?, ?, ?, ?)",
-  );
-
-  stmt.run(voteId, matchId, playerId, songId, now);
+  await prisma.vote.upsert({
+    where: { match_id_player_id: { match_id: matchId, player_id: playerId } },
+    update: { song_id: songId, created_at: now },
+    create: {
+      id: voteId,
+      match_id: matchId,
+      player_id: playerId,
+      song_id: songId,
+      created_at: now,
+    },
+  });
 
   // Update vote counts
-  const match = getMatch(matchId);
+  const match = await getMatch(matchId);
   if (!match) return;
-
-  const voteStmt = db.prepare(
-    "SELECT COUNT(*) as count FROM votes WHERE match_id = ? AND song_id = ?",
-  );
 
   let votesA = 0;
   let votesB = 0;
 
   if (match.song_a_id) {
-    const { count } = voteStmt.get(matchId, match.song_a_id) as {
-      count: number;
-    };
-    votesA = count;
+    votesA = await prisma.vote.count({
+      where: { match_id: matchId, song_id: match.song_a_id },
+    });
   }
 
   if (match.song_b_id) {
-    const { count } = voteStmt.get(matchId, match.song_b_id) as {
-      count: number;
-    };
-    votesB = count;
+    votesB = await prisma.vote.count({
+      where: { match_id: matchId, song_id: match.song_b_id },
+    });
   }
 
-  updateMatch(matchId, { votes_a: votesA, votes_b: votesB });
+  await updateMatch(matchId, { votes_a: votesA, votes_b: votesB });
 }
 
-export function getPlayerVote(
+export async function getPlayerVote(
   matchId: string,
   playerId: string,
-): string | null {
-  const db = getDb();
-  const stmt = db.prepare(
-    "SELECT song_id FROM votes WHERE match_id = ? AND player_id = ?",
-  );
-  const result = stmt.get(matchId, playerId) as { song_id: string } | undefined;
+): Promise<string | null> {
+  const result = await prisma.vote.findFirst({
+    where: { match_id: matchId, player_id: playerId },
+    select: { song_id: true },
+  });
+
   return result?.song_id || null;
 }
 
-export function deletePlayer(playerId: string): void {
-  const db = getDb();
-
-  // Delete in order of dependencies
-  db.prepare("DELETE FROM votes WHERE player_id = ?").run(playerId);
-  db.prepare("DELETE FROM songs WHERE player_id = ?").run(playerId);
-  db.prepare("DELETE FROM players WHERE id = ?").run(playerId);
+export async function deletePlayer(playerId: string): Promise<void> {
+  // Cascade delete is handled by Prisma relations in schema
+  await prisma.player.delete({
+    where: { id: playerId },
+  });
 }
 
-export function deleteTournament(tournamentId: string): void {
-  const db = getDb();
-
-  // Delete in order of dependencies
-  db.prepare(
-    "DELETE FROM votes WHERE match_id IN (SELECT id FROM tournament_matches WHERE tournament_id = ?)",
-  ).run(tournamentId);
-  db.prepare("DELETE FROM tournament_matches WHERE tournament_id = ?").run(
-    tournamentId,
-  );
-  db.prepare("DELETE FROM songs WHERE tournament_id = ?").run(tournamentId);
-  db.prepare("DELETE FROM tournaments WHERE id = ?").run(tournamentId);
+export async function deleteTournament(tournamentId: string): Promise<void> {
+  // Cascade delete is handled by Prisma relations in schema
+  await prisma.tournament.delete({
+    where: { id: tournamentId },
+  });
 }
 
-export function deleteSession(sessionId: string): void {
-  const db = getDb();
+export async function deleteSession(sessionId: string): Promise<void> {
+  // Cascade delete is handled by Prisma relations in schema
+  await prisma.session.delete({
+    where: { id: sessionId },
+  });
+}
 
-  // Get all tournaments in this session and delete them
-  const tournaments = getTournamentsBySession(sessionId);
-  for (const tournament of tournaments) {
-    deleteTournament(tournament.id);
-  }
+export async function getMatchVoteCount(matchId: string): Promise<number> {
+  const result = await prisma.vote.groupBy({
+    by: ["player_id"],
+    where: { match_id: matchId },
+    _count: true,
+  });
 
-  // Delete players
-  db.prepare("DELETE FROM players WHERE session_id = ?").run(sessionId);
-
-  // Delete session
-  db.prepare("DELETE FROM sessions WHERE id = ?").run(sessionId);
+  return result.length;
 }
