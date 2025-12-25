@@ -10,7 +10,7 @@ export async function POST(
     const { sessionId } = await params;
     const body = await request.json();
 
-    const session = getSession(sessionId);
+    const session = await getSession(sessionId);
     if (!session) {
       return new Response(JSON.stringify({ error: "Session not found" }), {
         status: 404,
@@ -18,7 +18,7 @@ export async function POST(
       });
     }
 
-    const tournament = getActiveTournament(sessionId);
+    const tournament = await getActiveTournament(sessionId);
     if (!tournament) {
       return new Response(JSON.stringify({ error: "No active tournament found" }), {
         status: 404,
@@ -46,7 +46,7 @@ export async function POST(
     }
 
     // Verify player exists and is in this session
-    const player = getPlayer(playerId);
+    const player = await getPlayer(playerId);
     if (!player || player.session_id !== sessionId) {
       return new Response(JSON.stringify({ error: "Player not in this session" }), {
         status: 403,
@@ -55,7 +55,7 @@ export async function POST(
     }
 
     // Add song to database (using round_number 0 for all submissions)
-    const song = addSong(
+    const song = await addSong(
       tournament.id,
       playerId,
       0,

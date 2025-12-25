@@ -9,7 +9,7 @@ export async function GET(
   try {
     const { sessionId } = await params;
 
-    const session = getSession(sessionId);
+    const session = await getSession(sessionId);
     if (!session) {
       return new Response(JSON.stringify({ error: "Session not found" }), {
         status: 404,
@@ -17,10 +17,12 @@ export async function GET(
       });
     }
 
-    const tournament = getActiveTournament(sessionId);
-    const players = getPlayers(sessionId);
-    const songs = tournament ? getSongs(tournament.id, tournament.current_round) : [];
-    const matches = tournament ? getMatches(tournament.id, tournament.current_round) : [];
+    const tournament = await getActiveTournament(sessionId);
+    const [players, songs, matches] = await Promise.all([
+      getPlayers(sessionId),
+      tournament ? getSongs(tournament.id, tournament.current_round) : Promise.resolve([]),
+      tournament ? getMatches(tournament.id, tournament.current_round) : Promise.resolve([]),
+    ]);
 
     return new Response(
       JSON.stringify({
@@ -66,15 +68,17 @@ export async function PATCH(
       });
     }
 
-    updateSession(sessionId, body);
+    await updateSession(sessionId, body);
 
     // Broadcast updated game state to all players
-    const updatedSession = getSession(sessionId);
+    const updatedSession = await getSession(sessionId);
     if (updatedSession) {
-      const tournament = getActiveTournament(sessionId);
-      const players = getPlayers(sessionId);
-      const songs = tournament ? getSongs(tournament.id, tournament.current_round) : [];
-      const matches = tournament ? getMatches(tournament.id, tournament.current_round) : [];
+      const tournament = await getActiveTournament(sessionId);
+      const [players, songs, matches] = await Promise.all([
+        getPlayers(sessionId),
+        tournament ? getSongs(tournament.id, tournament.current_round) : Promise.resolve([]),
+        tournament ? getMatches(tournament.id, tournament.current_round) : Promise.resolve([]),
+      ]);
 
       sseManager.broadcast(sessionId, {
         type: "game_state",

@@ -9,7 +9,7 @@ export async function POST(
   try {
     const { sessionId } = await params;
 
-    const session = getSession(sessionId);
+    const session = await getSession(sessionId);
     if (!session) {
       return new Response(JSON.stringify({ error: "Session not found" }), {
         status: 404,
@@ -18,16 +18,16 @@ export async function POST(
     }
 
     // Create a new tournament in waiting status
-    const tournament = createTournament(sessionId, "");
+    const tournament = await createTournament(sessionId, "");
 
     // Update tournament to category_selection status so players can select a category
-    updateTournament(tournament.id, {
+    await updateTournament(tournament.id, {
       status: "category_selection",
       current_picker_index: 0,
     });
 
     // Get players to set initial picker
-    const players = getPlayers(sessionId);
+    const players = await getPlayers(sessionId);
 
     // Broadcast updated game state to all players
     const updatedTournament = {
@@ -35,8 +35,10 @@ export async function POST(
       status: "category_selection" as const,
       current_picker_index: 0,
     };
-    const songs = getSongs(tournament.id, updatedTournament.current_round);
-    const matches = getMatches(tournament.id, updatedTournament.current_round);
+    const [songs, matches] = await Promise.all([
+      getSongs(tournament.id, updatedTournament.current_round),
+      getMatches(tournament.id, updatedTournament.current_round),
+    ]);
 
     sseManager.broadcast(sessionId, {
       type: "game_state",

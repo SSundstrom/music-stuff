@@ -10,7 +10,7 @@ export async function POST(
   try {
     const { sessionId } = await params;
 
-    const session = getSession(sessionId);
+    const session = await getSession(sessionId);
     if (!session) {
       return new Response(JSON.stringify({ error: "Session not found" }), {
         status: 404,
@@ -18,7 +18,7 @@ export async function POST(
       });
     }
 
-    const tournament = getActiveTournament(sessionId);
+    const tournament = await getActiveTournament(sessionId);
     if (!tournament) {
       return new Response(JSON.stringify({ error: "No active tournament found" }), {
         status: 404,
@@ -34,7 +34,7 @@ export async function POST(
     }
 
     // Get submitted songs
-    const songs = getSongs(tournament.id, 0);
+    const songs = await getSongs(tournament.id, 0);
 
     if (songs.length < 2) {
       return new Response(
@@ -50,15 +50,17 @@ export async function POST(
     initializeTournament(tournament.id);
 
     // Update tournament status
-    updateTournament(tournament.id, {
+    await updateTournament(tournament.id, {
       status: "tournament",
     });
 
     // Broadcast updated game state to all players
-    const updatedTournament = getActiveTournament(sessionId);
+    const updatedTournament = await getActiveTournament(sessionId);
     if (updatedTournament) {
-      const players = getPlayers(sessionId);
-      const matches = getMatches(tournament.id, 0);
+      const [players, matches] = await Promise.all([
+        getPlayers(sessionId),
+        getMatches(tournament.id, 0),
+      ]);
 
       sseManager.broadcast(sessionId, {
         type: "game_state",

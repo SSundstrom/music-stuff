@@ -21,7 +21,7 @@ export async function GET(
   ensureEventHandlersInitialized();
 
   // Verify session exists
-  const session = getSession(sessionId);
+  const session = await getSession(sessionId);
   if (!session) {
     return new Response(JSON.stringify({ error: "Session not found" }), {
       status: 404,
@@ -34,13 +34,15 @@ export async function GET(
   let controller: ReadableStreamDefaultController<Uint8Array> | null = null;
 
   const stream = new ReadableStream({
-    start(ctrl) {
+    async start(ctrl) {
       controller = ctrl;
       // Send initial game state
-      const tournament = getActiveTournament(sessionId);
-      const players = getPlayers(sessionId);
-      const songs = tournament ? getSongs(tournament.id, tournament.current_round) : [];
-      const matches = tournament ? getMatches(tournament.id, tournament.current_round) : [];
+      const tournament = await getActiveTournament(sessionId);
+      const [players, songs, matches] = await Promise.all([
+        getPlayers(sessionId),
+        tournament ? getSongs(tournament.id, tournament.current_round) : Promise.resolve([]),
+        tournament ? getMatches(tournament.id, tournament.current_round) : Promise.resolve([]),
+      ]);
 
       const initialState = {
         type: "game_state",

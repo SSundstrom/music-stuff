@@ -11,7 +11,7 @@ export async function POST(
     const body = await request.json();
     const validated = SubmitCategoryRequestSchema.parse(body);
 
-    const session = getSession(sessionId);
+    const session = await getSession(sessionId);
     if (!session) {
       return new Response(JSON.stringify({ error: "Session not found" }), {
         status: 404,
@@ -20,7 +20,7 @@ export async function POST(
     }
 
     // Get current picker
-    const players = getPlayers(sessionId);
+    const players = await getPlayers(sessionId);
     const currentPickerIndex = 0; // For now, start with first player
     const currentPicker = players[currentPickerIndex];
 
@@ -32,10 +32,10 @@ export async function POST(
     }
 
     // Create a new tournament with this category
-    const tournament = createTournament(sessionId, validated.category);
+    const tournament = await createTournament(sessionId, validated.category);
 
     // Move tournament to song submission phase
-    updateTournament(tournament.id, {
+    await updateTournament(tournament.id, {
       status: "song_submission",
       current_picker_index: currentPickerIndex,
     });
@@ -46,8 +46,10 @@ export async function POST(
       status: "song_submission" as const,
       current_picker_index: currentPickerIndex,
     };
-    const songs = getSongs(tournament.id, updatedTournament.current_round);
-    const matches = getMatches(tournament.id, updatedTournament.current_round);
+    const [songs, matches] = await Promise.all([
+      getSongs(tournament.id, updatedTournament.current_round),
+      getMatches(tournament.id, updatedTournament.current_round),
+    ]);
 
     sseManager.broadcast(sessionId, {
       type: "category_announced",

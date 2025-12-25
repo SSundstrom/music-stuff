@@ -15,7 +15,7 @@ export async function PATCH(
       });
     }
 
-    updateSession(sessionId, body);
+    await updateSession(sessionId, body);
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,

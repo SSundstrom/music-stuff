@@ -42,7 +42,7 @@ export async function POST(
       );
     }
 
-    const gameSession = getSession(sessionId);
+    const gameSession = await getSession(sessionId);
     if (!gameSession) {
       return new Response(JSON.stringify({ error: "Session not found" }), {
         status: 404,
@@ -80,7 +80,7 @@ export async function POST(
 
       // Clear currently playing song
       if (body.match_id) {
-        updateMatch(body.match_id, { currently_playing_song_id: null });
+        await updateMatch(body.match_id, { currently_playing_song_id: null });
         sseManager.broadcast(sessionId, {
           type: "playback_stopped",
           data: { match_id: body.match_id },
@@ -100,7 +100,7 @@ export async function POST(
     }
 
     if (body.action === "play") {
-      const match = getMatch(body.match_id || "");
+      const match = await getMatch(body.match_id || "");
       if (!match) {
         return new Response(JSON.stringify({ error: "Match not found" }), {
           status: 404,
@@ -115,7 +115,7 @@ export async function POST(
         });
       }
 
-      const song = getSong(songId);
+      const song = await getSong(songId);
       if (!song) {
         return new Response(JSON.stringify({ error: "Song not found" }), {
           status: 404,
@@ -132,7 +132,7 @@ export async function POST(
       );
 
       // Update match to track currently playing song
-      updateMatch(body.match_id || "", { currently_playing_song_id: songId });
+      await updateMatch(body.match_id || "", { currently_playing_song_id: songId });
 
       // Broadcast playback started event
       sseManager.broadcast(sessionId, {
@@ -145,7 +145,7 @@ export async function POST(
         },
       } satisfies SSEMessage);
 
-      const tournament = getActiveTournament(sessionId);
+      const tournament = await getActiveTournament(sessionId);
       if (!tournament) {
         return new Response(JSON.stringify({ error: "No active tournament found" }), {
           status: 404,

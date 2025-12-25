@@ -26,35 +26,35 @@ function successResponse(data: unknown, status: number = 200): Response {
   });
 }
 
-function validateSession(sessionId: string): Session | Response {
-  const session = getSession(sessionId);
+async function validateSession(sessionId: string): Promise<Session | Response> {
+  const session = await getSession(sessionId);
   if (!session) {
     return errorResponse("Session not found", 404);
   }
   return session;
 }
 
-function validatePlayer(
+async function validatePlayer(
   playerId: string | null,
   sessionId: string,
-): ReturnType<typeof getPlayer> | Response {
+): Promise<ReturnType<typeof getPlayer> | Response> {
   if (!playerId) {
     return errorResponse("Player ID required", 401);
   }
 
-  const player = getPlayer(playerId);
+  const player = await getPlayer(playerId);
   if (!player || player.session_id !== sessionId) {
     return errorResponse("Player not in this session", 403);
   }
   return player;
 }
 
-function validateMatch(
+async function validateMatch(
   matchId: string,
   tournamentId: string,
   songId: string,
-): ReturnType<typeof getMatch> | Response {
-  const match = getMatch(matchId);
+): Promise<ReturnType<typeof getMatch> | Response> {
+  const match = await getMatch(matchId);
   if (!match || match.tournament_id !== tournamentId) {
     return errorResponse("Match not found", 404);
   }
@@ -66,24 +66,30 @@ function validateMatch(
   return match;
 }
 
-function broadcastMatchVotes(sessionId: string, matchId: string, tournamentId: string): void {
-  const match = getMatch(matchId);
+async function broadcastMatchVotes(sessionId: string, matchId: string, tournamentId: string): Promise<void> {
+  const match = await getMatch(matchId);
   if (!match) return;
 
-  const session = getSession(sessionId);
+  const session = await getSession(sessionId);
   if (!session) return;
 
-  const tournament = getActiveTournament(sessionId);
+  const tournament = await getActiveTournament(sessionId);
   if (!tournament) return;
+
+  const [players, songs, matches] = await Promise.all([
+    getPlayers(sessionId),
+    getSongs(tournamentId, 0),
+    getMatches(tournamentId, 0),
+  ]);
 
   sseManager.broadcast(sessionId, {
     type: "game_state",
     data: {
       session,
       tournament,
-      players: getPlayers(sessionId),
-      songs: getSongs(tournamentId, 0),
-      matches: getMatches(tournamentId, 0),
+      players,
+      songs,
+      matches,
     },
   } satisfies SSEMessage);
 }
@@ -98,22 +104,22 @@ export async function POST(
     const validated = VoteRequestSchema.parse(body);
 
     // Validate session
-    const sessionResult = validateSession(sessionId);
+    const sessionResult = await validateSession(sessionId);
     if (sessionResult instanceof Response) return sessionResult;
 
     // Get active tournament
-    const tournament = getActiveTournament(sessionId);
+    const tournament = await getActiveTournament(sessionId);
     if (!tournament) {
       return errorResponse("No active tournament found", 404);
     }
 
     // Validate player
     const playerId = request.headers.get("X-Player-ID");
-    const playerResult = validatePlayer(playerId, sessionId);
+    const playerResult = await validatePlayer(playerId, sessionId);
     if (playerResult instanceof Response) return playerResult;
 
     // Validate match and song
-    const matchResult = validateMatch(
+    const matchResult = await validateMatch(
       validated.match_id,
       tournament.id,
       validated.song_id,
@@ -121,10 +127,10 @@ export async function POST(
     if (matchResult instanceof Response) return matchResult;
 
     // Record vote
-    addVote(validated.match_id, playerId!, validated.song_id);
+    await addVote(validated.match_id, playerId!, validated.song_id);
 
     // Broadcast updated vote counts to all clients
-    broadcastMatchVotes(sessionId, validated.match_id, tournament.id);
+    await broadcastMatchVotes(sessionId, validated.match_id, tournament.id);
 
     // Emit vote:cast event for async processing
     // Event handlers will determine if the match/round/game is complete

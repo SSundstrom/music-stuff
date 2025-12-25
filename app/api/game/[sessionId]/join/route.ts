@@ -16,7 +16,7 @@ export async function POST(
     });
 
     // Check if session exists
-    const session = getSession(validated.session_id);
+    const session = await getSession(validated.session_id);
     if (!session) {
       return new Response(JSON.stringify({ error: "Session not found" }), {
         status: 404,
@@ -32,7 +32,7 @@ export async function POST(
     const isOwner = authSession?.user?.id === session.owner_id;
 
     // Add player to session
-    const player = addPlayer(validated.session_id, validated.player_name, isOwner);
+    const player = await addPlayer(validated.session_id, validated.player_name, isOwner);
 
     // Broadcast player_joined message to all players in the session
     sseManager.broadcast(validated.session_id, {

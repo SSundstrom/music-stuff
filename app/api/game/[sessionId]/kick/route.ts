@@ -18,7 +18,7 @@ export async function DELETE(
       });
     }
 
-    const session = getSession(sessionId);
+    const session = await getSession(sessionId);
     if (!session) {
       return new Response(JSON.stringify({ error: "Session not found" }), {
         status: 404,
@@ -37,7 +37,7 @@ export async function DELETE(
       });
     }
 
-    const player = getPlayer(playerId);
+    const player = await getPlayer(playerId);
     if (!player || player.session_id !== sessionId) {
       return new Response(JSON.stringify({ error: "Player not found" }), {
         status: 404,
@@ -45,7 +45,7 @@ export async function DELETE(
       });
     }
 
-    deletePlayer(playerId);
+    await deletePlayer(playerId);
 
     // Broadcast player_left message to all players
     sseManager.broadcast(sessionId, {
