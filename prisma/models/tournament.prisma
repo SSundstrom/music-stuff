@@ -2,3 +2,125 @@ enum SessionStatus {
   active
   archived
 }
+
+// Container for multiple tournaments
+model GameSession {
+  id        String        @id
+  ownerId   String        @map("owner_id")
+  status    SessionStatus @default(active)
+  createdAt Int           @map("created_at")
+
+  tournaments Tournament[]
+  players     Player[]
+
+  @@index([ownerId], map: "idx_sessions_owner")
+}
+
+enum TournamentStatus {
+  waiting
+  category_selection
+  song_submission
+  tournament
+  finished
+}
+
+// Individual category tournaments within a session
+model Tournament {
+  id                 String           @id
+  sessionId          String           @map("session_id")
+  category           String
+  status             TournamentStatus @default(waiting)
+  currentRound       Int              @default(1) @map("current_round")
+  currentPickerIndex Int              @default(0) @map("current_picker_index")
+  winningSongId      String?          @map("winning_song_id")
+  eliminatedSongIds  String           @default("[]") @map("eliminated_song_ids") // JSON array stored as string
+  createdAt          Int              @map("created_at")
+
+  session GameSession       @relation(fields: [sessionId], references: [id])
+  songs   Song[]
+  matches TournamentMatch[]
+
+  @@index([sessionId], map: "idx_tournaments_session")
+}
+
+// Players join a session, participate in all tournaments
+model Player {
+  id              String  @id
+  sessionId       String  @map("session_id")
+  name            String
+  spotifyDeviceId String? @map("spotify_device_id")
+  isOwner         Int     @default(0) @map("is_owner")
+  joinOrder       Int     @map("join_order")
+  createdAt       Int     @map("created_at")
+
+  session GameSession @relation(fields: [sessionId], references: [id])
+  songs   Song[]
+  votes   Vote[]
+
+  @@index([sessionId], map: "idx_players_session")
+}
+
+// Songs are submitted per tournament
+model Song {
+  id           String  @id
+  tournamentId String  @map("tournament_id")
+  roundNumber  Int     @map("round_number")
+  spotifyId    String  @map("spotify_id")
+  playerId     String  @map("player_id")
+  startTime    Int     @map("start_time")
+  songName     String  @map("song_name")
+  artistName   String  @map("artist_name")
+  imageUrl     String? @map("image_url")
+  createdAt    Int     @map("created_at")
+
+  tournament     Tournament        @relation(fields: [tournamentId], references: [id])
+  player         Player            @relation(fields: [playerId], references: [id])
+  matchesAsA     TournamentMatch[] @relation("songA")
+  matchesAsB     TournamentMatch[] @relation("songB")
+  votes          Vote[]
+  matchesPlaying TournamentMatch[] @relation("currentlyPlaying")
+
+  @@index([tournamentId], map: "idx_songs_tournament")
+  @@index([tournamentId, roundNumber], map: "idx_songs_round")
+}
+
+// Matches are per tournament
+model TournamentMatch {
+  id                     String  @id
+  tournamentId           String  @map("tournament_id")
+  roundNumber            Int     @map("round_number")
+  matchNumber            Int     @map("match_number")
+  songAId                String? @map("song_a_id")
+  songBId                String? @map("song_b_id")
+  winnerId               String? @map("winner_id")
+  status                 String  @default("pending")
+  votesA                 Int     @default(0) @map("votes_a")
+  votesB                 Int     @default(0) @map("votes_b")
+  currentlyPlayingSongId String? @map("currently_playing_song_id")
+  createdAt              Int     @map("created_at")
+
+  tournament       Tournament @relation(fields: [tournamentId], references: [id])
+  songA            Song?      @relation("songA", fields: [songAId], references: [id])
+  songB            Song?      @relation("songB", fields: [songBId], references: [id])
+  currentlyPlaying Song?      @relation("currentlyPlaying", fields: [currentlyPlayingSongId], references: [id])
+  votes            Vote[]
+
+  @@index([tournamentId], map: "idx_matches_tournament")
+  @@index([tournamentId, roundNumber], map: "idx_matches_round")
+}
+
+// Votes table
+model Vote {
+  id        String @id
+  matchId   String @map("match_id")
+  playerId  String @map("player_id")
+  songId    String @map("song_id")
+  createdAt Int    @map("created_at")
+
+  match  TournamentMatch @relation(fields: [matchId], references: [id])
+  player Player          @relation(fields: [playerId], references: [id])
+  song   Song            @relation(fields: [songId], references: [id])
+
+  @@unique([matchId, playerId], map: "votes_match_id_player_id_key")
+  @@index([matchId], map: "idx_votes_match")
+}

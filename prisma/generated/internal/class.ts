@@ -20,7 +20,7 @@ const config: runtime.GetPrismaClientConfig = {
   "clientVersion": "7.2.0",
   "engineVersion": "0c8ef2ce45c83248ab3df073180d5eda9e8be7a3",
   "activeProvider": "sqlite",
-  "inlineSchema": "enum SessionStatus {\n  active\n  archived\n}\n\ngenerator client {\n  provider = \"prisma-client\"\n  output   = \"./generated\"\n}\n\ndatasource db {\n  provider = \"sqlite\"\n}\n",
+  "inlineSchema": "model User {\n  id            String    @id\n  name          String\n  email         String\n  emailVerified Boolean   @default(false)\n  image         String?\n  createdAt     DateTime  @default(now())\n  updatedAt     DateTime  @updatedAt\n  sessions      Session[]\n  accounts      Account[]\n\n  @@unique([email])\n  @@map(\"user\")\n}\n\nmodel Session {\n  id        String   @id\n  expiresAt DateTime\n  token     String\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n  ipAddress String?\n  userAgent String?\n  userId    String\n  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)\n\n  @@unique([token])\n  @@index([userId])\n  @@map(\"session\")\n}\n\nmodel Account {\n  id                    String    @id\n  accountId             String\n  providerId            String\n  userId                String\n  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)\n  accessToken           String?\n  refreshToken          String?\n  idToken               String?\n  accessTokenExpiresAt  DateTime?\n  refreshTokenExpiresAt DateTime?\n  scope                 String?\n  password              String?\n  createdAt             DateTime  @default(now())\n  updatedAt             DateTime  @updatedAt\n\n  @@index([userId])\n  @@map(\"account\")\n}\n\nmodel Verification {\n  id         String   @id\n  identifier String\n  value      String\n  expiresAt  DateTime\n  createdAt  DateTime @default(now())\n  updatedAt  DateTime @updatedAt\n\n  @@index([identifier])\n  @@map(\"verification\")\n}\n\nenum SessionStatus {\n  active\n  archived\n}\n\n// Container for multiple tournaments\nmodel GameSession {\n  id        String        @id\n  ownerId   String        @map(\"owner_id\")\n  status    SessionStatus @default(active)\n  createdAt Int           @map(\"created_at\")\n\n  tournaments Tournament[]\n  players     Player[]\n\n  @@index([ownerId], map: \"idx_sessions_owner\")\n  @@map(\"sessions\")\n}\n\nenum TournamentStatus {\n  waiting\n  category_selection\n  song_submission\n  tournament\n  finished\n}\n\n// Individual category tournaments within a session\nmodel Tournament {\n  id                 String           @id\n  sessionId          String           @map(\"session_id\")\n  category           String\n  status             TournamentStatus @default(waiting)\n  currentRound       Int              @default(1) @map(\"current_round\")\n  currentPickerIndex Int              @default(0) @map(\"current_picker_index\")\n  winningSongId      String?          @map(\"winning_song_id\")\n  eliminatedSongIds  String           @default(\"[]\") @map(\"eliminated_song_ids\") // JSON array stored as string\n  createdAt          Int              @map(\"created_at\")\n\n  session GameSession       @relation(fields: [sessionId], references: [id])\n  songs   Song[]\n  matches TournamentMatch[]\n\n  @@index([sessionId], map: \"idx_tournaments_session\")\n  @@map(\"tournaments\")\n}\n\n// Players join a session, participate in all tournaments\nmodel Player {\n  id              String  @id\n  sessionId       String  @map(\"session_id\")\n  name            String\n  spotifyDeviceId String? @map(\"spotify_device_id\")\n  isOwner         Int     @default(0) @map(\"is_owner\")\n  joinOrder       Int     @map(\"join_order\")\n  createdAt       Int     @map(\"created_at\")\n\n  session GameSession @relation(fields: [sessionId], references: [id])\n  songs   Song[]\n  votes   Vote[]\n\n  @@index([sessionId], map: \"idx_players_session\")\n  @@map(\"players\")\n}\n\n// Songs are submitted per tournament\nmodel Song {\n  id           String  @id\n  tournamentId String  @map(\"tournament_id\")\n  roundNumber  Int     @map(\"round_number\")\n  spotifyId    String  @map(\"spotify_id\")\n  playerId     String  @map(\"player_id\")\n  startTime    Int     @map(\"start_time\")\n  songName     String  @map(\"song_name\")\n  artistName   String  @map(\"artist_name\")\n  imageUrl     String? @map(\"image_url\")\n  createdAt    Int     @map(\"created_at\")\n\n  tournament     Tournament        @relation(fields: [tournamentId], references: [id])\n  player         Player            @relation(fields: [playerId], references: [id])\n  matchesAsA     TournamentMatch[] @relation(\"songA\")\n  matchesAsB     TournamentMatch[] @relation(\"songB\")\n  votes          Vote[]\n  matchesPlaying TournamentMatch[] @relation(\"currentlyPlaying\")\n\n  @@index([tournamentId], map: \"idx_songs_tournament\")\n  @@index([tournamentId, roundNumber], map: \"idx_songs_round\")\n  @@map(\"songs\")\n}\n\n// Matches are per tournament\nmodel TournamentMatch {\n  id                     String  @id\n  tournamentId           String  @map(\"tournament_id\")\n  roundNumber            Int     @map(\"round_number\")\n  matchNumber            Int     @map(\"match_number\")\n  songAId                String? @map(\"song_a_id\")\n  songBId                String? @map(\"song_b_id\")\n  winnerId               String? @map(\"winner_id\")\n  status                 String  @default(\"pending\")\n  votesA                 Int     @default(0) @map(\"votes_a\")\n  votesB                 Int     @default(0) @map(\"votes_b\")\n  currentlyPlayingSongId String? @map(\"currently_playing_song_id\")\n  createdAt              Int     @map(\"created_at\")\n\n  tournament       Tournament @relation(fields: [tournamentId], references: [id])\n  songA            Song?      @relation(\"songA\", fields: [songAId], references: [id])\n  songB            Song?      @relation(\"songB\", fields: [songBId], references: [id])\n  currentlyPlaying Song?      @relation(\"currentlyPlaying\", fields: [currentlyPlayingSongId], references: [id])\n  votes            Vote[]\n\n  @@index([tournamentId], map: \"idx_matches_tournament\")\n  @@index([tournamentId, roundNumber], map: \"idx_matches_round\")\n  @@map(\"tournament_matches\")\n}\n\n// Votes table\nmodel Vote {\n  id        String @id\n  matchId   String @map(\"match_id\")\n  playerId  String @map(\"player_id\")\n  songId    String @map(\"song_id\")\n  createdAt Int    @map(\"created_at\")\n\n  match  TournamentMatch @relation(fields: [matchId], references: [id])\n  player Player          @relation(fields: [playerId], references: [id])\n  song   Song            @relation(fields: [songId], references: [id])\n\n  @@unique([matchId, playerId], map: \"votes_match_id_player_id_key\")\n  @@index([matchId], map: \"idx_votes_match\")\n  @@map(\"votes\")\n}\n\ngenerator client {\n  provider = \"prisma-client\"\n  output   = \"./generated\"\n}\n\ndatasource db {\n  provider = \"sqlite\"\n}\n",
   "runtimeDataModel": {
     "models": {},
     "enums": {},
@@ -28,7 +28,7 @@ const config: runtime.GetPrismaClientConfig = {
   }
 }
 
-config.runtimeDataModel = JSON.parse("{\"models\":{},\"enums\":{},\"types\":{}}")
+config.runtimeDataModel = JSON.parse("{\"models\":{\"User\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"email\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"emailVerified\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"image\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"sessions\",\"kind\":\"object\",\"type\":\"Session\",\"relationName\":\"SessionToUser\"},{\"name\":\"accounts\",\"kind\":\"object\",\"type\":\"Account\",\"relationName\":\"AccountToUser\"}],\"dbName\":\"user\"},\"Session\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"expiresAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"token\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"ipAddress\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"userAgent\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"SessionToUser\"}],\"dbName\":\"session\"},\"Account\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"accountId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"providerId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"AccountToUser\"},{\"name\":\"accessToken\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"refreshToken\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"idToken\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"accessTokenExpiresAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"refreshTokenExpiresAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"scope\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"password\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":\"account\"},\"Verification\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"identifier\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"value\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"expiresAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":\"verification\"},\"GameSession\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"ownerId\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"owner_id\"},{\"name\":\"status\",\"kind\":\"enum\",\"type\":\"SessionStatus\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"Int\",\"dbName\":\"created_at\"},{\"name\":\"tournaments\",\"kind\":\"object\",\"type\":\"Tournament\",\"relationName\":\"GameSessionToTournament\"},{\"name\":\"players\",\"kind\":\"object\",\"type\":\"Player\",\"relationName\":\"GameSessionToPlayer\"}],\"dbName\":\"sessions\"},\"Tournament\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"sessionId\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"session_id\"},{\"name\":\"category\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"status\",\"kind\":\"enum\",\"type\":\"TournamentStatus\"},{\"name\":\"currentRound\",\"kind\":\"scalar\",\"type\":\"Int\",\"dbName\":\"current_round\"},{\"name\":\"currentPickerIndex\",\"kind\":\"scalar\",\"type\":\"Int\",\"dbName\":\"current_picker_index\"},{\"name\":\"winningSongId\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"winning_song_id\"},{\"name\":\"eliminatedSongIds\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"eliminated_song_ids\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"Int\",\"dbName\":\"created_at\"},{\"name\":\"session\",\"kind\":\"object\",\"type\":\"GameSession\",\"relationName\":\"GameSessionToTournament\"},{\"name\":\"songs\",\"kind\":\"object\",\"type\":\"Song\",\"relationName\":\"SongToTournament\"},{\"name\":\"matches\",\"kind\":\"object\",\"type\":\"TournamentMatch\",\"relationName\":\"TournamentToTournamentMatch\"}],\"dbName\":\"tournaments\"},\"Player\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"sessionId\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"session_id\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"spotifyDeviceId\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"spotify_device_id\"},{\"name\":\"isOwner\",\"kind\":\"scalar\",\"type\":\"Int\",\"dbName\":\"is_owner\"},{\"name\":\"joinOrder\",\"kind\":\"scalar\",\"type\":\"Int\",\"dbName\":\"join_order\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"Int\",\"dbName\":\"created_at\"},{\"name\":\"session\",\"kind\":\"object\",\"type\":\"GameSession\",\"relationName\":\"GameSessionToPlayer\"},{\"name\":\"songs\",\"kind\":\"object\",\"type\":\"Song\",\"relationName\":\"PlayerToSong\"},{\"name\":\"votes\",\"kind\":\"object\",\"type\":\"Vote\",\"relationName\":\"PlayerToVote\"}],\"dbName\":\"players\"},\"Song\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"tournamentId\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"tournament_id\"},{\"name\":\"roundNumber\",\"kind\":\"scalar\",\"type\":\"Int\",\"dbName\":\"round_number\"},{\"name\":\"spotifyId\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"spotify_id\"},{\"name\":\"playerId\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"player_id\"},{\"name\":\"startTime\",\"kind\":\"scalar\",\"type\":\"Int\",\"dbName\":\"start_time\"},{\"name\":\"songName\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"song_name\"},{\"name\":\"artistName\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"artist_name\"},{\"name\":\"imageUrl\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"image_url\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"Int\",\"dbName\":\"created_at\"},{\"name\":\"tournament\",\"kind\":\"object\",\"type\":\"Tournament\",\"relationName\":\"SongToTournament\"},{\"name\":\"player\",\"kind\":\"object\",\"type\":\"Player\",\"relationName\":\"PlayerToSong\"},{\"name\":\"matchesAsA\",\"kind\":\"object\",\"type\":\"TournamentMatch\",\"relationName\":\"songA\"},{\"name\":\"matchesAsB\",\"kind\":\"object\",\"type\":\"TournamentMatch\",\"relationName\":\"songB\"},{\"name\":\"votes\",\"kind\":\"object\",\"type\":\"Vote\",\"relationName\":\"SongToVote\"},{\"name\":\"matchesPlaying\",\"kind\":\"object\",\"type\":\"TournamentMatch\",\"relationName\":\"currentlyPlaying\"}],\"dbName\":\"songs\"},\"TournamentMatch\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"tournamentId\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"tournament_id\"},{\"name\":\"roundNumber\",\"kind\":\"scalar\",\"type\":\"Int\",\"dbName\":\"round_number\"},{\"name\":\"matchNumber\",\"kind\":\"scalar\",\"type\":\"Int\",\"dbName\":\"match_number\"},{\"name\":\"songAId\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"song_a_id\"},{\"name\":\"songBId\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"song_b_id\"},{\"name\":\"winnerId\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"winner_id\"},{\"name\":\"status\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"votesA\",\"kind\":\"scalar\",\"type\":\"Int\",\"dbName\":\"votes_a\"},{\"name\":\"votesB\",\"kind\":\"scalar\",\"type\":\"Int\",\"dbName\":\"votes_b\"},{\"name\":\"currentlyPlayingSongId\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"currently_playing_song_id\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"Int\",\"dbName\":\"created_at\"},{\"name\":\"tournament\",\"kind\":\"object\",\"type\":\"Tournament\",\"relationName\":\"TournamentToTournamentMatch\"},{\"name\":\"songA\",\"kind\":\"object\",\"type\":\"Song\",\"relationName\":\"songA\"},{\"name\":\"songB\",\"kind\":\"object\",\"type\":\"Song\",\"relationName\":\"songB\"},{\"name\":\"currentlyPlaying\",\"kind\":\"object\",\"type\":\"Song\",\"relationName\":\"currentlyPlaying\"},{\"name\":\"votes\",\"kind\":\"object\",\"type\":\"Vote\",\"relationName\":\"TournamentMatchToVote\"}],\"dbName\":\"tournament_matches\"},\"Vote\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"matchId\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"match_id\"},{\"name\":\"playerId\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"player_id\"},{\"name\":\"songId\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"song_id\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"Int\",\"dbName\":\"created_at\"},{\"name\":\"match\",\"kind\":\"object\",\"type\":\"TournamentMatch\",\"relationName\":\"TournamentMatchToVote\"},{\"name\":\"player\",\"kind\":\"object\",\"type\":\"Player\",\"relationName\":\"PlayerToVote\"},{\"name\":\"song\",\"kind\":\"object\",\"type\":\"Song\",\"relationName\":\"SongToVote\"}],\"dbName\":\"votes\"}},\"enums\":{},\"types\":{}}")
 
 async function decodeBase64AsWasm(wasmBase64: string): Promise<WebAssembly.Module> {
   const { Buffer } = await import('node:buffer')
@@ -174,7 +174,105 @@ export interface PrismaClient<
     extArgs: ExtArgs
   }>>
 
-    
+      /**
+   * `prisma.user`: Exposes CRUD operations for the **User** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Users
+    * const users = await prisma.user.findMany()
+    * ```
+    */
+  get user(): Prisma.UserDelegate<ExtArgs, { omit: OmitOpts }>;
+
+  /**
+   * `prisma.session`: Exposes CRUD operations for the **Session** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Sessions
+    * const sessions = await prisma.session.findMany()
+    * ```
+    */
+  get session(): Prisma.SessionDelegate<ExtArgs, { omit: OmitOpts }>;
+
+  /**
+   * `prisma.account`: Exposes CRUD operations for the **Account** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Accounts
+    * const accounts = await prisma.account.findMany()
+    * ```
+    */
+  get account(): Prisma.AccountDelegate<ExtArgs, { omit: OmitOpts }>;
+
+  /**
+   * `prisma.verification`: Exposes CRUD operations for the **Verification** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Verifications
+    * const verifications = await prisma.verification.findMany()
+    * ```
+    */
+  get verification(): Prisma.VerificationDelegate<ExtArgs, { omit: OmitOpts }>;
+
+  /**
+   * `prisma.gameSession`: Exposes CRUD operations for the **GameSession** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more GameSessions
+    * const gameSessions = await prisma.gameSession.findMany()
+    * ```
+    */
+  get gameSession(): Prisma.GameSessionDelegate<ExtArgs, { omit: OmitOpts }>;
+
+  /**
+   * `prisma.tournament`: Exposes CRUD operations for the **Tournament** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Tournaments
+    * const tournaments = await prisma.tournament.findMany()
+    * ```
+    */
+  get tournament(): Prisma.TournamentDelegate<ExtArgs, { omit: OmitOpts }>;
+
+  /**
+   * `prisma.player`: Exposes CRUD operations for the **Player** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Players
+    * const players = await prisma.player.findMany()
+    * ```
+    */
+  get player(): Prisma.PlayerDelegate<ExtArgs, { omit: OmitOpts }>;
+
+  /**
+   * `prisma.song`: Exposes CRUD operations for the **Song** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Songs
+    * const songs = await prisma.song.findMany()
+    * ```
+    */
+  get song(): Prisma.SongDelegate<ExtArgs, { omit: OmitOpts }>;
+
+  /**
+   * `prisma.tournamentMatch`: Exposes CRUD operations for the **TournamentMatch** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more TournamentMatches
+    * const tournamentMatches = await prisma.tournamentMatch.findMany()
+    * ```
+    */
+  get tournamentMatch(): Prisma.TournamentMatchDelegate<ExtArgs, { omit: OmitOpts }>;
+
+  /**
+   * `prisma.vote`: Exposes CRUD operations for the **Vote** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Votes
+    * const votes = await prisma.vote.findMany()
+    * ```
+    */
+  get vote(): Prisma.VoteDelegate<ExtArgs, { omit: OmitOpts }>;
 }
 
 export function getPrismaClientClass(): PrismaClientConstructor {

@@ -15,3 +15,14 @@ export const SessionStatus = {
 } as const
 
 export type SessionStatus = (typeof SessionStatus)[keyof typeof SessionStatus]
+
+
+export const TournamentStatus = {
+  waiting: 'waiting',
+  category_selection: 'category_selection',
+  song_submission: 'song_submission',
+  tournament: 'tournament',
+  finished: 'finished'
+} as const
+
+export type TournamentStatus = (typeof TournamentStatus)[keyof typeof TournamentStatus]
