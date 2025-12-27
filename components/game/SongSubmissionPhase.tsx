@@ -38,11 +38,11 @@ export default function SongSubmissionPhase({
           "X-Player-ID": currentPlayerId || "",
         },
         body: JSON.stringify({
-          spotify_id: song.id,
-          song_name: song.name,
-          artist_name: song.artists[0]?.name || "Unknown",
-          start_time: song.startTimeS,
-          image_url: song.images[0]?.url || null,
+          spotifyId: song.id,
+          songName: song.name,
+          artistName: song.artists[0]?.name || "Unknown",
+          startTime: song.startTimeS,
+          imageUrl: song.images[0]?.url || null,
         } satisfies SubmitSongRequest),
       });
 

@@ -1,10 +1,17 @@
-import { getSession, getActiveTournament, getPlayers, getSongs, getMatches, updateSession } from "@/lib/game-session";
+import {
+  getSession,
+  getActiveTournament,
+  getPlayers,
+  getSongs,
+  getMatches,
+  updateSession,
+} from "@/lib/game-session";
 import { sseManager } from "@/lib/sse-manager";
 import type { SSEMessage } from "@/types/game";
 
 export async function GET(
-  request: Request,
-  { params }: { params: Promise<{ sessionId: string }> }
+  _: Request,
+  { params }: { params: Promise<{ sessionId: string }> },
 ) {
   try {
     const { sessionId } = await params;
@@ -20,8 +27,8 @@ export async function GET(
     const tournament = await getActiveTournament(sessionId);
     const [players, songs, matches] = await Promise.all([
       getPlayers(sessionId),
-      tournament ? getSongs(tournament.id, tournament.current_round) : Promise.resolve([]),
-      tournament ? getMatches(tournament.id, tournament.current_round) : Promise.resolve([]),
+      tournament ? getSongs(tournament.id) : Promise.resolve([]),
+      tournament ? getMatches(tournament.id) : Promise.resolve([]),
     ]);
 
     return new Response(
@@ -35,7 +42,7 @@ export async function GET(
       {
         status: 200,
         headers: { "Content-Type": "application/json" },
-      }
+      },
     );
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
@@ -48,24 +55,30 @@ export async function GET(
 
 export async function PATCH(
   request: Request,
-  { params }: { params: Promise<{ sessionId: string }> }
+  { params }: { params: Promise<{ sessionId: string }> },
 ) {
   try {
     const { sessionId } = await params;
     const body = await request.json();
 
     if ("owner_id" in body) {
-      return new Response(JSON.stringify({ error: "Cannot modify session owner" }), {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({ error: "Cannot modify session owner" }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
     }
 
     if ("status" in body) {
-      return new Response(JSON.stringify({ error: "Cannot modify session status directly" }), {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({ error: "Cannot modify session status directly" }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
     }
 
     await updateSession(sessionId, body);
@@ -76,8 +89,8 @@ export async function PATCH(
       const tournament = await getActiveTournament(sessionId);
       const [players, songs, matches] = await Promise.all([
         getPlayers(sessionId),
-        tournament ? getSongs(tournament.id, tournament.current_round) : Promise.resolve([]),
-        tournament ? getMatches(tournament.id, tournament.current_round) : Promise.resolve([]),
+        tournament ? getSongs(tournament.id) : Promise.resolve([]),
+        tournament ? getMatches(tournament.id) : Promise.resolve([]),
       ]);
 
       sseManager.broadcast(sessionId, {

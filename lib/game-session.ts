@@ -131,7 +131,7 @@ export async function addPlayer(
       id: playerId,
       sessionId: sessionId,
       name,
-      isOwner: isOwner ? 1 : 0,
+      isOwner,
       joinOrder: count,
       createdAt: now,
     },
@@ -142,7 +142,7 @@ export async function addPlayer(
     sessionId: result.sessionId,
     name: result.name,
     spotifyDeviceId: result.spotifyDeviceId,
-    isOwner: result.isOwner === 1,
+    isOwner: result.isOwner,
     joinOrder: result.joinOrder,
     createdAt: result.createdAt,
   };
@@ -159,7 +159,7 @@ export async function getPlayers(sessionId: string): Promise<Player[]> {
     sessionId: result.sessionId,
     name: result.name,
     spotifyDeviceId: result.spotifyDeviceId,
-    isOwner: result.isOwner === 1,
+    isOwner: result.isOwner,
     joinOrder: result.joinOrder,
     createdAt: result.createdAt,
   }));
@@ -176,7 +176,7 @@ export async function getPlayer(playerId: string): Promise<Player | null> {
         sessionId: result.sessionId,
         name: result.name,
         spotifyDeviceId: result.spotifyDeviceId,
-        isOwner: result.isOwner === 1,
+        isOwner: result.isOwner,
         joinOrder: result.joinOrder,
         createdAt: result.createdAt,
       }

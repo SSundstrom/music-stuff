@@ -5,6 +5,7 @@ import {
   type TournamentMatch,
   type Song,
   SSEMessageSchema,
+  VoteRequest,
 } from "@/types/game";
 import { useSpotifyPlayer } from "../SpotifyPlayerProvider";
 
@@ -82,9 +83,9 @@ export default function MatchDisplay({
           "X-Player-ID": playerId,
         },
         body: JSON.stringify({
-          match_id: match.id,
-          song_id: songId,
-        }),
+          matchId: match.id,
+          songId: songId,
+        } satisfies VoteRequest),
       });
 
       if (!response.ok) {
@@ -114,11 +115,11 @@ export default function MatchDisplay({
       const song = songA.id === songId ? songA : songB;
 
       // Use Web Playback SDK to play the song
-      const spotifyId = song.spotify_id || song.id;
+      const spotifyId = song.spotifyId || song.id;
       await play(spotifyId);
 
       // Seek to the start time if specified (convert seconds to milliseconds)
-      const startTimeMs = song.start_time * 1000;
+      const startTimeMs = song.startTime * 1000;
       await new Promise((resolve) => setTimeout(resolve, 100)); // Small delay to ensure playback started
       await seek(startTimeMs);
 
@@ -175,14 +176,14 @@ export default function MatchDisplay({
         {/* Song A */}
         <div
           className={`order-1 rounded-lg border-2 p-6 relative ${
-            match.votes_a > match.votes_b
+            match.votesA > match.votesB
               ? "border-green-500 bg-green-50"
-              : match.currently_playing_song_id === songA.id
+              : match.currentlyPlayingSongId === songA.id
                 ? "border-blue-500 bg-blue-50"
                 : "border-gray-300"
           }`}
         >
-          {match.currently_playing_song_id === songA.id && (
+          {match.currentlyPlayingSongId === songA.id && (
             <div className="absolute top-2 right-2 flex items-center gap-1 rounded-full bg-blue-600 px-3 py-1 text-sm font-semibold text-white">
               <span className="inline-block h-2 w-2 rounded-full bg-white animate-pulse" />
               Now Playing
@@ -216,7 +217,7 @@ export default function MatchDisplay({
 
             {/* Vote Count */}
             <div className="text-center text-base font-semibold text-black">
-              Votes: {match.votes_a}
+              Votes: {match.votesA}
             </div>
           </div>
         </div>
@@ -224,14 +225,14 @@ export default function MatchDisplay({
         {/* Song B */}
         <div
           className={`order-3 md:order-2 rounded-lg border-2 p-6 relative ${
-            match.votes_b > match.votes_a
+            match.votesB > match.votesA
               ? "border-green-500 bg-green-50"
-              : match.currently_playing_song_id === songB.id
+              : match.currentlyPlayingSongId === songB.id
                 ? "border-blue-500 bg-blue-50"
                 : "border-gray-300"
           }`}
         >
-          {match.currently_playing_song_id === songB.id && (
+          {match.currentlyPlayingSongId === songB.id && (
             <div className="absolute top-2 right-2 flex items-center gap-1 rounded-full bg-blue-600 px-3 py-1 text-sm font-semibold text-white">
               <span className="inline-block h-2 w-2 rounded-full bg-white animate-pulse" />
               Now Playing
@@ -264,7 +265,7 @@ export default function MatchDisplay({
 
             {/* Vote Count */}
             <div className="text-center text-base font-semibold text-black">
-              Votes: {match.votes_b}
+              Votes: {match.votesB}
             </div>
           </div>
         </div>

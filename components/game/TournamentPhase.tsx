@@ -59,11 +59,11 @@ export default function TournamentPhase({
     );
   }
 
-  const songA = currentMatch?.song_a_id
-    ? songMap.get(currentMatch.song_a_id)
+  const songA = currentMatch?.songAId
+    ? songMap.get(currentMatch.songAId)
     : null;
-  const songB = currentMatch?.song_b_id
-    ? songMap.get(currentMatch.song_b_id)
+  const songB = currentMatch?.songBId
+    ? songMap.get(currentMatch.songBId)
     : null;
 
   return (
@@ -126,9 +126,9 @@ export default function TournamentPhase({
                   {match.status}
                 </span>
               </div>
-              {match.status === "completed" && match.winner_id && (
+              {match.status === "completed" && match.winnerId && (
                 <p className="mt-1 text-base text-gray-700">
-                  Winner: {songMap.get(match.winner_id)?.song_name}
+                  Winner: {songMap.get(match.winnerId)?.songName}
                 </p>
               )}
             </div>

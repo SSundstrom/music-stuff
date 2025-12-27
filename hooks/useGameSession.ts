@@ -64,7 +64,7 @@ export function useGameSession({ sessionId, playerId }: UseGameSessionOptions) {
           return {
             ...prevState,
             players: prevState.players.filter(
-              (p) => p.id !== message.data.player_id,
+              (p) => p.id !== message.data.playerId,
             ),
           };
 
@@ -88,12 +88,12 @@ export function useGameSession({ sessionId, playerId }: UseGameSessionOptions) {
           return {
             ...prevState,
             matches: prevState.matches.map((m) =>
-              m.id === message.data.match_id
+              m.id === message.data.matchId
                 ? {
                     ...m,
-                    winner_id: message.data.winner_id,
-                    votes_a: message.data.votes_a,
-                    votes_b: message.data.votes_b,
+                    winner_id: message.data.winnerId,
+                    votes_a: message.data.votesA,
+                    votes_b: message.data.votesB,
                     status: "completed" as const,
                   }
                 : m,

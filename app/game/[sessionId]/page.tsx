@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useParams } from "next/navigation";
+import Image from "next/image";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { useGameSession } from "@/hooks/useGameSession";
 import CategoryPhase from "@/components/game/CategoryPhase";
@@ -68,7 +69,7 @@ export default function GamePage() {
         <div className="mb-4 rounded-lg bg-red-500 px-4 py-2 text-white flex items-center gap-2">
           <span className="text-lg">🔌</span>
           <span className="font-semibold">
-            Connection lost - reconnecting...
+            Connection lost - refresh to reconnect...
           </span>
         </div>
       )}
@@ -130,7 +131,6 @@ export default function GamePage() {
                 category={tournament.category || ""}
                 currentPlayerId={currentPlayerId}
                 isOwner={isOwner}
-                // TODO: Uppdateras automatiskt?
                 submittedCount={songs.length}
                 playerCount={players.length}
               />
@@ -139,7 +139,7 @@ export default function GamePage() {
             {tournament.status === "tournament" && (
               <TournamentPhase
                 sessionId={sessionId}
-                roundNumber={tournament.current_round}
+                roundNumber={tournament.currentRound}
                 isOwner={isOwner}
                 currentPlayerId={currentPlayerId}
                 songs={songs}
@@ -150,7 +150,7 @@ export default function GamePage() {
             {tournament.status === "finished" &&
               (() => {
                 const winningSong = songs.find(
-                  (song) => song.id === tournament.winning_song_id,
+                  (song) => song.id === tournament.winningSongId,
                 );
                 return (
                   <div className="rounded-lg bg-white p-8 shadow-lg text-center">
@@ -159,19 +159,19 @@ export default function GamePage() {
                     </h1>
                     {winningSong ? (
                       <div className="space-y-4">
-                        {winningSong.image_url && (
-                          <img
-                            src={winningSong.image_url}
-                            alt={winningSong.song_name}
+                        {winningSong.imageUrl && (
+                          <Image
+                            src={winningSong.imageUrl}
+                            alt={winningSong.songName}
                             className="mx-auto h-48 w-48 rounded-lg object-cover shadow"
                           />
                         )}
                         <div>
                           <p className="text-2xl font-bold text-gray-900">
-                            {winningSong.song_name}
+                            {winningSong.songName}
                           </p>
                           <p className="text-lg text-gray-600">
-                            by {winningSong.artist_name}
+                            by {winningSong.artistName}
                           </p>
                         </div>
                       </div>

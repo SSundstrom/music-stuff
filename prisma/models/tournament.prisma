@@ -30,6 +30,7 @@ model Tournament {
   sessionId          String
   category           String
   status             TournamentStatus @default(waiting)
+  currentRound       Int              @default(0)
   currentPickerIndex Int              @default(0)
   winningSongId      String?
   createdAt          DateTime

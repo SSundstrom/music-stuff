@@ -64,10 +64,9 @@ CREATE TABLE "Tournament" (
     "sessionId" TEXT NOT NULL,
     "category" TEXT NOT NULL,
     "status" TEXT NOT NULL DEFAULT 'waiting',
-    "currentRound" INTEGER NOT NULL DEFAULT 1,
+    "currentRound" INTEGER NOT NULL DEFAULT 0,
     "currentPickerIndex" INTEGER NOT NULL DEFAULT 0,
     "winningSongId" TEXT,
-    "eliminatedSongIds" TEXT NOT NULL DEFAULT '[]',
     "createdAt" DATETIME NOT NULL,
     CONSTRAINT "Tournament_sessionId_fkey" FOREIGN KEY ("sessionId") REFERENCES "GameSession" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
@@ -78,9 +77,9 @@ CREATE TABLE "Player" (
     "sessionId" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "spotifyDeviceId" TEXT,
-    "isOwner" INTEGER NOT NULL DEFAULT 0,
+    "isOwner" BOOLEAN NOT NULL DEFAULT false,
     "joinOrder" INTEGER NOT NULL,
-    "createdAt" INTEGER NOT NULL,
+    "createdAt" DATETIME NOT NULL,
     CONSTRAINT "Player_sessionId_fkey" FOREIGN KEY ("sessionId") REFERENCES "GameSession" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
@@ -88,14 +87,13 @@ CREATE TABLE "Player" (
 CREATE TABLE "Song" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "tournamentId" TEXT NOT NULL,
-    "roundNumber" INTEGER NOT NULL,
     "spotifyId" TEXT NOT NULL,
     "playerId" TEXT NOT NULL,
     "startTime" INTEGER NOT NULL,
     "songName" TEXT NOT NULL,
     "artistName" TEXT NOT NULL,
     "imageUrl" TEXT,
-    "createdAt" INTEGER NOT NULL,
+    "createdAt" DATETIME NOT NULL,
     CONSTRAINT "Song_tournamentId_fkey" FOREIGN KEY ("tournamentId") REFERENCES "Tournament" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT "Song_playerId_fkey" FOREIGN KEY ("playerId") REFERENCES "Player" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
@@ -105,7 +103,6 @@ CREATE TABLE "TournamentMatch" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "tournamentId" TEXT NOT NULL,
     "roundNumber" INTEGER NOT NULL,
-    "matchNumber" INTEGER NOT NULL,
     "songAId" TEXT,
     "songBId" TEXT,
     "winnerId" TEXT,
@@ -113,7 +110,7 @@ CREATE TABLE "TournamentMatch" (
     "votesA" INTEGER NOT NULL DEFAULT 0,
     "votesB" INTEGER NOT NULL DEFAULT 0,
     "currentlyPlayingSongId" TEXT,
-    "createdAt" INTEGER NOT NULL,
+    "createdAt" DATETIME NOT NULL,
     CONSTRAINT "TournamentMatch_tournamentId_fkey" FOREIGN KEY ("tournamentId") REFERENCES "Tournament" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT "TournamentMatch_songAId_fkey" FOREIGN KEY ("songAId") REFERENCES "Song" ("id") ON DELETE SET NULL ON UPDATE CASCADE,
     CONSTRAINT "TournamentMatch_songBId_fkey" FOREIGN KEY ("songBId") REFERENCES "Song" ("id") ON DELETE SET NULL ON UPDATE CASCADE,
@@ -163,7 +160,7 @@ CREATE INDEX "idx_players_session" ON "Player"("sessionId");
 CREATE INDEX "idx_songs_tournament" ON "Song"("tournamentId");
 
 -- CreateIndex
-CREATE INDEX "idx_songs_round" ON "Song"("tournamentId", "roundNumber");
+CREATE UNIQUE INDEX "Song_playerId_tournamentId_key" ON "Song"("playerId", "tournamentId");
 
 -- CreateIndex
 CREATE INDEX "idx_matches_tournament" ON "TournamentMatch"("tournamentId");

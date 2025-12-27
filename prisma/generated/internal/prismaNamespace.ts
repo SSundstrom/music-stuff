@@ -1262,6 +1262,7 @@ export const TournamentScalarFieldEnum = {
   sessionId: 'sessionId',
   category: 'category',
   status: 'status',
+  currentRound: 'currentRound',
   currentPickerIndex: 'currentPickerIndex',
   winningSongId: 'winningSongId',
   createdAt: 'createdAt'

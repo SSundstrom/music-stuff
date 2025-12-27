@@ -121,7 +121,9 @@ export default function LobbyPage() {
       {!isConnected && (
         <div className="mb-4 rounded-lg bg-red-500 px-4 py-2 text-white flex items-center gap-2">
           <span className="text-lg">🔌</span>
-          <span className="font-semibold">Connection lost - reconnecting...</span>
+          <span className="font-semibold">
+            Connection lost - reconnecting...
+          </span>
         </div>
       )}
       <div className="mx-auto max-w-2xl">
@@ -187,7 +189,7 @@ export default function LobbyPage() {
                 >
                   <div>
                     <p className="font-semibold text-black">{player.name}</p>
-                    {player.is_owner && (
+                    {player.isOwner && (
                       <p className="text-sm text-green-600">Owner</p>
                     )}
                   </div>

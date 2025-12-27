@@ -11,11 +11,7 @@ import {
   updateTournament,
   getMatchVoteCount,
 } from "./game-session";
-import {
-  determineMatchWinner,
-  advanceToNextMatch,
-  getNextMatch,
-} from "./tournament";
+import { determineMatchWinner, advanceToNextMatch } from "./tournament";
 import type { MatchEndedMessage, SSEMessage } from "@/types/game";
 
 let initialized = false;
@@ -62,7 +58,7 @@ export function initializeEventHandlers(): void {
       const winnerId = determineMatchWinner(match);
 
       // Update match with winner
-      const updatedMatch = await updateMatch(matchId, {
+      await updateMatch(matchId, {
         winnerId: winnerId,
         status: "completed",
       });
@@ -78,66 +74,24 @@ export function initializeEventHandlers(): void {
       } satisfies MatchEndedMessage);
 
       // Process elimination and check if tournament is over
-      const { finished, winningSongId } = advanceToNextMatch(
-        tournamentId,
-        updatedMatch,
-        tournament,
-      );
+      const result = await advanceToNextMatch(tournamentId);
 
-      if (finished && winningSongId) {
-        // Tournament finished
-        await updateTournament(tournamentId, {
-          status: "finished",
-          winningSongId: winningSongId,
-        });
-        eventBus.emit("game:finished", {
-          sessionId,
+      if (result.finished) {
+        await finishTournament({
           tournamentId,
-          winningSongId,
+          sessionId,
+          winningSongId: result.winningSongId,
         });
-
-        // Broadcast updated game state after tournament is updated
-        const session = await getSession(sessionId);
-        const updatedTournament = await getTournament(tournamentId);
-        if (session && updatedTournament) {
-          const [players, songs, matches] = await Promise.all([
-            getPlayers(sessionId),
-            getSongs(tournamentId, 0),
-            getMatches(tournamentId, 0),
-          ]);
-          sseManager.broadcast(sessionId, {
-            type: "game_state",
-            data: {
-              session,
-              tournament: updatedTournament,
-              players,
-              songs,
-              matches,
-            },
-          } satisfies SSEMessage);
-        }
       } else {
-        // Continue tournament with next match
-        const allSongs = await getSongs(tournamentId, 0);
-
         try {
-          // Creates next match in the tournament
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          const _nextMatch = getNextMatch(
-            tournamentId,
-            allSongs,
-            winnerId,
-            eliminatedIds,
-          );
-
           // Broadcast updated game state
           const session = await getSession(sessionId);
           const updatedTournament = await getTournament(tournamentId);
           if (session && updatedTournament) {
             const [players, songs, matches] = await Promise.all([
               getPlayers(sessionId),
-              getSongs(tournamentId, 0),
-              getMatches(tournamentId, 0),
+              getSongs(tournamentId),
+              getMatches(tournamentId),
             ]);
             sseManager.broadcast(sessionId, {
               type: "game_state",
@@ -169,4 +123,46 @@ export function initializeEventHandlers(): void {
   eventBus.on("game:finished", (data) => {
     console.log(`[game:finished]: ${JSON.stringify(data)}`);
   });
+}
+
+async function finishTournament({
+  tournamentId,
+  winningSongId,
+  sessionId,
+}: {
+  tournamentId: string;
+  sessionId: string;
+  winningSongId: string;
+}) {
+  // Tournament finished
+  await updateTournament(tournamentId, {
+    status: "finished",
+    winningSongId: winningSongId,
+  });
+  eventBus.emit("game:finished", {
+    sessionId,
+    tournamentId,
+    winningSongId,
+  });
+
+  // Broadcast updated game state after tournament is updated
+  const session = await getSession(sessionId);
+  const updatedTournament = await getTournament(tournamentId);
+  if (session && updatedTournament) {
+    const [players, songs, matches] = await Promise.all([
+      getPlayers(sessionId),
+      getSongs(tournamentId),
+      getMatches(tournamentId),
+    ]);
+    sseManager.broadcast(sessionId, {
+      type: "game_state",
+      data: {
+        session,
+        tournament: updatedTournament,
+        players,
+        songs,
+        matches,
+      },
+    } satisfies SSEMessage);
+  }
 }

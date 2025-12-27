@@ -122,16 +122,16 @@ class SSEManager {
     // Listen to match:completed event and broadcast match_ended
     eventBus.on("match:completed", async (data) => {
       const { sessionId, matchId } = data;
-      const match = getMatch(matchId);
+      const match = await getMatch(matchId);
 
       if (match) {
         this.broadcast(sessionId, {
           type: "match_ended",
           data: {
-            match_id: matchId,
-            winner_id: match.winner_id || "",
-            votes_a: match.votes_a,
-            votes_b: match.votes_b,
+            matchId,
+            winnerId: match.winnerId || "",
+            votesA: match.votesA,
+            votesB: match.votesB,
           },
         } satisfies SSEMessage);
       }
@@ -143,7 +143,7 @@ class SSEManager {
       this.broadcast(sessionId, {
         type: "round_complete",
         data: {
-          round_number: roundNumber,
+          roundNumber: roundNumber,
         },
       } satisfies SSEMessage);
     });
@@ -154,7 +154,7 @@ class SSEManager {
       this.broadcast(sessionId, {
         type: "game_winner",
         data: {
-          winning_song_id: winningSongId,
+          winningSongId: winningSongId,
         },
       } satisfies SSEMessage);
     });

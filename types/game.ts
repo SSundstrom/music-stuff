@@ -27,6 +27,7 @@ export const TournamentSchema = z.object({
     "tournament",
     "finished",
   ]),
+  currentRound: z.number().default(0),
   currentPickerIndex: z.number().default(0),
   winningSongId: z.string().nullable().default(null),
   createdAt: dateTimeSchema,

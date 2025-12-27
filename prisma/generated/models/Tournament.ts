@@ -27,10 +27,12 @@ export type AggregateTournament = {
 }
 
 export type TournamentAvgAggregateOutputType = {
+  currentRound: number | null
   currentPickerIndex: number | null
 }
 
 export type TournamentSumAggregateOutputType = {
+  currentRound: number | null
   currentPickerIndex: number | null
 }
 
@@ -39,6 +41,7 @@ export type TournamentMinAggregateOutputType = {
   sessionId: string | null
   category: string | null
   status: $Enums.TournamentStatus | null
+  currentRound: number | null
   currentPickerIndex: number | null
   winningSongId: string | null
   createdAt: Date | null
@@ -49,6 +52,7 @@ export type TournamentMaxAggregateOutputType = {
   sessionId: string | null
   category: string | null
   status: $Enums.TournamentStatus | null
+  currentRound: number | null
   currentPickerIndex: number | null
   winningSongId: string | null
   createdAt: Date | null
@@ -59,6 +63,7 @@ export type TournamentCountAggregateOutputType = {
   sessionId: number
   category: number
   status: number
+  currentRound: number
   currentPickerIndex: number
   winningSongId: number
   createdAt: number
@@ -67,10 +72,12 @@ export type TournamentCountAggregateOutputType = {
 
 
 export type TournamentAvgAggregateInputType = {
+  currentRound?: true
   currentPickerIndex?: true
 }
 
 export type TournamentSumAggregateInputType = {
+  currentRound?: true
   currentPickerIndex?: true
 }
 
@@ -79,6 +86,7 @@ export type TournamentMinAggregateInputType = {
   sessionId?: true
   category?: true
   status?: true
+  currentRound?: true
   currentPickerIndex?: true
   winningSongId?: true
   createdAt?: true
@@ -89,6 +97,7 @@ export type TournamentMaxAggregateInputType = {
   sessionId?: true
   category?: true
   status?: true
+  currentRound?: true
   currentPickerIndex?: true
   winningSongId?: true
   createdAt?: true
@@ -99,6 +108,7 @@ export type TournamentCountAggregateInputType = {
   sessionId?: true
   category?: true
   status?: true
+  currentRound?: true
   currentPickerIndex?: true
   winningSongId?: true
   createdAt?: true
@@ -196,6 +206,7 @@ export type TournamentGroupByOutputType = {
   sessionId: string
   category: string
   status: $Enums.TournamentStatus
+  currentRound: number
   currentPickerIndex: number
   winningSongId: string | null
   createdAt: Date
@@ -229,6 +240,7 @@ export type TournamentWhereInput = {
   sessionId?: Prisma.StringFilter<"Tournament"> | string
   category?: Prisma.StringFilter<"Tournament"> | string
   status?: Prisma.EnumTournamentStatusFilter<"Tournament"> | $Enums.TournamentStatus
+  currentRound?: Prisma.IntFilter<"Tournament"> | number
   currentPickerIndex?: Prisma.IntFilter<"Tournament"> | number
   winningSongId?: Prisma.StringNullableFilter<"Tournament"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Tournament"> | Date | string
@@ -242,6 +254,7 @@ export type TournamentOrderByWithRelationInput = {
   sessionId?: Prisma.SortOrder
   category?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  currentRound?: Prisma.SortOrder
   currentPickerIndex?: Prisma.SortOrder
   winningSongId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -258,6 +271,7 @@ export type TournamentWhereUniqueInput = Prisma.AtLeast<{
   sessionId?: Prisma.StringFilter<"Tournament"> | string
   category?: Prisma.StringFilter<"Tournament"> | string
   status?: Prisma.EnumTournamentStatusFilter<"Tournament"> | $Enums.TournamentStatus
+  currentRound?: Prisma.IntFilter<"Tournament"> | number
   currentPickerIndex?: Prisma.IntFilter<"Tournament"> | number
   winningSongId?: Prisma.StringNullableFilter<"Tournament"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Tournament"> | Date | string
@@ -271,6 +285,7 @@ export type TournamentOrderByWithAggregationInput = {
   sessionId?: Prisma.SortOrder
   category?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  currentRound?: Prisma.SortOrder
   currentPickerIndex?: Prisma.SortOrder
   winningSongId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -289,6 +304,7 @@ export type TournamentScalarWhereWithAggregatesInput = {
   sessionId?: Prisma.StringWithAggregatesFilter<"Tournament"> | string
   category?: Prisma.StringWithAggregatesFilter<"Tournament"> | string
   status?: Prisma.EnumTournamentStatusWithAggregatesFilter<"Tournament"> | $Enums.TournamentStatus
+  currentRound?: Prisma.IntWithAggregatesFilter<"Tournament"> | number
   currentPickerIndex?: Prisma.IntWithAggregatesFilter<"Tournament"> | number
   winningSongId?: Prisma.StringNullableWithAggregatesFilter<"Tournament"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Tournament"> | Date | string
@@ -298,6 +314,7 @@ export type TournamentCreateInput = {
   id: string
   category: string
   status?: $Enums.TournamentStatus
+  currentRound?: number
   currentPickerIndex?: number
   winningSongId?: string | null
   createdAt: Date | string
@@ -311,6 +328,7 @@ export type TournamentUncheckedCreateInput = {
   sessionId: string
   category: string
   status?: $Enums.TournamentStatus
+  currentRound?: number
   currentPickerIndex?: number
   winningSongId?: string | null
   createdAt: Date | string
@@ -322,6 +340,7 @@ export type TournamentUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   category?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumTournamentStatusFieldUpdateOperationsInput | $Enums.TournamentStatus
+  currentRound?: Prisma.IntFieldUpdateOperationsInput | number
   currentPickerIndex?: Prisma.IntFieldUpdateOperationsInput | number
   winningSongId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -335,6 +354,7 @@ export type TournamentUncheckedUpdateInput = {
   sessionId?: Prisma.StringFieldUpdateOperationsInput | string
   category?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumTournamentStatusFieldUpdateOperationsInput | $Enums.TournamentStatus
+  currentRound?: Prisma.IntFieldUpdateOperationsInput | number
   currentPickerIndex?: Prisma.IntFieldUpdateOperationsInput | number
   winningSongId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -347,6 +367,7 @@ export type TournamentCreateManyInput = {
   sessionId: string
   category: string
   status?: $Enums.TournamentStatus
+  currentRound?: number
   currentPickerIndex?: number
   winningSongId?: string | null
   createdAt: Date | string
@@ -356,6 +377,7 @@ export type TournamentUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   category?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumTournamentStatusFieldUpdateOperationsInput | $Enums.TournamentStatus
+  currentRound?: Prisma.IntFieldUpdateOperationsInput | number
   currentPickerIndex?: Prisma.IntFieldUpdateOperationsInput | number
   winningSongId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -366,6 +388,7 @@ export type TournamentUncheckedUpdateManyInput = {
   sessionId?: Prisma.StringFieldUpdateOperationsInput | string
   category?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumTournamentStatusFieldUpdateOperationsInput | $Enums.TournamentStatus
+  currentRound?: Prisma.IntFieldUpdateOperationsInput | number
   currentPickerIndex?: Prisma.IntFieldUpdateOperationsInput | number
   winningSongId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -386,12 +409,14 @@ export type TournamentCountOrderByAggregateInput = {
   sessionId?: Prisma.SortOrder
   category?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  currentRound?: Prisma.SortOrder
   currentPickerIndex?: Prisma.SortOrder
   winningSongId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
 export type TournamentAvgOrderByAggregateInput = {
+  currentRound?: Prisma.SortOrder
   currentPickerIndex?: Prisma.SortOrder
 }
 
@@ -400,6 +425,7 @@ export type TournamentMaxOrderByAggregateInput = {
   sessionId?: Prisma.SortOrder
   category?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  currentRound?: Prisma.SortOrder
   currentPickerIndex?: Prisma.SortOrder
   winningSongId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -410,12 +436,14 @@ export type TournamentMinOrderByAggregateInput = {
   sessionId?: Prisma.SortOrder
   category?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  currentRound?: Prisma.SortOrder
   currentPickerIndex?: Prisma.SortOrder
   winningSongId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
 export type TournamentSumOrderByAggregateInput = {
+  currentRound?: Prisma.SortOrder
   currentPickerIndex?: Prisma.SortOrder
 }
 
@@ -510,6 +538,7 @@ export type TournamentCreateWithoutSessionInput = {
   id: string
   category: string
   status?: $Enums.TournamentStatus
+  currentRound?: number
   currentPickerIndex?: number
   winningSongId?: string | null
   createdAt: Date | string
@@ -521,6 +550,7 @@ export type TournamentUncheckedCreateWithoutSessionInput = {
   id: string
   category: string
   status?: $Enums.TournamentStatus
+  currentRound?: number
   currentPickerIndex?: number
   winningSongId?: string | null
   createdAt: Date | string
@@ -561,6 +591,7 @@ export type TournamentScalarWhereInput = {
   sessionId?: Prisma.StringFilter<"Tournament"> | string
   category?: Prisma.StringFilter<"Tournament"> | string
   status?: Prisma.EnumTournamentStatusFilter<"Tournament"> | $Enums.TournamentStatus
+  currentRound?: Prisma.IntFilter<"Tournament"> | number
   currentPickerIndex?: Prisma.IntFilter<"Tournament"> | number
   winningSongId?: Prisma.StringNullableFilter<"Tournament"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Tournament"> | Date | string
@@ -570,6 +601,7 @@ export type TournamentCreateWithoutSongsInput = {
   id: string
   category: string
   status?: $Enums.TournamentStatus
+  currentRound?: number
   currentPickerIndex?: number
   winningSongId?: string | null
   createdAt: Date | string
@@ -582,6 +614,7 @@ export type TournamentUncheckedCreateWithoutSongsInput = {
   sessionId: string
   category: string
   status?: $Enums.TournamentStatus
+  currentRound?: number
   currentPickerIndex?: number
   winningSongId?: string | null
   createdAt: Date | string
@@ -608,6 +641,7 @@ export type TournamentUpdateWithoutSongsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   category?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumTournamentStatusFieldUpdateOperationsInput | $Enums.TournamentStatus
+  currentRound?: Prisma.IntFieldUpdateOperationsInput | number
   currentPickerIndex?: Prisma.IntFieldUpdateOperationsInput | number
   winningSongId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -620,6 +654,7 @@ export type TournamentUncheckedUpdateWithoutSongsInput = {
   sessionId?: Prisma.StringFieldUpdateOperationsInput | string
   category?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumTournamentStatusFieldUpdateOperationsInput | $Enums.TournamentStatus
+  currentRound?: Prisma.IntFieldUpdateOperationsInput | number
   currentPickerIndex?: Prisma.IntFieldUpdateOperationsInput | number
   winningSongId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -630,6 +665,7 @@ export type TournamentCreateWithoutMatchesInput = {
   id: string
   category: string
   status?: $Enums.TournamentStatus
+  currentRound?: number
   currentPickerIndex?: number
   winningSongId?: string | null
   createdAt: Date | string
@@ -642,6 +678,7 @@ export type TournamentUncheckedCreateWithoutMatchesInput = {
   sessionId: string
   category: string
   status?: $Enums.TournamentStatus
+  currentRound?: number
   currentPickerIndex?: number
   winningSongId?: string | null
   createdAt: Date | string
@@ -668,6 +705,7 @@ export type TournamentUpdateWithoutMatchesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   category?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumTournamentStatusFieldUpdateOperationsInput | $Enums.TournamentStatus
+  currentRound?: Prisma.IntFieldUpdateOperationsInput | number
   currentPickerIndex?: Prisma.IntFieldUpdateOperationsInput | number
   winningSongId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -680,6 +718,7 @@ export type TournamentUncheckedUpdateWithoutMatchesInput = {
   sessionId?: Prisma.StringFieldUpdateOperationsInput | string
   category?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumTournamentStatusFieldUpdateOperationsInput | $Enums.TournamentStatus
+  currentRound?: Prisma.IntFieldUpdateOperationsInput | number
   currentPickerIndex?: Prisma.IntFieldUpdateOperationsInput | number
   winningSongId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -690,6 +729,7 @@ export type TournamentCreateManySessionInput = {
   id: string
   category: string
   status?: $Enums.TournamentStatus
+  currentRound?: number
   currentPickerIndex?: number
   winningSongId?: string | null
   createdAt: Date | string
@@ -699,6 +739,7 @@ export type TournamentUpdateWithoutSessionInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   category?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumTournamentStatusFieldUpdateOperationsInput | $Enums.TournamentStatus
+  currentRound?: Prisma.IntFieldUpdateOperationsInput | number
   currentPickerIndex?: Prisma.IntFieldUpdateOperationsInput | number
   winningSongId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -710,6 +751,7 @@ export type TournamentUncheckedUpdateWithoutSessionInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   category?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumTournamentStatusFieldUpdateOperationsInput | $Enums.TournamentStatus
+  currentRound?: Prisma.IntFieldUpdateOperationsInput | number
   currentPickerIndex?: Prisma.IntFieldUpdateOperationsInput | number
   winningSongId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -721,6 +763,7 @@ export type TournamentUncheckedUpdateManyWithoutSessionInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   category?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumTournamentStatusFieldUpdateOperationsInput | $Enums.TournamentStatus
+  currentRound?: Prisma.IntFieldUpdateOperationsInput | number
   currentPickerIndex?: Prisma.IntFieldUpdateOperationsInput | number
   winningSongId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -771,6 +814,7 @@ export type TournamentSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   sessionId?: boolean
   category?: boolean
   status?: boolean
+  currentRound?: boolean
   currentPickerIndex?: boolean
   winningSongId?: boolean
   createdAt?: boolean
@@ -785,6 +829,7 @@ export type TournamentSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ex
   sessionId?: boolean
   category?: boolean
   status?: boolean
+  currentRound?: boolean
   currentPickerIndex?: boolean
   winningSongId?: boolean
   createdAt?: boolean
@@ -796,6 +841,7 @@ export type TournamentSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ex
   sessionId?: boolean
   category?: boolean
   status?: boolean
+  currentRound?: boolean
   currentPickerIndex?: boolean
   winningSongId?: boolean
   createdAt?: boolean
@@ -807,12 +853,13 @@ export type TournamentSelectScalar = {
   sessionId?: boolean
   category?: boolean
   status?: boolean
+  currentRound?: boolean
   currentPickerIndex?: boolean
   winningSongId?: boolean
   createdAt?: boolean
 }
 
-export type TournamentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "sessionId" | "category" | "status" | "currentPickerIndex" | "winningSongId" | "createdAt", ExtArgs["result"]["tournament"]>
+export type TournamentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "sessionId" | "category" | "status" | "currentRound" | "currentPickerIndex" | "winningSongId" | "createdAt", ExtArgs["result"]["tournament"]>
 export type TournamentInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   session?: boolean | Prisma.GameSessionDefaultArgs<ExtArgs>
   songs?: boolean | Prisma.Tournament$songsArgs<ExtArgs>
@@ -838,6 +885,7 @@ export type $TournamentPayload<ExtArgs extends runtime.Types.Extensions.Internal
     sessionId: string
     category: string
     status: $Enums.TournamentStatus
+    currentRound: number
     currentPickerIndex: number
     winningSongId: string | null
     createdAt: Date
@@ -1271,6 +1319,7 @@ export interface TournamentFieldRefs {
   readonly sessionId: Prisma.FieldRef<"Tournament", 'String'>
   readonly category: Prisma.FieldRef<"Tournament", 'String'>
   readonly status: Prisma.FieldRef<"Tournament", 'TournamentStatus'>
+  readonly currentRound: Prisma.FieldRef<"Tournament", 'Int'>
   readonly currentPickerIndex: Prisma.FieldRef<"Tournament", 'Int'>
   readonly winningSongId: Prisma.FieldRef<"Tournament", 'String'>
   readonly createdAt: Prisma.FieldRef<"Tournament", 'DateTime'>

@@ -1,10 +1,6 @@
 import { shuffle } from "./arrayHelper";
-import {
-  createMatch,
-  getSongs,
-  updateMatch,
-  updateTournament,
-} from "./game-session";
+import prisma from "./db-prisma";
+import { createMatch, getSongs, updateMatch } from "./game-session";
 import type { Song, TournamentMatch, Tournament } from "@/types/game";
 
 /**
@@ -35,81 +31,62 @@ export async function initializeTournament(
 }
 
 /**
- * Gets undefeated songs that haven't been played yet
- * For initial match: all songs
- * For subsequent matches: all songs except eliminated ones
- */
-function getUndefeatedSongs(songs: Song[], eliminatedIds: string[]): Song[] {
-  return songs.filter((song) => !eliminatedIds.includes(song.id));
-}
-
-/**
- * Creates the next match in single-elimination tournament
- * Requires one song to be undefeated (the winner from previous match)
- * Selects a new random undefeated song to face it
- */
-export function getNextMatch(
-  tournamentId: string,
-  allSongs: Song[],
-  lastWinnerId: string,
-  eliminatedIds: string[],
-): TournamentMatch {
-  // Get available songs (not eliminated and not the previous winner)
-  const availableForNewOpponent = getUndefeatedSongs(
-    allSongs,
-    eliminatedIds,
-  ).filter((song) => song.id !== lastWinnerId);
-
-  if (availableForNewOpponent.length === 0) {
-    throw new Error("No undefeated songs available for next match");
-  }
-
-  // Pick random opponent
-  const opponent =
-    availableForNewOpponent[
-      Math.floor(Math.random() * availableForNewOpponent.length)
-    ];
-
-  // Create match between winner and new opponent
-  const match = createMatch(tournamentId, 0, 0, lastWinnerId, opponent.id);
-
-  return match;
-}
-
-/**
  * Processes match completion in single-elimination tournament
  * Eliminates the loser, checks if tournament is over
  * Returns tournament state after elimination
  */
-export function advanceToNextMatch(
-  tournamentId: string,
-  match: TournamentMatch,
-  tournamentRecord: Tournament,
-): { finished: boolean; winningSongId: string | null } {
-  if (!match.winnerId) {
-    throw new Error(`Match ${match.id} completed but has no winner`);
+export async function advanceToNextMatch(tournamentId: string): Promise<
+  | {
+      finished: true;
+      winningSongId: string;
+    }
+  | { finished: false }
+> {
+  const tournament = await prisma.tournament.findUnique({
+    where: { id: tournamentId },
+    include: { matches: { orderBy: { roundNumber: "asc" } } },
+  });
+
+  if (!tournament) {
+    throw new Error(
+      `Could not find a tournament with this id: ${tournamentId}`,
+    );
   }
 
-  // Get all songs to count undefeated
-  const allSongs = getSongs(tournamentId, 0);
-  const undefeatedSongs = getUndefeatedSongs(allSongs, eliminatedIds);
+  const { currentRound, matches } = tournament;
 
-  // If only 1 undefeated song remains, tournament is finished
-  if (undefeatedSongs.length === 1) {
-    return {
-      finished: true,
-      winningSongId: undefeatedSongs[0].id,
-    };
+  const finishedMatch = matches[currentRound];
+
+  if (!finishedMatch || finishedMatch.status !== "completed") {
+    throw new Error("Match was not finished.");
   }
 
-  // Update tournament with new eliminated list
-  updateTournament(tournamentId, {
-    eliminated_song_ids: JSON.stringify(eliminatedIds),
+  const { winnerId } = finishedMatch;
+  if (!winnerId) {
+    throw new Error("Finished match did not have a winner.");
+  }
+
+  const nextMatch = matches[currentRound + 1];
+
+  // Check if we are finnished
+  if (!nextMatch) {
+    return { finished: true, winningSongId: winnerId };
+  }
+
+  // Set new match to playing and add the winner
+  await prisma.tournamentMatch.update({
+    where: { id: nextMatch.id },
+    data: { songAId: winnerId, status: "playing" },
+  });
+
+  // Update the roundNumber in tournament
+  await prisma.tournament.update({
+    where: { id: tournament.id },
+    data: { currentRound: currentRound + 1 },
   });
 
   return {
     finished: false,
-    winningSongId: null,
   };
 }
 
