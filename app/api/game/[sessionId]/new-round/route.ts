@@ -61,6 +61,13 @@ export async function POST(
       pickerIndex: currentPickerIndex,
     });
 
+    if (lastTournament) {
+      await prisma.tournament.update({
+        where: { id: lastTournament.id },
+        data: { status: "archived" },
+      });
+    }
+
     sseManager.broadcast(sessionId, {
       type: "game_state",
       data: {

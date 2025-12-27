@@ -94,7 +94,7 @@ export async function getActiveTournament(
   const result = await prisma.tournament.findFirst({
     where: {
       sessionId: sessionId,
-      status: { not: "finished" },
+      status: { not: "archived" },
     },
     orderBy: { createdAt: "desc" },
   });

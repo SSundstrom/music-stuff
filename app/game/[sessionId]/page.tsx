@@ -22,6 +22,13 @@ export default function GamePage() {
     return null;
   });
 
+  async function handleNewRound() {
+    await fetch(`/api/game/${sessionId}/new-round`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
   const {
     session: gameSession,
     tournament,
@@ -124,6 +131,8 @@ export default function GamePage() {
                           <Image
                             src={winningSong.imageUrl}
                             alt={winningSong.songName}
+                            width={192}
+                            height={192}
                             className="mx-auto h-48 w-48 rounded-lg object-cover shadow"
                           />
                         )}
@@ -141,6 +150,12 @@ export default function GamePage() {
                         Tournament winner determined!
                       </p>
                     )}
+                    <button
+                      onClick={handleNewRound}
+                      className="w-full rounded-lg bg-green-600 px-4 py-3 font-semibold text-white hover:bg-green-700 disabled:opacity-50"
+                    >
+                      {"Pick new category!"}
+                    </button>
                   </div>
                 );
               })()}

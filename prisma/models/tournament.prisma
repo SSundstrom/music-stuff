@@ -22,6 +22,7 @@ enum TournamentStatus {
   song_submission
   tournament
   finished
+  archived
 }
 
 // Individual category tournaments within a session

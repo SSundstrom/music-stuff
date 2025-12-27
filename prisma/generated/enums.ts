@@ -22,7 +22,8 @@ export const TournamentStatus = {
   category_selection: 'category_selection',
   song_submission: 'song_submission',
   tournament: 'tournament',
-  finished: 'finished'
+  finished: 'finished',
+  archived: 'archived'
 } as const
 
 export type TournamentStatus = (typeof TournamentStatus)[keyof typeof TournamentStatus]

@@ -26,6 +26,7 @@ export const TournamentSchema = z.object({
     "song_submission",
     "tournament",
     "finished",
+    "archived",
   ]),
   currentRound: z.number().default(0),
   currentPickerIndex: z.number().default(0),
