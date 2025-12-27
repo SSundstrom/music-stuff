@@ -59,7 +59,6 @@ export async function updateSession(
 
 export async function createTournament(data: {
   sessionId: string;
-  category: string;
   pickerIndex: number;
 }) {
   const tournamentId = uuidv4();
@@ -68,8 +67,8 @@ export async function createTournament(data: {
     data: {
       id: tournamentId,
       sessionId: data.sessionId,
-      category: data.category,
-      status: "song_submission",
+      category: "",
+      status: "category_selection",
       currentPickerIndex: data.pickerIndex,
       createdAt: new Date(),
     },

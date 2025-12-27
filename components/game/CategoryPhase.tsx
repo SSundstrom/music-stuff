@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { Player } from "@/types/game";
+import type { Player, SubmitCategoryRequest } from "@/types/game";
 
 interface CategoryPhaseProps {
   sessionId: string;
@@ -31,7 +31,9 @@ export default function CategoryPhase({
       const response = await fetch(`/api/game/${sessionId}/category`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ category: category.trim() }),
+        body: JSON.stringify({
+          category: category.trim(),
+        } satisfies SubmitCategoryRequest),
       });
 
       if (!response.ok) {

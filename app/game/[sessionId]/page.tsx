@@ -22,8 +22,6 @@ export default function GamePage() {
     return null;
   });
 
-  const [initializingTournament, setInitializingTournament] = useState(false);
-
   const {
     session: gameSession,
     tournament,
@@ -77,44 +75,7 @@ export default function GamePage() {
         {isOwner && <SpotifyPlayer />}
 
         {!tournament ? (
-          <div className="rounded-lg bg-white p-8 shadow-lg text-center">
-            <h2 className="mb-4 text-2xl font-bold text-gray-900">
-              Ready to start?
-            </h2>
-            <p className="text-gray-600 mb-6">
-              Waiting for the tournament to begin. The owner will select a
-              category to start.
-            </p>
-            {isOwner && (
-              <button
-                onClick={async () => {
-                  setInitializingTournament(true);
-                  try {
-                    const response = await fetch(
-                      `/api/game/${sessionId}/tournament/init`,
-                      {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                      },
-                    );
-
-                    if (!response.ok)
-                      throw new Error("Failed to initialize tournament");
-                    // Tournament should be created and SSE will update the page
-                  } catch (err) {
-                    console.error(err);
-                    setInitializingTournament(false);
-                  }
-                }}
-                disabled={initializingTournament}
-                className="rounded-lg bg-green-600 px-6 py-3 font-semibold text-white hover:bg-green-700 disabled:opacity-50"
-              >
-                {initializingTournament
-                  ? "Initializing..."
-                  : "Start Tournament"}
-              </button>
-            )}
-          </div>
+          <p>something went wrong</p>
         ) : (
           <>
             {tournament.status === "category_selection" && (
@@ -124,7 +85,6 @@ export default function GamePage() {
                 isCurrentPicker={currentPlayerId === currentPicker?.id}
               />
             )}
-
             {tournament.status === "song_submission" && (
               <SongSubmissionPhase
                 sessionId={sessionId}

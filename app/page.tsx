@@ -4,6 +4,7 @@ import { authClient } from "@/components/SessionProvider";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthSession } from "@/hooks/useAuthSession";
+import { CreateSessionRequest } from "@/types/game";
 
 export default function Home() {
   const router = useRouter();
@@ -38,10 +39,16 @@ export default function Home() {
     setError("");
 
     try {
+      if (!session?.user?.id) {
+        setError("Missing user id");
+        return;
+      }
       const response = await fetch("/api/game/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ owner_id: session?.user?.id }),
+        body: JSON.stringify({
+          ownerId: session.user.id,
+        } satisfies CreateSessionRequest),
       });
 
       if (!response.ok) {

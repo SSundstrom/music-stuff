@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { QRCodeSVG } from "qrcode.react";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { useGameSession } from "@/hooks/useGameSession";
-import type { Player } from "@/types/game";
+import type { JoinSessionRequest, NewRoundRequest, Player } from "@/types/game";
 
 export default function LobbyPage() {
   const params = useParams();
@@ -59,7 +59,10 @@ export default function LobbyPage() {
       const response = await fetch(`/api/game/${sessionId}/join`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ player_name: playerName }),
+        body: JSON.stringify({
+          playerName,
+          sessionId,
+        } satisfies JoinSessionRequest),
       });
 
       if (!response.ok) throw new Error("Failed to join game");
@@ -82,8 +85,15 @@ export default function LobbyPage() {
     setJoinError("");
 
     try {
-      // Just redirect to game page - category selection happens there
-      router.push(`/game/${sessionId}`);
+      const response = await fetch(`/api/game/${sessionId}/new-round`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sessionId,
+        } satisfies NewRoundRequest),
+      });
+
+      if (!response.ok) throw new Error("Failed to create new round");
     } catch (err) {
       setJoinError(err instanceof Error ? err.message : "An error occurred");
     } finally {
@@ -167,7 +177,7 @@ export default function LobbyPage() {
                     value={
                       typeof window !== "undefined"
                         ? `${window.location.origin}/lobby/${sessionId}`
-                        : `https://192.168.32.7:3000/lobby/${sessionId}`
+                        : `https://192.168.68.103:3000/lobby/${sessionId}`
                     }
                     size={120}
                     level="H"

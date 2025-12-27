@@ -210,6 +210,12 @@ export const CreateSessionRequestSchema = z.object({
 
 export type CreateSessionRequest = z.infer<typeof CreateSessionRequestSchema>;
 
+export const NewRoundRequestSchema = z.object({
+  sessionId: z.string(),
+});
+
+export type NewRoundRequest = z.infer<typeof NewRoundRequestSchema>;
+
 export const JoinSessionRequestSchema = z.object({
   sessionId: z.string(),
   playerName: z.string(),
