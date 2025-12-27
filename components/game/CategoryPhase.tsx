@@ -5,6 +5,7 @@ import type { Player, SubmitCategoryRequest } from "@/types/game";
 
 interface CategoryPhaseProps {
   sessionId: string;
+  tournamentId: string;
   currentPicker: Player | undefined;
   isCurrentPicker: boolean;
 }
@@ -12,6 +13,7 @@ interface CategoryPhaseProps {
 export default function CategoryPhase({
   sessionId,
   currentPicker,
+  tournamentId,
   isCurrentPicker,
 }: CategoryPhaseProps) {
   const [category, setCategory] = useState("");
@@ -33,6 +35,7 @@ export default function CategoryPhase({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           category: category.trim(),
+          tournamentId,
         } satisfies SubmitCategoryRequest),
       });
 

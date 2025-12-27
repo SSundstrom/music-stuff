@@ -8,20 +8,18 @@ import prisma from "@/lib/db-prisma";
 
 export async function POST(
   request: Request,
-  { params }: { params: Promise<{ tournamentId: string }> },
+  { params }: { params: Promise<{ sessionId: string }> },
 ) {
   try {
-    const { tournamentId } = await params;
+    const { sessionId } = await params;
     const body = await request.json();
     const validated = SubmitCategoryRequestSchema.parse(body);
 
     const { matches, songs, ...tournament } = await prisma.tournament.update({
-      where: { id: tournamentId },
-      data: { category: validated.category },
+      where: { id: validated.tournamentId },
+      data: { category: validated.category, status: "song_submission" },
       include: { songs: true, matches: true },
     });
-
-    const { sessionId } = tournament;
 
     const sessionData = await prisma.gameSession.findUnique({
       where: { id: sessionId },
@@ -62,6 +60,7 @@ export async function POST(
     );
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
+    console.error(error);
     return new Response(JSON.stringify({ error: message }), {
       status: 400,
       headers: { "Content-Type": "application/json" },

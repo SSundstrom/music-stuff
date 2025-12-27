@@ -225,6 +225,7 @@ export type JoinSessionRequest = z.infer<typeof JoinSessionRequestSchema>;
 
 export const SubmitCategoryRequestSchema = z.object({
   category: z.string().min(1).max(100),
+  tournamentId: z.string(),
 });
 
 export type SubmitCategoryRequest = z.infer<typeof SubmitCategoryRequestSchema>;

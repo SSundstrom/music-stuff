@@ -81,6 +81,7 @@ export default function GamePage() {
             {tournament.status === "category_selection" && (
               <CategoryPhase
                 sessionId={sessionId}
+                tournamentId={tournament.id}
                 currentPicker={currentPicker}
                 isCurrentPicker={currentPlayerId === currentPicker?.id}
               />
