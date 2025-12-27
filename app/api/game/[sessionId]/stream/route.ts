@@ -40,8 +40,8 @@ export async function GET(
       const tournament = await getActiveTournament(sessionId);
       const [players, songs, matches] = await Promise.all([
         getPlayers(sessionId),
-        tournament ? getSongs(tournament.id, tournament.current_round) : Promise.resolve([]),
-        tournament ? getMatches(tournament.id, tournament.current_round) : Promise.resolve([]),
+        tournament ? getSongs(tournament.id) : Promise.resolve([]),
+        tournament ? getMatches(tournament.id) : Promise.resolve([]),
       ]);
 
       const initialState = {

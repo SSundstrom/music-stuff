@@ -8,7 +8,11 @@ import {
   getSongs,
   getMatches,
 } from "@/lib/game-session";
-import { VoteRequestSchema, type Session, type SSEMessage } from "@/types/game";
+import {
+  GameStateMessage,
+  VoteRequestSchema,
+  type Session,
+} from "@/types/game";
 import { sseManager } from "@/lib/sse-manager";
 import { eventBus } from "@/lib/event-bus";
 
@@ -43,7 +47,7 @@ async function validatePlayer(
   }
 
   const player = await getPlayer(playerId);
-  if (!player || player.session_id !== sessionId) {
+  if (!player || player.sessionId !== sessionId) {
     return errorResponse("Player not in this session", 403);
   }
   return player;
@@ -55,18 +59,22 @@ async function validateMatch(
   songId: string,
 ): Promise<ReturnType<typeof getMatch> | Response> {
   const match = await getMatch(matchId);
-  if (!match || match.tournament_id !== tournamentId) {
+  if (!match || match.tournamentId !== tournamentId) {
     return errorResponse("Match not found", 404);
   }
 
-  if (songId !== match.song_a_id && songId !== match.song_b_id) {
+  if (songId !== match.songAId && songId !== match.songBId) {
     return errorResponse("Song not in this match", 400);
   }
 
   return match;
 }
 
-async function broadcastMatchVotes(sessionId: string, matchId: string, tournamentId: string): Promise<void> {
+async function broadcastMatchVotes(
+  sessionId: string,
+  matchId: string,
+  tournamentId: string,
+): Promise<void> {
   const match = await getMatch(matchId);
   if (!match) return;
 
@@ -78,8 +86,8 @@ async function broadcastMatchVotes(sessionId: string, matchId: string, tournamen
 
   const [players, songs, matches] = await Promise.all([
     getPlayers(sessionId),
-    getSongs(tournamentId, 0),
-    getMatches(tournamentId, 0),
+    getSongs(tournamentId),
+    getMatches(tournamentId),
   ]);
 
   sseManager.broadcast(sessionId, {
@@ -91,7 +99,7 @@ async function broadcastMatchVotes(sessionId: string, matchId: string, tournamen
       songs,
       matches,
     },
-  } satisfies SSEMessage);
+  } satisfies GameStateMessage);
 }
 
 export async function POST(
@@ -120,32 +128,32 @@ export async function POST(
 
     // Validate match and song
     const matchResult = await validateMatch(
-      validated.match_id,
+      validated.matchId,
       tournament.id,
-      validated.song_id,
+      validated.songId,
     );
     if (matchResult instanceof Response) return matchResult;
 
     // Record vote
-    await addVote(validated.match_id, playerId!, validated.song_id);
+    await addVote(validated.matchId, playerId!, validated.songId);
 
     // Broadcast updated vote counts to all clients
-    await broadcastMatchVotes(sessionId, validated.match_id, tournament.id);
+    await broadcastMatchVotes(sessionId, validated.matchId, tournament.id);
 
     // Emit vote:cast event for async processing
     // Event handlers will determine if the match/round/game is complete
     eventBus.emit("vote:cast", {
       playerId: playerId!,
-      matchId: validated.match_id,
-      songId: validated.song_id,
+      matchId: validated.matchId,
+      songId: validated.songId,
       sessionId,
       tournamentId: tournament.id,
     });
 
     return successResponse({
-      match_id: validated.match_id,
-      player_id: playerId,
-      voted_for: validated.song_id,
+      matchId: validated.matchId,
+      playerId: playerId,
+      votedFor: validated.songId,
       message: "Vote recorded",
     });
   } catch (error) {

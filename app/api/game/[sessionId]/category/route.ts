@@ -1,17 +1,27 @@
-import { getSession, createTournament, updateTournament, getPlayers, getSongs, getMatches } from "@/lib/game-session";
-import { SubmitCategoryRequestSchema, type SSEMessage } from "@/types/game";
+import { createTournament } from "@/lib/game-session";
+import {
+  CategoryAnnouncedMessage,
+  GameStateMessage,
+  SubmitCategoryRequestSchema,
+} from "@/types/game";
 import { sseManager } from "@/lib/sse-manager";
+import prisma from "@/lib/db-prisma";
+import { nextPicker } from "@/lib/tournament";
 
 export async function POST(
   request: Request,
-  { params }: { params: Promise<{ sessionId: string }> }
+  { params }: { params: Promise<{ sessionId: string }> },
 ) {
   try {
     const { sessionId } = await params;
     const body = await request.json();
     const validated = SubmitCategoryRequestSchema.parse(body);
 
-    const session = await getSession(sessionId);
+    const session = await prisma.gameSession.findUnique({
+      where: { id: sessionId },
+      include: { tournaments: { orderBy: { createdAt: "desc" } } },
+    });
+
     if (!session) {
       return new Response(JSON.stringify({ error: "Session not found" }), {
         status: 404,
@@ -19,9 +29,14 @@ export async function POST(
       });
     }
 
+    const lastTournament = session.tournaments.at(0);
+
     // Get current picker
-    const players = await getPlayers(sessionId);
-    const currentPickerIndex = 0; // For now, start with first player
+    const players = await prisma.player.findMany({
+      where: { sessionId: sessionId },
+      orderBy: { joinOrder: "asc" },
+    });
+    const currentPickerIndex = nextPicker(lastTournament, players.length);
     const currentPicker = players[currentPickerIndex];
 
     if (!currentPicker) {
@@ -32,52 +47,39 @@ export async function POST(
     }
 
     // Create a new tournament with this category
-    const tournament = await createTournament(sessionId, validated.category);
-
-    // Move tournament to song submission phase
-    await updateTournament(tournament.id, {
-      status: "song_submission",
-      current_picker_index: currentPickerIndex,
+    const { matches, songs, ...tournament } = await createTournament({
+      sessionId,
+      category: validated.category,
+      pickerIndex: currentPickerIndex,
     });
-
-    // Broadcast category_announced and game_state to all players
-    const updatedTournament = {
-      ...tournament,
-      status: "song_submission" as const,
-      current_picker_index: currentPickerIndex,
-    };
-    const [songs, matches] = await Promise.all([
-      getSongs(tournament.id, updatedTournament.current_round),
-      getMatches(tournament.id, updatedTournament.current_round),
-    ]);
 
     sseManager.broadcast(sessionId, {
       type: "category_announced",
       data: { category: validated.category },
-    } satisfies SSEMessage);
+    } satisfies CategoryAnnouncedMessage);
 
     sseManager.broadcast(sessionId, {
       type: "game_state",
       data: {
         session,
-        tournament: updatedTournament,
+        tournament,
         players,
         songs,
         matches,
       },
-    } satisfies SSEMessage);
+    } satisfies GameStateMessage);
 
     return new Response(
       JSON.stringify({
-        tournament_id: tournament.id,
+        tournamentId: tournament.id,
         category: validated.category,
-        picker_id: currentPicker.id,
-        picker_name: currentPicker.name,
+        pickerId: currentPicker.id,
+        pickerName: currentPicker.name,
       }),
       {
         status: 200,
         headers: { "Content-Type": "application/json" },
-      }
+      },
     );
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";

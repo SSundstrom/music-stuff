@@ -1262,10 +1262,8 @@ export const TournamentScalarFieldEnum = {
   sessionId: 'sessionId',
   category: 'category',
   status: 'status',
-  currentRound: 'currentRound',
   currentPickerIndex: 'currentPickerIndex',
   winningSongId: 'winningSongId',
-  eliminatedSongIds: 'eliminatedSongIds',
   createdAt: 'createdAt'
 } as const
 
@@ -1288,7 +1286,6 @@ export type PlayerScalarFieldEnum = (typeof PlayerScalarFieldEnum)[keyof typeof 
 export const SongScalarFieldEnum = {
   id: 'id',
   tournamentId: 'tournamentId',
-  roundNumber: 'roundNumber',
   spotifyId: 'spotifyId',
   playerId: 'playerId',
   startTime: 'startTime',
@@ -1305,7 +1302,6 @@ export const TournamentMatchScalarFieldEnum = {
   id: 'id',
   tournamentId: 'tournamentId',
   roundNumber: 'roundNumber',
-  matchNumber: 'matchNumber',
   songAId: 'songAId',
   songBId: 'songBId',
   winnerId: 'winnerId',
@@ -1381,6 +1377,13 @@ export type EnumSessionStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$Pr
 
 
 /**
+ * Reference to a field of type 'TournamentStatus'
+ */
+export type EnumTournamentStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TournamentStatus'>
+    
+
+
+/**
  * Reference to a field of type 'Int'
  */
 export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
@@ -1388,9 +1391,9 @@ export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'In
 
 
 /**
- * Reference to a field of type 'TournamentStatus'
+ * Reference to a field of type 'MatchStatus'
  */
-export type EnumTournamentStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TournamentStatus'>
+export type EnumMatchStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MatchStatus'>
     
 
 

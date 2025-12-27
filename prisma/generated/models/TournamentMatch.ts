@@ -28,55 +28,48 @@ export type AggregateTournamentMatch = {
 
 export type TournamentMatchAvgAggregateOutputType = {
   roundNumber: number | null
-  matchNumber: number | null
   votesA: number | null
   votesB: number | null
-  createdAt: number | null
 }
 
 export type TournamentMatchSumAggregateOutputType = {
   roundNumber: number | null
-  matchNumber: number | null
   votesA: number | null
   votesB: number | null
-  createdAt: number | null
 }
 
 export type TournamentMatchMinAggregateOutputType = {
   id: string | null
   tournamentId: string | null
   roundNumber: number | null
-  matchNumber: number | null
   songAId: string | null
   songBId: string | null
   winnerId: string | null
-  status: string | null
+  status: $Enums.MatchStatus | null
   votesA: number | null
   votesB: number | null
   currentlyPlayingSongId: string | null
-  createdAt: number | null
+  createdAt: Date | null
 }
 
 export type TournamentMatchMaxAggregateOutputType = {
   id: string | null
   tournamentId: string | null
   roundNumber: number | null
-  matchNumber: number | null
   songAId: string | null
   songBId: string | null
   winnerId: string | null
-  status: string | null
+  status: $Enums.MatchStatus | null
   votesA: number | null
   votesB: number | null
   currentlyPlayingSongId: string | null
-  createdAt: number | null
+  createdAt: Date | null
 }
 
 export type TournamentMatchCountAggregateOutputType = {
   id: number
   tournamentId: number
   roundNumber: number
-  matchNumber: number
   songAId: number
   songBId: number
   winnerId: number
@@ -91,25 +84,20 @@ export type TournamentMatchCountAggregateOutputType = {
 
 export type TournamentMatchAvgAggregateInputType = {
   roundNumber?: true
-  matchNumber?: true
   votesA?: true
   votesB?: true
-  createdAt?: true
 }
 
 export type TournamentMatchSumAggregateInputType = {
   roundNumber?: true
-  matchNumber?: true
   votesA?: true
   votesB?: true
-  createdAt?: true
 }
 
 export type TournamentMatchMinAggregateInputType = {
   id?: true
   tournamentId?: true
   roundNumber?: true
-  matchNumber?: true
   songAId?: true
   songBId?: true
   winnerId?: true
@@ -124,7 +112,6 @@ export type TournamentMatchMaxAggregateInputType = {
   id?: true
   tournamentId?: true
   roundNumber?: true
-  matchNumber?: true
   songAId?: true
   songBId?: true
   winnerId?: true
@@ -139,7 +126,6 @@ export type TournamentMatchCountAggregateInputType = {
   id?: true
   tournamentId?: true
   roundNumber?: true
-  matchNumber?: true
   songAId?: true
   songBId?: true
   winnerId?: true
@@ -241,15 +227,14 @@ export type TournamentMatchGroupByOutputType = {
   id: string
   tournamentId: string
   roundNumber: number
-  matchNumber: number
   songAId: string | null
   songBId: string | null
   winnerId: string | null
-  status: string
+  status: $Enums.MatchStatus
   votesA: number
   votesB: number
   currentlyPlayingSongId: string | null
-  createdAt: number
+  createdAt: Date
   _count: TournamentMatchCountAggregateOutputType | null
   _avg: TournamentMatchAvgAggregateOutputType | null
   _sum: TournamentMatchSumAggregateOutputType | null
@@ -279,15 +264,14 @@ export type TournamentMatchWhereInput = {
   id?: Prisma.StringFilter<"TournamentMatch"> | string
   tournamentId?: Prisma.StringFilter<"TournamentMatch"> | string
   roundNumber?: Prisma.IntFilter<"TournamentMatch"> | number
-  matchNumber?: Prisma.IntFilter<"TournamentMatch"> | number
   songAId?: Prisma.StringNullableFilter<"TournamentMatch"> | string | null
   songBId?: Prisma.StringNullableFilter<"TournamentMatch"> | string | null
   winnerId?: Prisma.StringNullableFilter<"TournamentMatch"> | string | null
-  status?: Prisma.StringFilter<"TournamentMatch"> | string
+  status?: Prisma.EnumMatchStatusFilter<"TournamentMatch"> | $Enums.MatchStatus
   votesA?: Prisma.IntFilter<"TournamentMatch"> | number
   votesB?: Prisma.IntFilter<"TournamentMatch"> | number
   currentlyPlayingSongId?: Prisma.StringNullableFilter<"TournamentMatch"> | string | null
-  createdAt?: Prisma.IntFilter<"TournamentMatch"> | number
+  createdAt?: Prisma.DateTimeFilter<"TournamentMatch"> | Date | string
   tournament?: Prisma.XOR<Prisma.TournamentScalarRelationFilter, Prisma.TournamentWhereInput>
   songA?: Prisma.XOR<Prisma.SongNullableScalarRelationFilter, Prisma.SongWhereInput> | null
   songB?: Prisma.XOR<Prisma.SongNullableScalarRelationFilter, Prisma.SongWhereInput> | null
@@ -299,7 +283,6 @@ export type TournamentMatchOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   tournamentId?: Prisma.SortOrder
   roundNumber?: Prisma.SortOrder
-  matchNumber?: Prisma.SortOrder
   songAId?: Prisma.SortOrderInput | Prisma.SortOrder
   songBId?: Prisma.SortOrderInput | Prisma.SortOrder
   winnerId?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -322,15 +305,14 @@ export type TournamentMatchWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.TournamentMatchWhereInput | Prisma.TournamentMatchWhereInput[]
   tournamentId?: Prisma.StringFilter<"TournamentMatch"> | string
   roundNumber?: Prisma.IntFilter<"TournamentMatch"> | number
-  matchNumber?: Prisma.IntFilter<"TournamentMatch"> | number
   songAId?: Prisma.StringNullableFilter<"TournamentMatch"> | string | null
   songBId?: Prisma.StringNullableFilter<"TournamentMatch"> | string | null
   winnerId?: Prisma.StringNullableFilter<"TournamentMatch"> | string | null
-  status?: Prisma.StringFilter<"TournamentMatch"> | string
+  status?: Prisma.EnumMatchStatusFilter<"TournamentMatch"> | $Enums.MatchStatus
   votesA?: Prisma.IntFilter<"TournamentMatch"> | number
   votesB?: Prisma.IntFilter<"TournamentMatch"> | number
   currentlyPlayingSongId?: Prisma.StringNullableFilter<"TournamentMatch"> | string | null
-  createdAt?: Prisma.IntFilter<"TournamentMatch"> | number
+  createdAt?: Prisma.DateTimeFilter<"TournamentMatch"> | Date | string
   tournament?: Prisma.XOR<Prisma.TournamentScalarRelationFilter, Prisma.TournamentWhereInput>
   songA?: Prisma.XOR<Prisma.SongNullableScalarRelationFilter, Prisma.SongWhereInput> | null
   songB?: Prisma.XOR<Prisma.SongNullableScalarRelationFilter, Prisma.SongWhereInput> | null
@@ -342,7 +324,6 @@ export type TournamentMatchOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   tournamentId?: Prisma.SortOrder
   roundNumber?: Prisma.SortOrder
-  matchNumber?: Prisma.SortOrder
   songAId?: Prisma.SortOrderInput | Prisma.SortOrder
   songBId?: Prisma.SortOrderInput | Prisma.SortOrder
   winnerId?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -365,26 +346,24 @@ export type TournamentMatchScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"TournamentMatch"> | string
   tournamentId?: Prisma.StringWithAggregatesFilter<"TournamentMatch"> | string
   roundNumber?: Prisma.IntWithAggregatesFilter<"TournamentMatch"> | number
-  matchNumber?: Prisma.IntWithAggregatesFilter<"TournamentMatch"> | number
   songAId?: Prisma.StringNullableWithAggregatesFilter<"TournamentMatch"> | string | null
   songBId?: Prisma.StringNullableWithAggregatesFilter<"TournamentMatch"> | string | null
   winnerId?: Prisma.StringNullableWithAggregatesFilter<"TournamentMatch"> | string | null
-  status?: Prisma.StringWithAggregatesFilter<"TournamentMatch"> | string
+  status?: Prisma.EnumMatchStatusWithAggregatesFilter<"TournamentMatch"> | $Enums.MatchStatus
   votesA?: Prisma.IntWithAggregatesFilter<"TournamentMatch"> | number
   votesB?: Prisma.IntWithAggregatesFilter<"TournamentMatch"> | number
   currentlyPlayingSongId?: Prisma.StringNullableWithAggregatesFilter<"TournamentMatch"> | string | null
-  createdAt?: Prisma.IntWithAggregatesFilter<"TournamentMatch"> | number
+  createdAt?: Prisma.DateTimeWithAggregatesFilter<"TournamentMatch"> | Date | string
 }
 
 export type TournamentMatchCreateInput = {
   id: string
   roundNumber: number
-  matchNumber: number
   winnerId?: string | null
-  status?: string
+  status?: $Enums.MatchStatus
   votesA?: number
   votesB?: number
-  createdAt: number
+  createdAt: Date | string
   tournament: Prisma.TournamentCreateNestedOneWithoutMatchesInput
   songA?: Prisma.SongCreateNestedOneWithoutMatchesAsAInput
   songB?: Prisma.SongCreateNestedOneWithoutMatchesAsBInput
@@ -396,27 +375,25 @@ export type TournamentMatchUncheckedCreateInput = {
   id: string
   tournamentId: string
   roundNumber: number
-  matchNumber: number
   songAId?: string | null
   songBId?: string | null
   winnerId?: string | null
-  status?: string
+  status?: $Enums.MatchStatus
   votesA?: number
   votesB?: number
   currentlyPlayingSongId?: string | null
-  createdAt: number
+  createdAt: Date | string
   votes?: Prisma.VoteUncheckedCreateNestedManyWithoutMatchInput
 }
 
 export type TournamentMatchUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   roundNumber?: Prisma.IntFieldUpdateOperationsInput | number
-  matchNumber?: Prisma.IntFieldUpdateOperationsInput | number
   winnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  status?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumMatchStatusFieldUpdateOperationsInput | $Enums.MatchStatus
   votesA?: Prisma.IntFieldUpdateOperationsInput | number
   votesB?: Prisma.IntFieldUpdateOperationsInput | number
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tournament?: Prisma.TournamentUpdateOneRequiredWithoutMatchesNestedInput
   songA?: Prisma.SongUpdateOneWithoutMatchesAsANestedInput
   songB?: Prisma.SongUpdateOneWithoutMatchesAsBNestedInput
@@ -428,15 +405,14 @@ export type TournamentMatchUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   tournamentId?: Prisma.StringFieldUpdateOperationsInput | string
   roundNumber?: Prisma.IntFieldUpdateOperationsInput | number
-  matchNumber?: Prisma.IntFieldUpdateOperationsInput | number
   songAId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   songBId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   winnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  status?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumMatchStatusFieldUpdateOperationsInput | $Enums.MatchStatus
   votesA?: Prisma.IntFieldUpdateOperationsInput | number
   votesB?: Prisma.IntFieldUpdateOperationsInput | number
   currentlyPlayingSongId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   votes?: Prisma.VoteUncheckedUpdateManyWithoutMatchNestedInput
 }
 
@@ -444,41 +420,38 @@ export type TournamentMatchCreateManyInput = {
   id: string
   tournamentId: string
   roundNumber: number
-  matchNumber: number
   songAId?: string | null
   songBId?: string | null
   winnerId?: string | null
-  status?: string
+  status?: $Enums.MatchStatus
   votesA?: number
   votesB?: number
   currentlyPlayingSongId?: string | null
-  createdAt: number
+  createdAt: Date | string
 }
 
 export type TournamentMatchUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   roundNumber?: Prisma.IntFieldUpdateOperationsInput | number
-  matchNumber?: Prisma.IntFieldUpdateOperationsInput | number
   winnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  status?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumMatchStatusFieldUpdateOperationsInput | $Enums.MatchStatus
   votesA?: Prisma.IntFieldUpdateOperationsInput | number
   votesB?: Prisma.IntFieldUpdateOperationsInput | number
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type TournamentMatchUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   tournamentId?: Prisma.StringFieldUpdateOperationsInput | string
   roundNumber?: Prisma.IntFieldUpdateOperationsInput | number
-  matchNumber?: Prisma.IntFieldUpdateOperationsInput | number
   songAId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   songBId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   winnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  status?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumMatchStatusFieldUpdateOperationsInput | $Enums.MatchStatus
   votesA?: Prisma.IntFieldUpdateOperationsInput | number
   votesB?: Prisma.IntFieldUpdateOperationsInput | number
   currentlyPlayingSongId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type TournamentMatchListRelationFilter = {
@@ -495,7 +468,6 @@ export type TournamentMatchCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   tournamentId?: Prisma.SortOrder
   roundNumber?: Prisma.SortOrder
-  matchNumber?: Prisma.SortOrder
   songAId?: Prisma.SortOrder
   songBId?: Prisma.SortOrder
   winnerId?: Prisma.SortOrder
@@ -508,17 +480,14 @@ export type TournamentMatchCountOrderByAggregateInput = {
 
 export type TournamentMatchAvgOrderByAggregateInput = {
   roundNumber?: Prisma.SortOrder
-  matchNumber?: Prisma.SortOrder
   votesA?: Prisma.SortOrder
   votesB?: Prisma.SortOrder
-  createdAt?: Prisma.SortOrder
 }
 
 export type TournamentMatchMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   tournamentId?: Prisma.SortOrder
   roundNumber?: Prisma.SortOrder
-  matchNumber?: Prisma.SortOrder
   songAId?: Prisma.SortOrder
   songBId?: Prisma.SortOrder
   winnerId?: Prisma.SortOrder
@@ -533,7 +502,6 @@ export type TournamentMatchMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   tournamentId?: Prisma.SortOrder
   roundNumber?: Prisma.SortOrder
-  matchNumber?: Prisma.SortOrder
   songAId?: Prisma.SortOrder
   songBId?: Prisma.SortOrder
   winnerId?: Prisma.SortOrder
@@ -546,10 +514,8 @@ export type TournamentMatchMinOrderByAggregateInput = {
 
 export type TournamentMatchSumOrderByAggregateInput = {
   roundNumber?: Prisma.SortOrder
-  matchNumber?: Prisma.SortOrder
   votesA?: Prisma.SortOrder
   votesB?: Prisma.SortOrder
-  createdAt?: Prisma.SortOrder
 }
 
 export type TournamentMatchScalarRelationFilter = {
@@ -725,6 +691,10 @@ export type TournamentMatchUncheckedUpdateManyWithoutCurrentlyPlayingNestedInput
   deleteMany?: Prisma.TournamentMatchScalarWhereInput | Prisma.TournamentMatchScalarWhereInput[]
 }
 
+export type EnumMatchStatusFieldUpdateOperationsInput = {
+  set?: $Enums.MatchStatus
+}
+
 export type TournamentMatchCreateNestedOneWithoutVotesInput = {
   create?: Prisma.XOR<Prisma.TournamentMatchCreateWithoutVotesInput, Prisma.TournamentMatchUncheckedCreateWithoutVotesInput>
   connectOrCreate?: Prisma.TournamentMatchCreateOrConnectWithoutVotesInput
@@ -742,12 +712,11 @@ export type TournamentMatchUpdateOneRequiredWithoutVotesNestedInput = {
 export type TournamentMatchCreateWithoutTournamentInput = {
   id: string
   roundNumber: number
-  matchNumber: number
   winnerId?: string | null
-  status?: string
+  status?: $Enums.MatchStatus
   votesA?: number
   votesB?: number
-  createdAt: number
+  createdAt: Date | string
   songA?: Prisma.SongCreateNestedOneWithoutMatchesAsAInput
   songB?: Prisma.SongCreateNestedOneWithoutMatchesAsBInput
   currentlyPlaying?: Prisma.SongCreateNestedOneWithoutMatchesPlayingInput
@@ -757,15 +726,14 @@ export type TournamentMatchCreateWithoutTournamentInput = {
 export type TournamentMatchUncheckedCreateWithoutTournamentInput = {
   id: string
   roundNumber: number
-  matchNumber: number
   songAId?: string | null
   songBId?: string | null
   winnerId?: string | null
-  status?: string
+  status?: $Enums.MatchStatus
   votesA?: number
   votesB?: number
   currentlyPlayingSongId?: string | null
-  createdAt: number
+  createdAt: Date | string
   votes?: Prisma.VoteUncheckedCreateNestedManyWithoutMatchInput
 }
 
@@ -801,26 +769,24 @@ export type TournamentMatchScalarWhereInput = {
   id?: Prisma.StringFilter<"TournamentMatch"> | string
   tournamentId?: Prisma.StringFilter<"TournamentMatch"> | string
   roundNumber?: Prisma.IntFilter<"TournamentMatch"> | number
-  matchNumber?: Prisma.IntFilter<"TournamentMatch"> | number
   songAId?: Prisma.StringNullableFilter<"TournamentMatch"> | string | null
   songBId?: Prisma.StringNullableFilter<"TournamentMatch"> | string | null
   winnerId?: Prisma.StringNullableFilter<"TournamentMatch"> | string | null
-  status?: Prisma.StringFilter<"TournamentMatch"> | string
+  status?: Prisma.EnumMatchStatusFilter<"TournamentMatch"> | $Enums.MatchStatus
   votesA?: Prisma.IntFilter<"TournamentMatch"> | number
   votesB?: Prisma.IntFilter<"TournamentMatch"> | number
   currentlyPlayingSongId?: Prisma.StringNullableFilter<"TournamentMatch"> | string | null
-  createdAt?: Prisma.IntFilter<"TournamentMatch"> | number
+  createdAt?: Prisma.DateTimeFilter<"TournamentMatch"> | Date | string
 }
 
 export type TournamentMatchCreateWithoutSongAInput = {
   id: string
   roundNumber: number
-  matchNumber: number
   winnerId?: string | null
-  status?: string
+  status?: $Enums.MatchStatus
   votesA?: number
   votesB?: number
-  createdAt: number
+  createdAt: Date | string
   tournament: Prisma.TournamentCreateNestedOneWithoutMatchesInput
   songB?: Prisma.SongCreateNestedOneWithoutMatchesAsBInput
   currentlyPlaying?: Prisma.SongCreateNestedOneWithoutMatchesPlayingInput
@@ -831,14 +797,13 @@ export type TournamentMatchUncheckedCreateWithoutSongAInput = {
   id: string
   tournamentId: string
   roundNumber: number
-  matchNumber: number
   songBId?: string | null
   winnerId?: string | null
-  status?: string
+  status?: $Enums.MatchStatus
   votesA?: number
   votesB?: number
   currentlyPlayingSongId?: string | null
-  createdAt: number
+  createdAt: Date | string
   votes?: Prisma.VoteUncheckedCreateNestedManyWithoutMatchInput
 }
 
@@ -854,12 +819,11 @@ export type TournamentMatchCreateManySongAInputEnvelope = {
 export type TournamentMatchCreateWithoutSongBInput = {
   id: string
   roundNumber: number
-  matchNumber: number
   winnerId?: string | null
-  status?: string
+  status?: $Enums.MatchStatus
   votesA?: number
   votesB?: number
-  createdAt: number
+  createdAt: Date | string
   tournament: Prisma.TournamentCreateNestedOneWithoutMatchesInput
   songA?: Prisma.SongCreateNestedOneWithoutMatchesAsAInput
   currentlyPlaying?: Prisma.SongCreateNestedOneWithoutMatchesPlayingInput
@@ -870,14 +834,13 @@ export type TournamentMatchUncheckedCreateWithoutSongBInput = {
   id: string
   tournamentId: string
   roundNumber: number
-  matchNumber: number
   songAId?: string | null
   winnerId?: string | null
-  status?: string
+  status?: $Enums.MatchStatus
   votesA?: number
   votesB?: number
   currentlyPlayingSongId?: string | null
-  createdAt: number
+  createdAt: Date | string
   votes?: Prisma.VoteUncheckedCreateNestedManyWithoutMatchInput
 }
 
@@ -893,12 +856,11 @@ export type TournamentMatchCreateManySongBInputEnvelope = {
 export type TournamentMatchCreateWithoutCurrentlyPlayingInput = {
   id: string
   roundNumber: number
-  matchNumber: number
   winnerId?: string | null
-  status?: string
+  status?: $Enums.MatchStatus
   votesA?: number
   votesB?: number
-  createdAt: number
+  createdAt: Date | string
   tournament: Prisma.TournamentCreateNestedOneWithoutMatchesInput
   songA?: Prisma.SongCreateNestedOneWithoutMatchesAsAInput
   songB?: Prisma.SongCreateNestedOneWithoutMatchesAsBInput
@@ -909,14 +871,13 @@ export type TournamentMatchUncheckedCreateWithoutCurrentlyPlayingInput = {
   id: string
   tournamentId: string
   roundNumber: number
-  matchNumber: number
   songAId?: string | null
   songBId?: string | null
   winnerId?: string | null
-  status?: string
+  status?: $Enums.MatchStatus
   votesA?: number
   votesB?: number
-  createdAt: number
+  createdAt: Date | string
   votes?: Prisma.VoteUncheckedCreateNestedManyWithoutMatchInput
 }
 
@@ -980,12 +941,11 @@ export type TournamentMatchUpdateManyWithWhereWithoutCurrentlyPlayingInput = {
 export type TournamentMatchCreateWithoutVotesInput = {
   id: string
   roundNumber: number
-  matchNumber: number
   winnerId?: string | null
-  status?: string
+  status?: $Enums.MatchStatus
   votesA?: number
   votesB?: number
-  createdAt: number
+  createdAt: Date | string
   tournament: Prisma.TournamentCreateNestedOneWithoutMatchesInput
   songA?: Prisma.SongCreateNestedOneWithoutMatchesAsAInput
   songB?: Prisma.SongCreateNestedOneWithoutMatchesAsBInput
@@ -996,15 +956,14 @@ export type TournamentMatchUncheckedCreateWithoutVotesInput = {
   id: string
   tournamentId: string
   roundNumber: number
-  matchNumber: number
   songAId?: string | null
   songBId?: string | null
   winnerId?: string | null
-  status?: string
+  status?: $Enums.MatchStatus
   votesA?: number
   votesB?: number
   currentlyPlayingSongId?: string | null
-  createdAt: number
+  createdAt: Date | string
 }
 
 export type TournamentMatchCreateOrConnectWithoutVotesInput = {
@@ -1026,12 +985,11 @@ export type TournamentMatchUpdateToOneWithWhereWithoutVotesInput = {
 export type TournamentMatchUpdateWithoutVotesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   roundNumber?: Prisma.IntFieldUpdateOperationsInput | number
-  matchNumber?: Prisma.IntFieldUpdateOperationsInput | number
   winnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  status?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumMatchStatusFieldUpdateOperationsInput | $Enums.MatchStatus
   votesA?: Prisma.IntFieldUpdateOperationsInput | number
   votesB?: Prisma.IntFieldUpdateOperationsInput | number
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tournament?: Prisma.TournamentUpdateOneRequiredWithoutMatchesNestedInput
   songA?: Prisma.SongUpdateOneWithoutMatchesAsANestedInput
   songB?: Prisma.SongUpdateOneWithoutMatchesAsBNestedInput
@@ -1042,40 +1000,37 @@ export type TournamentMatchUncheckedUpdateWithoutVotesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   tournamentId?: Prisma.StringFieldUpdateOperationsInput | string
   roundNumber?: Prisma.IntFieldUpdateOperationsInput | number
-  matchNumber?: Prisma.IntFieldUpdateOperationsInput | number
   songAId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   songBId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   winnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  status?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumMatchStatusFieldUpdateOperationsInput | $Enums.MatchStatus
   votesA?: Prisma.IntFieldUpdateOperationsInput | number
   votesB?: Prisma.IntFieldUpdateOperationsInput | number
   currentlyPlayingSongId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type TournamentMatchCreateManyTournamentInput = {
   id: string
   roundNumber: number
-  matchNumber: number
   songAId?: string | null
   songBId?: string | null
   winnerId?: string | null
-  status?: string
+  status?: $Enums.MatchStatus
   votesA?: number
   votesB?: number
   currentlyPlayingSongId?: string | null
-  createdAt: number
+  createdAt: Date | string
 }
 
 export type TournamentMatchUpdateWithoutTournamentInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   roundNumber?: Prisma.IntFieldUpdateOperationsInput | number
-  matchNumber?: Prisma.IntFieldUpdateOperationsInput | number
   winnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  status?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumMatchStatusFieldUpdateOperationsInput | $Enums.MatchStatus
   votesA?: Prisma.IntFieldUpdateOperationsInput | number
   votesB?: Prisma.IntFieldUpdateOperationsInput | number
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   songA?: Prisma.SongUpdateOneWithoutMatchesAsANestedInput
   songB?: Prisma.SongUpdateOneWithoutMatchesAsBNestedInput
   currentlyPlaying?: Prisma.SongUpdateOneWithoutMatchesPlayingNestedInput
@@ -1085,83 +1040,77 @@ export type TournamentMatchUpdateWithoutTournamentInput = {
 export type TournamentMatchUncheckedUpdateWithoutTournamentInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   roundNumber?: Prisma.IntFieldUpdateOperationsInput | number
-  matchNumber?: Prisma.IntFieldUpdateOperationsInput | number
   songAId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   songBId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   winnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  status?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumMatchStatusFieldUpdateOperationsInput | $Enums.MatchStatus
   votesA?: Prisma.IntFieldUpdateOperationsInput | number
   votesB?: Prisma.IntFieldUpdateOperationsInput | number
   currentlyPlayingSongId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   votes?: Prisma.VoteUncheckedUpdateManyWithoutMatchNestedInput
 }
 
 export type TournamentMatchUncheckedUpdateManyWithoutTournamentInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   roundNumber?: Prisma.IntFieldUpdateOperationsInput | number
-  matchNumber?: Prisma.IntFieldUpdateOperationsInput | number
   songAId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   songBId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   winnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  status?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumMatchStatusFieldUpdateOperationsInput | $Enums.MatchStatus
   votesA?: Prisma.IntFieldUpdateOperationsInput | number
   votesB?: Prisma.IntFieldUpdateOperationsInput | number
   currentlyPlayingSongId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type TournamentMatchCreateManySongAInput = {
   id: string
   tournamentId: string
   roundNumber: number
-  matchNumber: number
   songBId?: string | null
   winnerId?: string | null
-  status?: string
+  status?: $Enums.MatchStatus
   votesA?: number
   votesB?: number
   currentlyPlayingSongId?: string | null
-  createdAt: number
+  createdAt: Date | string
 }
 
 export type TournamentMatchCreateManySongBInput = {
   id: string
   tournamentId: string
   roundNumber: number
-  matchNumber: number
   songAId?: string | null
   winnerId?: string | null
-  status?: string
+  status?: $Enums.MatchStatus
   votesA?: number
   votesB?: number
   currentlyPlayingSongId?: string | null
-  createdAt: number
+  createdAt: Date | string
 }
 
 export type TournamentMatchCreateManyCurrentlyPlayingInput = {
   id: string
   tournamentId: string
   roundNumber: number
-  matchNumber: number
   songAId?: string | null
   songBId?: string | null
   winnerId?: string | null
-  status?: string
+  status?: $Enums.MatchStatus
   votesA?: number
   votesB?: number
-  createdAt: number
+  createdAt: Date | string
 }
 
 export type TournamentMatchUpdateWithoutSongAInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   roundNumber?: Prisma.IntFieldUpdateOperationsInput | number
-  matchNumber?: Prisma.IntFieldUpdateOperationsInput | number
   winnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  status?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumMatchStatusFieldUpdateOperationsInput | $Enums.MatchStatus
   votesA?: Prisma.IntFieldUpdateOperationsInput | number
   votesB?: Prisma.IntFieldUpdateOperationsInput | number
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tournament?: Prisma.TournamentUpdateOneRequiredWithoutMatchesNestedInput
   songB?: Prisma.SongUpdateOneWithoutMatchesAsBNestedInput
   currentlyPlaying?: Prisma.SongUpdateOneWithoutMatchesPlayingNestedInput
@@ -1172,14 +1121,13 @@ export type TournamentMatchUncheckedUpdateWithoutSongAInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   tournamentId?: Prisma.StringFieldUpdateOperationsInput | string
   roundNumber?: Prisma.IntFieldUpdateOperationsInput | number
-  matchNumber?: Prisma.IntFieldUpdateOperationsInput | number
   songBId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   winnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  status?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumMatchStatusFieldUpdateOperationsInput | $Enums.MatchStatus
   votesA?: Prisma.IntFieldUpdateOperationsInput | number
   votesB?: Prisma.IntFieldUpdateOperationsInput | number
   currentlyPlayingSongId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   votes?: Prisma.VoteUncheckedUpdateManyWithoutMatchNestedInput
 }
 
@@ -1187,25 +1135,23 @@ export type TournamentMatchUncheckedUpdateManyWithoutSongAInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   tournamentId?: Prisma.StringFieldUpdateOperationsInput | string
   roundNumber?: Prisma.IntFieldUpdateOperationsInput | number
-  matchNumber?: Prisma.IntFieldUpdateOperationsInput | number
   songBId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   winnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  status?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumMatchStatusFieldUpdateOperationsInput | $Enums.MatchStatus
   votesA?: Prisma.IntFieldUpdateOperationsInput | number
   votesB?: Prisma.IntFieldUpdateOperationsInput | number
   currentlyPlayingSongId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type TournamentMatchUpdateWithoutSongBInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   roundNumber?: Prisma.IntFieldUpdateOperationsInput | number
-  matchNumber?: Prisma.IntFieldUpdateOperationsInput | number
   winnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  status?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumMatchStatusFieldUpdateOperationsInput | $Enums.MatchStatus
   votesA?: Prisma.IntFieldUpdateOperationsInput | number
   votesB?: Prisma.IntFieldUpdateOperationsInput | number
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tournament?: Prisma.TournamentUpdateOneRequiredWithoutMatchesNestedInput
   songA?: Prisma.SongUpdateOneWithoutMatchesAsANestedInput
   currentlyPlaying?: Prisma.SongUpdateOneWithoutMatchesPlayingNestedInput
@@ -1216,14 +1162,13 @@ export type TournamentMatchUncheckedUpdateWithoutSongBInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   tournamentId?: Prisma.StringFieldUpdateOperationsInput | string
   roundNumber?: Prisma.IntFieldUpdateOperationsInput | number
-  matchNumber?: Prisma.IntFieldUpdateOperationsInput | number
   songAId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   winnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  status?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumMatchStatusFieldUpdateOperationsInput | $Enums.MatchStatus
   votesA?: Prisma.IntFieldUpdateOperationsInput | number
   votesB?: Prisma.IntFieldUpdateOperationsInput | number
   currentlyPlayingSongId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   votes?: Prisma.VoteUncheckedUpdateManyWithoutMatchNestedInput
 }
 
@@ -1231,25 +1176,23 @@ export type TournamentMatchUncheckedUpdateManyWithoutSongBInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   tournamentId?: Prisma.StringFieldUpdateOperationsInput | string
   roundNumber?: Prisma.IntFieldUpdateOperationsInput | number
-  matchNumber?: Prisma.IntFieldUpdateOperationsInput | number
   songAId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   winnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  status?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumMatchStatusFieldUpdateOperationsInput | $Enums.MatchStatus
   votesA?: Prisma.IntFieldUpdateOperationsInput | number
   votesB?: Prisma.IntFieldUpdateOperationsInput | number
   currentlyPlayingSongId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type TournamentMatchUpdateWithoutCurrentlyPlayingInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   roundNumber?: Prisma.IntFieldUpdateOperationsInput | number
-  matchNumber?: Prisma.IntFieldUpdateOperationsInput | number
   winnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  status?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumMatchStatusFieldUpdateOperationsInput | $Enums.MatchStatus
   votesA?: Prisma.IntFieldUpdateOperationsInput | number
   votesB?: Prisma.IntFieldUpdateOperationsInput | number
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tournament?: Prisma.TournamentUpdateOneRequiredWithoutMatchesNestedInput
   songA?: Prisma.SongUpdateOneWithoutMatchesAsANestedInput
   songB?: Prisma.SongUpdateOneWithoutMatchesAsBNestedInput
@@ -1260,14 +1203,13 @@ export type TournamentMatchUncheckedUpdateWithoutCurrentlyPlayingInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   tournamentId?: Prisma.StringFieldUpdateOperationsInput | string
   roundNumber?: Prisma.IntFieldUpdateOperationsInput | number
-  matchNumber?: Prisma.IntFieldUpdateOperationsInput | number
   songAId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   songBId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   winnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  status?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumMatchStatusFieldUpdateOperationsInput | $Enums.MatchStatus
   votesA?: Prisma.IntFieldUpdateOperationsInput | number
   votesB?: Prisma.IntFieldUpdateOperationsInput | number
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   votes?: Prisma.VoteUncheckedUpdateManyWithoutMatchNestedInput
 }
 
@@ -1275,14 +1217,13 @@ export type TournamentMatchUncheckedUpdateManyWithoutCurrentlyPlayingInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   tournamentId?: Prisma.StringFieldUpdateOperationsInput | string
   roundNumber?: Prisma.IntFieldUpdateOperationsInput | number
-  matchNumber?: Prisma.IntFieldUpdateOperationsInput | number
   songAId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   songBId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   winnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  status?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumMatchStatusFieldUpdateOperationsInput | $Enums.MatchStatus
   votesA?: Prisma.IntFieldUpdateOperationsInput | number
   votesB?: Prisma.IntFieldUpdateOperationsInput | number
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 
@@ -1320,7 +1261,6 @@ export type TournamentMatchSelect<ExtArgs extends runtime.Types.Extensions.Inter
   id?: boolean
   tournamentId?: boolean
   roundNumber?: boolean
-  matchNumber?: boolean
   songAId?: boolean
   songBId?: boolean
   winnerId?: boolean
@@ -1341,7 +1281,6 @@ export type TournamentMatchSelectCreateManyAndReturn<ExtArgs extends runtime.Typ
   id?: boolean
   tournamentId?: boolean
   roundNumber?: boolean
-  matchNumber?: boolean
   songAId?: boolean
   songBId?: boolean
   winnerId?: boolean
@@ -1360,7 +1299,6 @@ export type TournamentMatchSelectUpdateManyAndReturn<ExtArgs extends runtime.Typ
   id?: boolean
   tournamentId?: boolean
   roundNumber?: boolean
-  matchNumber?: boolean
   songAId?: boolean
   songBId?: boolean
   winnerId?: boolean
@@ -1379,7 +1317,6 @@ export type TournamentMatchSelectScalar = {
   id?: boolean
   tournamentId?: boolean
   roundNumber?: boolean
-  matchNumber?: boolean
   songAId?: boolean
   songBId?: boolean
   winnerId?: boolean
@@ -1390,7 +1327,7 @@ export type TournamentMatchSelectScalar = {
   createdAt?: boolean
 }
 
-export type TournamentMatchOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "tournamentId" | "roundNumber" | "matchNumber" | "songAId" | "songBId" | "winnerId" | "status" | "votesA" | "votesB" | "currentlyPlayingSongId" | "createdAt", ExtArgs["result"]["tournamentMatch"]>
+export type TournamentMatchOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "tournamentId" | "roundNumber" | "songAId" | "songBId" | "winnerId" | "status" | "votesA" | "votesB" | "currentlyPlayingSongId" | "createdAt", ExtArgs["result"]["tournamentMatch"]>
 export type TournamentMatchInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   tournament?: boolean | Prisma.TournamentDefaultArgs<ExtArgs>
   songA?: boolean | Prisma.TournamentMatch$songAArgs<ExtArgs>
@@ -1425,15 +1362,14 @@ export type $TournamentMatchPayload<ExtArgs extends runtime.Types.Extensions.Int
     id: string
     tournamentId: string
     roundNumber: number
-    matchNumber: number
     songAId: string | null
     songBId: string | null
     winnerId: string | null
-    status: string
+    status: $Enums.MatchStatus
     votesA: number
     votesB: number
     currentlyPlayingSongId: string | null
-    createdAt: number
+    createdAt: Date
   }, ExtArgs["result"]["tournamentMatch"]>
   composites: {}
 }
@@ -1865,15 +1801,14 @@ export interface TournamentMatchFieldRefs {
   readonly id: Prisma.FieldRef<"TournamentMatch", 'String'>
   readonly tournamentId: Prisma.FieldRef<"TournamentMatch", 'String'>
   readonly roundNumber: Prisma.FieldRef<"TournamentMatch", 'Int'>
-  readonly matchNumber: Prisma.FieldRef<"TournamentMatch", 'Int'>
   readonly songAId: Prisma.FieldRef<"TournamentMatch", 'String'>
   readonly songBId: Prisma.FieldRef<"TournamentMatch", 'String'>
   readonly winnerId: Prisma.FieldRef<"TournamentMatch", 'String'>
-  readonly status: Prisma.FieldRef<"TournamentMatch", 'String'>
+  readonly status: Prisma.FieldRef<"TournamentMatch", 'MatchStatus'>
   readonly votesA: Prisma.FieldRef<"TournamentMatch", 'Int'>
   readonly votesB: Prisma.FieldRef<"TournamentMatch", 'Int'>
   readonly currentlyPlayingSongId: Prisma.FieldRef<"TournamentMatch", 'String'>
-  readonly createdAt: Prisma.FieldRef<"TournamentMatch", 'Int'>
+  readonly createdAt: Prisma.FieldRef<"TournamentMatch", 'DateTime'>
 }
     
 

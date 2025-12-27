@@ -34,7 +34,7 @@ export default function LobbyPage() {
     playerId: currentPlayerId,
   });
 
-  const isOwner = gameSession?.owner_id === authSession?.user?.id;
+  const isOwner = gameSession?.ownerId === authSession?.user?.id;
   const hasJoined = !!currentPlayerId;
 
   const [joinError, setJoinError] = useState("");

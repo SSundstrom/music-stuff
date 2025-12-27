@@ -3,12 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "npx prisma migrate deploy && npm run db:init && next dev --experimental-https",
-    "build": "npx prisma generate && npx prisma migrate deploy && next build",
+    "dev": "npx prisma migrate deploy && next dev --experimental-https",
+    "build": "npx prisma generate && next build",
     "start": "next start",
     "test:lint": "eslint",
     "test:lint:fix": "eslint --fix",
-    "db:clear": "rm -f data/game.db data/better-auth.db && npx prisma migrate deploy"
+    "db:gen": "prisma generate",
+    "db:reset": "prisma migrate reset",
+    "db:migrate": "prisma migrate dev"
   },
   "dependencies": {
     "@prisma/client": "7.2.0",

@@ -25,33 +25,21 @@ export const auth = betterAuth({
   },
 });
 
+const providerId = "spotify";
+
 export async function getSpotifyAccessToken(
   userId: string,
 ): Promise<string | null> {
-  const account = prisma();
-  // .prepare(
-  //   `SELECT accessToken, accessTokenExpiresAt, refreshToken FROM account
-  //    WHERE userId = ? AND providerId = 'spotify'`,
-  // )
-  // .get(userId) as
-  // | {
-  //     accessToken: string;
-  //     accessTokenExpiresAt: string | number | null;
-  //     refreshToken: string;
-  //   }
-  // | undefined;
+  const account = await prisma.account.findUnique({
+    where: { userId, providerId },
+  });
 
   if (!account) {
     console.log(`[auth] No Spotify account found for user ${userId}`);
     return null;
   }
 
-  // Convert ISO string to timestamp if needed
-  const expiresAtMs =
-    typeof account.accessTokenExpiresAt === "string"
-      ? new Date(account.accessTokenExpiresAt).getTime()
-      : (account.accessTokenExpiresAt ?? 0);
-
+  const expiresAtMs = account.accessTokenExpiresAt?.getTime() ?? 0;
   const now = Date.now();
   const timeUntilExpiry = expiresAtMs - now;
   console.log(
@@ -140,16 +128,25 @@ async function refreshSpotifyToken(
   // Update the access token and expiration time, and refresh token if Spotify provided a new one
   if (data.refresh_token) {
     console.log(`[auth] Spotify provided new refresh token, updating database`);
-    db.prepare(
-      `UPDATE account SET accessToken = ?, accessTokenExpiresAt = ?, refreshToken = ? WHERE userId = ? AND providerId = 'spotify'`,
-    ).run(data.access_token, expiresAtISO, data.refresh_token, userId);
+    prisma.account.update({
+      data: {
+        accessToken: data.access_token,
+        accessTokenExpiresAt: expiresAtISO,
+        refreshToken: data.refresh_token,
+      },
+      where: { userId, providerId },
+    });
   } else {
     console.log(
       `[auth] No new refresh token from Spotify, keeping existing one`,
     );
-    db.prepare(
-      `UPDATE account SET accessToken = ?, accessTokenExpiresAt = ? WHERE userId = ? AND providerId = 'spotify'`,
-    ).run(data.access_token, expiresAtISO, userId);
+    prisma.account.update({
+      data: {
+        accessToken: data.access_token,
+        accessTokenExpiresAt: expiresAtISO,
+      },
+      where: { userId, providerId },
+    });
   }
 
   console.log(`[auth] Token updated in database for user ${userId}`);

@@ -26,3 +26,13 @@ export const TournamentStatus = {
 } as const
 
 export type TournamentStatus = (typeof TournamentStatus)[keyof typeof TournamentStatus]
+
+
+export const MatchStatus = {
+  pending: 'pending',
+  playing: 'playing',
+  voting: 'voting',
+  completed: 'completed'
+} as const
+
+export type MatchStatus = (typeof MatchStatus)[keyof typeof MatchStatus]

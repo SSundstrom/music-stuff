@@ -11,8 +11,12 @@ import {
   updateTournament,
   getMatchVoteCount,
 } from "./game-session";
-import { determineMatchWinner, advanceToNextMatch, getNextMatch } from "./tournament";
-import type { SSEMessage } from "@/types/game";
+import {
+  determineMatchWinner,
+  advanceToNextMatch,
+  getNextMatch,
+} from "./tournament";
+import type { MatchEndedMessage, SSEMessage } from "@/types/game";
 
 let initialized = false;
 
@@ -58,15 +62,25 @@ export function initializeEventHandlers(): void {
       const winnerId = determineMatchWinner(match);
 
       // Update match with winner
-      await updateMatch(matchId, {
-        winner_id: winnerId,
+      const updatedMatch = await updateMatch(matchId, {
+        winnerId: winnerId,
         status: "completed",
       });
+
+      sseManager.broadcast(sessionId, {
+        type: "match_ended",
+        data: {
+          matchId,
+          winnerId,
+          votesA: match.votesA,
+          votesB: match.votesB,
+        },
+      } satisfies MatchEndedMessage);
 
       // Process elimination and check if tournament is over
       const { finished, winningSongId } = advanceToNextMatch(
         tournamentId,
-        { ...match, winner_id: winnerId, status: "completed" },
+        updatedMatch,
         tournament,
       );
 
@@ -74,7 +88,7 @@ export function initializeEventHandlers(): void {
         // Tournament finished
         await updateTournament(tournamentId, {
           status: "finished",
-          winning_song_id: winningSongId,
+          winningSongId: winningSongId,
         });
         eventBus.emit("game:finished", {
           sessionId,
@@ -105,12 +119,16 @@ export function initializeEventHandlers(): void {
       } else {
         // Continue tournament with next match
         const allSongs = await getSongs(tournamentId, 0);
-        const eliminatedIds = JSON.parse(tournament.eliminated_song_ids || "[]");
 
         try {
           // Creates next match in the tournament
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          const _nextMatch = getNextMatch(tournamentId, allSongs, winnerId, eliminatedIds);
+          const _nextMatch = getNextMatch(
+            tournamentId,
+            allSongs,
+            winnerId,
+            eliminatedIds,
+          );
 
           // Broadcast updated game state
           const session = await getSession(sessionId);

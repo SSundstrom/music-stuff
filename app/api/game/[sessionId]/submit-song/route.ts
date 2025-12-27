@@ -1,10 +1,15 @@
-import { getSession, getActiveTournament, addSong, getPlayer } from "@/lib/game-session";
+import {
+  getSession,
+  getActiveTournament,
+  addSong,
+  getPlayer,
+} from "@/lib/game-session";
 import { SubmitSongRequestSchema, type SSEMessage } from "@/types/game";
 import { sseManager } from "@/lib/sse-manager";
 
 export async function POST(
   request: Request,
-  { params }: { params: Promise<{ sessionId: string }> }
+  { params }: { params: Promise<{ sessionId: string }> },
 ) {
   try {
     const { sessionId } = await params;
@@ -20,17 +25,23 @@ export async function POST(
 
     const tournament = await getActiveTournament(sessionId);
     if (!tournament) {
-      return new Response(JSON.stringify({ error: "No active tournament found" }), {
-        status: 404,
-        headers: { "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({ error: "No active tournament found" }),
+        {
+          status: 404,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
     }
 
     if (tournament.status !== "song_submission") {
-      return new Response(JSON.stringify({ error: "Not in song submission phase" }), {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({ error: "Not in song submission phase" }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
     }
 
     // Validate request body
@@ -47,23 +58,25 @@ export async function POST(
 
     // Verify player exists and is in this session
     const player = await getPlayer(playerId);
-    if (!player || player.session_id !== sessionId) {
-      return new Response(JSON.stringify({ error: "Player not in this session" }), {
-        status: 403,
-        headers: { "Content-Type": "application/json" },
-      });
+    if (!player || player.sessionId !== sessionId) {
+      return new Response(
+        JSON.stringify({ error: "Player not in this session" }),
+        {
+          status: 403,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
     }
 
     // Add song to database (using round_number 0 for all submissions)
     const song = await addSong(
       tournament.id,
       playerId,
-      0,
-      validated.spotify_id,
-      validated.song_name,
-      validated.artist_name,
-      validated.start_time,
-      validated.image_url || null
+      validated.spotifyId,
+      validated.songName,
+      validated.artistName,
+      validated.startTime,
+      validated.imageUrl || null,
     );
 
     // Broadcast song_submitted message to all players

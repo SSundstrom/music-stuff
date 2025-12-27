@@ -18,7 +18,7 @@ export async function POST(request: Request) {
     const body = await request.json();
     const validated = CreateSessionRequestSchema.parse(body);
 
-    if (validated.owner_id !== session.user.id) {
+    if (validated.ownerId !== session.user.id) {
       return new Response(
         JSON.stringify({ error: "Cannot create session for another user" }),
         {

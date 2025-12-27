@@ -11,12 +11,12 @@ export async function POST(
     const { sessionId } = await params;
     const body = await request.json();
     const validated = JoinSessionRequestSchema.parse({
-      session_id: sessionId,
+      sessionId: sessionId,
       ...body,
     });
 
     // Check if session exists
-    const session = await getSession(validated.session_id);
+    const session = await getSession(validated.sessionId);
     if (!session) {
       return new Response(JSON.stringify({ error: "Session not found" }), {
         status: 404,
@@ -29,13 +29,13 @@ export async function POST(
       headers: request.headers,
     });
 
-    const isOwner = authSession?.user?.id === session.owner_id;
+    const isOwner = authSession?.user?.id === session.ownerId;
 
     // Add player to session
-    const player = await addPlayer(validated.session_id, validated.player_name, isOwner);
+    const player = await addPlayer(validated.sessionId, validated.playerName, isOwner);
 
     // Broadcast player_joined message to all players in the session
-    sseManager.broadcast(validated.session_id, {
+    sseManager.broadcast(validated.sessionId, {
       type: "player_joined",
       data: player,
     } satisfies SSEMessage);

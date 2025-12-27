@@ -30,7 +30,7 @@ export async function DELETE(
     const authSession = await auth.api.getSession({
       headers: request.headers,
     });
-    if (session.owner_id !== authSession?.user?.id) {
+    if (session.ownerId !== authSession?.user?.id) {
       return new Response(JSON.stringify({ error: "Only the owner can kick players" }), {
         status: 403,
         headers: { "Content-Type": "application/json" },
@@ -38,7 +38,7 @@ export async function DELETE(
     }
 
     const player = await getPlayer(playerId);
-    if (!player || player.session_id !== sessionId) {
+    if (!player || player.sessionId !== sessionId) {
       return new Response(JSON.stringify({ error: "Player not found" }), {
         status: 404,
         headers: { "Content-Type": "application/json" },
@@ -50,7 +50,7 @@ export async function DELETE(
     // Broadcast player_left message to all players
     sseManager.broadcast(sessionId, {
       type: "player_left",
-      data: { player_id: playerId },
+      data: { playerId: playerId },
     } satisfies SSEMessage);
 
     return new Response(JSON.stringify({ success: true }), {

@@ -27,47 +27,40 @@ export type AggregateSong = {
 }
 
 export type SongAvgAggregateOutputType = {
-  roundNumber: number | null
   startTime: number | null
-  createdAt: number | null
 }
 
 export type SongSumAggregateOutputType = {
-  roundNumber: number | null
   startTime: number | null
-  createdAt: number | null
 }
 
 export type SongMinAggregateOutputType = {
   id: string | null
   tournamentId: string | null
-  roundNumber: number | null
   spotifyId: string | null
   playerId: string | null
   startTime: number | null
   songName: string | null
   artistName: string | null
   imageUrl: string | null
-  createdAt: number | null
+  createdAt: Date | null
 }
 
 export type SongMaxAggregateOutputType = {
   id: string | null
   tournamentId: string | null
-  roundNumber: number | null
   spotifyId: string | null
   playerId: string | null
   startTime: number | null
   songName: string | null
   artistName: string | null
   imageUrl: string | null
-  createdAt: number | null
+  createdAt: Date | null
 }
 
 export type SongCountAggregateOutputType = {
   id: number
   tournamentId: number
-  roundNumber: number
   spotifyId: number
   playerId: number
   startTime: number
@@ -80,21 +73,16 @@ export type SongCountAggregateOutputType = {
 
 
 export type SongAvgAggregateInputType = {
-  roundNumber?: true
   startTime?: true
-  createdAt?: true
 }
 
 export type SongSumAggregateInputType = {
-  roundNumber?: true
   startTime?: true
-  createdAt?: true
 }
 
 export type SongMinAggregateInputType = {
   id?: true
   tournamentId?: true
-  roundNumber?: true
   spotifyId?: true
   playerId?: true
   startTime?: true
@@ -107,7 +95,6 @@ export type SongMinAggregateInputType = {
 export type SongMaxAggregateInputType = {
   id?: true
   tournamentId?: true
-  roundNumber?: true
   spotifyId?: true
   playerId?: true
   startTime?: true
@@ -120,7 +107,6 @@ export type SongMaxAggregateInputType = {
 export type SongCountAggregateInputType = {
   id?: true
   tournamentId?: true
-  roundNumber?: true
   spotifyId?: true
   playerId?: true
   startTime?: true
@@ -220,14 +206,13 @@ export type SongGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalArg
 export type SongGroupByOutputType = {
   id: string
   tournamentId: string
-  roundNumber: number
   spotifyId: string
   playerId: string
   startTime: number
   songName: string
   artistName: string
   imageUrl: string | null
-  createdAt: number
+  createdAt: Date
   _count: SongCountAggregateOutputType | null
   _avg: SongAvgAggregateOutputType | null
   _sum: SongSumAggregateOutputType | null
@@ -256,14 +241,13 @@ export type SongWhereInput = {
   NOT?: Prisma.SongWhereInput | Prisma.SongWhereInput[]
   id?: Prisma.StringFilter<"Song"> | string
   tournamentId?: Prisma.StringFilter<"Song"> | string
-  roundNumber?: Prisma.IntFilter<"Song"> | number
   spotifyId?: Prisma.StringFilter<"Song"> | string
   playerId?: Prisma.StringFilter<"Song"> | string
   startTime?: Prisma.IntFilter<"Song"> | number
   songName?: Prisma.StringFilter<"Song"> | string
   artistName?: Prisma.StringFilter<"Song"> | string
   imageUrl?: Prisma.StringNullableFilter<"Song"> | string | null
-  createdAt?: Prisma.IntFilter<"Song"> | number
+  createdAt?: Prisma.DateTimeFilter<"Song"> | Date | string
   tournament?: Prisma.XOR<Prisma.TournamentScalarRelationFilter, Prisma.TournamentWhereInput>
   player?: Prisma.XOR<Prisma.PlayerScalarRelationFilter, Prisma.PlayerWhereInput>
   matchesAsA?: Prisma.TournamentMatchListRelationFilter
@@ -275,7 +259,6 @@ export type SongWhereInput = {
 export type SongOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   tournamentId?: Prisma.SortOrder
-  roundNumber?: Prisma.SortOrder
   spotifyId?: Prisma.SortOrder
   playerId?: Prisma.SortOrder
   startTime?: Prisma.SortOrder
@@ -293,30 +276,29 @@ export type SongOrderByWithRelationInput = {
 
 export type SongWhereUniqueInput = Prisma.AtLeast<{
   id?: string
+  playerId_tournamentId?: Prisma.SongPlayerIdTournamentIdCompoundUniqueInput
   AND?: Prisma.SongWhereInput | Prisma.SongWhereInput[]
   OR?: Prisma.SongWhereInput[]
   NOT?: Prisma.SongWhereInput | Prisma.SongWhereInput[]
   tournamentId?: Prisma.StringFilter<"Song"> | string
-  roundNumber?: Prisma.IntFilter<"Song"> | number
   spotifyId?: Prisma.StringFilter<"Song"> | string
   playerId?: Prisma.StringFilter<"Song"> | string
   startTime?: Prisma.IntFilter<"Song"> | number
   songName?: Prisma.StringFilter<"Song"> | string
   artistName?: Prisma.StringFilter<"Song"> | string
   imageUrl?: Prisma.StringNullableFilter<"Song"> | string | null
-  createdAt?: Prisma.IntFilter<"Song"> | number
+  createdAt?: Prisma.DateTimeFilter<"Song"> | Date | string
   tournament?: Prisma.XOR<Prisma.TournamentScalarRelationFilter, Prisma.TournamentWhereInput>
   player?: Prisma.XOR<Prisma.PlayerScalarRelationFilter, Prisma.PlayerWhereInput>
   matchesAsA?: Prisma.TournamentMatchListRelationFilter
   matchesAsB?: Prisma.TournamentMatchListRelationFilter
   votes?: Prisma.VoteListRelationFilter
   matchesPlaying?: Prisma.TournamentMatchListRelationFilter
-}, "id">
+}, "id" | "playerId_tournamentId">
 
 export type SongOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   tournamentId?: Prisma.SortOrder
-  roundNumber?: Prisma.SortOrder
   spotifyId?: Prisma.SortOrder
   playerId?: Prisma.SortOrder
   startTime?: Prisma.SortOrder
@@ -337,25 +319,23 @@ export type SongScalarWhereWithAggregatesInput = {
   NOT?: Prisma.SongScalarWhereWithAggregatesInput | Prisma.SongScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"Song"> | string
   tournamentId?: Prisma.StringWithAggregatesFilter<"Song"> | string
-  roundNumber?: Prisma.IntWithAggregatesFilter<"Song"> | number
   spotifyId?: Prisma.StringWithAggregatesFilter<"Song"> | string
   playerId?: Prisma.StringWithAggregatesFilter<"Song"> | string
   startTime?: Prisma.IntWithAggregatesFilter<"Song"> | number
   songName?: Prisma.StringWithAggregatesFilter<"Song"> | string
   artistName?: Prisma.StringWithAggregatesFilter<"Song"> | string
   imageUrl?: Prisma.StringNullableWithAggregatesFilter<"Song"> | string | null
-  createdAt?: Prisma.IntWithAggregatesFilter<"Song"> | number
+  createdAt?: Prisma.DateTimeWithAggregatesFilter<"Song"> | Date | string
 }
 
 export type SongCreateInput = {
   id: string
-  roundNumber: number
   spotifyId: string
   startTime: number
   songName: string
   artistName: string
   imageUrl?: string | null
-  createdAt: number
+  createdAt: Date | string
   tournament: Prisma.TournamentCreateNestedOneWithoutSongsInput
   player: Prisma.PlayerCreateNestedOneWithoutSongsInput
   matchesAsA?: Prisma.TournamentMatchCreateNestedManyWithoutSongAInput
@@ -367,14 +347,13 @@ export type SongCreateInput = {
 export type SongUncheckedCreateInput = {
   id: string
   tournamentId: string
-  roundNumber: number
   spotifyId: string
   playerId: string
   startTime: number
   songName: string
   artistName: string
   imageUrl?: string | null
-  createdAt: number
+  createdAt: Date | string
   matchesAsA?: Prisma.TournamentMatchUncheckedCreateNestedManyWithoutSongAInput
   matchesAsB?: Prisma.TournamentMatchUncheckedCreateNestedManyWithoutSongBInput
   votes?: Prisma.VoteUncheckedCreateNestedManyWithoutSongInput
@@ -383,13 +362,12 @@ export type SongUncheckedCreateInput = {
 
 export type SongUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  roundNumber?: Prisma.IntFieldUpdateOperationsInput | number
   spotifyId?: Prisma.StringFieldUpdateOperationsInput | string
   startTime?: Prisma.IntFieldUpdateOperationsInput | number
   songName?: Prisma.StringFieldUpdateOperationsInput | string
   artistName?: Prisma.StringFieldUpdateOperationsInput | string
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tournament?: Prisma.TournamentUpdateOneRequiredWithoutSongsNestedInput
   player?: Prisma.PlayerUpdateOneRequiredWithoutSongsNestedInput
   matchesAsA?: Prisma.TournamentMatchUpdateManyWithoutSongANestedInput
@@ -401,14 +379,13 @@ export type SongUpdateInput = {
 export type SongUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   tournamentId?: Prisma.StringFieldUpdateOperationsInput | string
-  roundNumber?: Prisma.IntFieldUpdateOperationsInput | number
   spotifyId?: Prisma.StringFieldUpdateOperationsInput | string
   playerId?: Prisma.StringFieldUpdateOperationsInput | string
   startTime?: Prisma.IntFieldUpdateOperationsInput | number
   songName?: Prisma.StringFieldUpdateOperationsInput | string
   artistName?: Prisma.StringFieldUpdateOperationsInput | string
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   matchesAsA?: Prisma.TournamentMatchUncheckedUpdateManyWithoutSongANestedInput
   matchesAsB?: Prisma.TournamentMatchUncheckedUpdateManyWithoutSongBNestedInput
   votes?: Prisma.VoteUncheckedUpdateManyWithoutSongNestedInput
@@ -418,38 +395,35 @@ export type SongUncheckedUpdateInput = {
 export type SongCreateManyInput = {
   id: string
   tournamentId: string
-  roundNumber: number
   spotifyId: string
   playerId: string
   startTime: number
   songName: string
   artistName: string
   imageUrl?: string | null
-  createdAt: number
+  createdAt: Date | string
 }
 
 export type SongUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  roundNumber?: Prisma.IntFieldUpdateOperationsInput | number
   spotifyId?: Prisma.StringFieldUpdateOperationsInput | string
   startTime?: Prisma.IntFieldUpdateOperationsInput | number
   songName?: Prisma.StringFieldUpdateOperationsInput | string
   artistName?: Prisma.StringFieldUpdateOperationsInput | string
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type SongUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   tournamentId?: Prisma.StringFieldUpdateOperationsInput | string
-  roundNumber?: Prisma.IntFieldUpdateOperationsInput | number
   spotifyId?: Prisma.StringFieldUpdateOperationsInput | string
   playerId?: Prisma.StringFieldUpdateOperationsInput | string
   startTime?: Prisma.IntFieldUpdateOperationsInput | number
   songName?: Prisma.StringFieldUpdateOperationsInput | string
   artistName?: Prisma.StringFieldUpdateOperationsInput | string
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type SongListRelationFilter = {
@@ -462,10 +436,14 @@ export type SongOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
 }
 
+export type SongPlayerIdTournamentIdCompoundUniqueInput = {
+  playerId: string
+  tournamentId: string
+}
+
 export type SongCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   tournamentId?: Prisma.SortOrder
-  roundNumber?: Prisma.SortOrder
   spotifyId?: Prisma.SortOrder
   playerId?: Prisma.SortOrder
   startTime?: Prisma.SortOrder
@@ -476,15 +454,12 @@ export type SongCountOrderByAggregateInput = {
 }
 
 export type SongAvgOrderByAggregateInput = {
-  roundNumber?: Prisma.SortOrder
   startTime?: Prisma.SortOrder
-  createdAt?: Prisma.SortOrder
 }
 
 export type SongMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   tournamentId?: Prisma.SortOrder
-  roundNumber?: Prisma.SortOrder
   spotifyId?: Prisma.SortOrder
   playerId?: Prisma.SortOrder
   startTime?: Prisma.SortOrder
@@ -497,7 +472,6 @@ export type SongMaxOrderByAggregateInput = {
 export type SongMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   tournamentId?: Prisma.SortOrder
-  roundNumber?: Prisma.SortOrder
   spotifyId?: Prisma.SortOrder
   playerId?: Prisma.SortOrder
   startTime?: Prisma.SortOrder
@@ -508,9 +482,7 @@ export type SongMinOrderByAggregateInput = {
 }
 
 export type SongSumOrderByAggregateInput = {
-  roundNumber?: Prisma.SortOrder
   startTime?: Prisma.SortOrder
-  createdAt?: Prisma.SortOrder
 }
 
 export type SongNullableScalarRelationFilter = {
@@ -671,13 +643,12 @@ export type SongUpdateOneRequiredWithoutVotesNestedInput = {
 
 export type SongCreateWithoutTournamentInput = {
   id: string
-  roundNumber: number
   spotifyId: string
   startTime: number
   songName: string
   artistName: string
   imageUrl?: string | null
-  createdAt: number
+  createdAt: Date | string
   player: Prisma.PlayerCreateNestedOneWithoutSongsInput
   matchesAsA?: Prisma.TournamentMatchCreateNestedManyWithoutSongAInput
   matchesAsB?: Prisma.TournamentMatchCreateNestedManyWithoutSongBInput
@@ -687,14 +658,13 @@ export type SongCreateWithoutTournamentInput = {
 
 export type SongUncheckedCreateWithoutTournamentInput = {
   id: string
-  roundNumber: number
   spotifyId: string
   playerId: string
   startTime: number
   songName: string
   artistName: string
   imageUrl?: string | null
-  createdAt: number
+  createdAt: Date | string
   matchesAsA?: Prisma.TournamentMatchUncheckedCreateNestedManyWithoutSongAInput
   matchesAsB?: Prisma.TournamentMatchUncheckedCreateNestedManyWithoutSongBInput
   votes?: Prisma.VoteUncheckedCreateNestedManyWithoutSongInput
@@ -732,25 +702,23 @@ export type SongScalarWhereInput = {
   NOT?: Prisma.SongScalarWhereInput | Prisma.SongScalarWhereInput[]
   id?: Prisma.StringFilter<"Song"> | string
   tournamentId?: Prisma.StringFilter<"Song"> | string
-  roundNumber?: Prisma.IntFilter<"Song"> | number
   spotifyId?: Prisma.StringFilter<"Song"> | string
   playerId?: Prisma.StringFilter<"Song"> | string
   startTime?: Prisma.IntFilter<"Song"> | number
   songName?: Prisma.StringFilter<"Song"> | string
   artistName?: Prisma.StringFilter<"Song"> | string
   imageUrl?: Prisma.StringNullableFilter<"Song"> | string | null
-  createdAt?: Prisma.IntFilter<"Song"> | number
+  createdAt?: Prisma.DateTimeFilter<"Song"> | Date | string
 }
 
 export type SongCreateWithoutPlayerInput = {
   id: string
-  roundNumber: number
   spotifyId: string
   startTime: number
   songName: string
   artistName: string
   imageUrl?: string | null
-  createdAt: number
+  createdAt: Date | string
   tournament: Prisma.TournamentCreateNestedOneWithoutSongsInput
   matchesAsA?: Prisma.TournamentMatchCreateNestedManyWithoutSongAInput
   matchesAsB?: Prisma.TournamentMatchCreateNestedManyWithoutSongBInput
@@ -761,13 +729,12 @@ export type SongCreateWithoutPlayerInput = {
 export type SongUncheckedCreateWithoutPlayerInput = {
   id: string
   tournamentId: string
-  roundNumber: number
   spotifyId: string
   startTime: number
   songName: string
   artistName: string
   imageUrl?: string | null
-  createdAt: number
+  createdAt: Date | string
   matchesAsA?: Prisma.TournamentMatchUncheckedCreateNestedManyWithoutSongAInput
   matchesAsB?: Prisma.TournamentMatchUncheckedCreateNestedManyWithoutSongBInput
   votes?: Prisma.VoteUncheckedCreateNestedManyWithoutSongInput
@@ -801,13 +768,12 @@ export type SongUpdateManyWithWhereWithoutPlayerInput = {
 
 export type SongCreateWithoutMatchesAsAInput = {
   id: string
-  roundNumber: number
   spotifyId: string
   startTime: number
   songName: string
   artistName: string
   imageUrl?: string | null
-  createdAt: number
+  createdAt: Date | string
   tournament: Prisma.TournamentCreateNestedOneWithoutSongsInput
   player: Prisma.PlayerCreateNestedOneWithoutSongsInput
   matchesAsB?: Prisma.TournamentMatchCreateNestedManyWithoutSongBInput
@@ -818,14 +784,13 @@ export type SongCreateWithoutMatchesAsAInput = {
 export type SongUncheckedCreateWithoutMatchesAsAInput = {
   id: string
   tournamentId: string
-  roundNumber: number
   spotifyId: string
   playerId: string
   startTime: number
   songName: string
   artistName: string
   imageUrl?: string | null
-  createdAt: number
+  createdAt: Date | string
   matchesAsB?: Prisma.TournamentMatchUncheckedCreateNestedManyWithoutSongBInput
   votes?: Prisma.VoteUncheckedCreateNestedManyWithoutSongInput
   matchesPlaying?: Prisma.TournamentMatchUncheckedCreateNestedManyWithoutCurrentlyPlayingInput
@@ -838,13 +803,12 @@ export type SongCreateOrConnectWithoutMatchesAsAInput = {
 
 export type SongCreateWithoutMatchesAsBInput = {
   id: string
-  roundNumber: number
   spotifyId: string
   startTime: number
   songName: string
   artistName: string
   imageUrl?: string | null
-  createdAt: number
+  createdAt: Date | string
   tournament: Prisma.TournamentCreateNestedOneWithoutSongsInput
   player: Prisma.PlayerCreateNestedOneWithoutSongsInput
   matchesAsA?: Prisma.TournamentMatchCreateNestedManyWithoutSongAInput
@@ -855,14 +819,13 @@ export type SongCreateWithoutMatchesAsBInput = {
 export type SongUncheckedCreateWithoutMatchesAsBInput = {
   id: string
   tournamentId: string
-  roundNumber: number
   spotifyId: string
   playerId: string
   startTime: number
   songName: string
   artistName: string
   imageUrl?: string | null
-  createdAt: number
+  createdAt: Date | string
   matchesAsA?: Prisma.TournamentMatchUncheckedCreateNestedManyWithoutSongAInput
   votes?: Prisma.VoteUncheckedCreateNestedManyWithoutSongInput
   matchesPlaying?: Prisma.TournamentMatchUncheckedCreateNestedManyWithoutCurrentlyPlayingInput
@@ -875,13 +838,12 @@ export type SongCreateOrConnectWithoutMatchesAsBInput = {
 
 export type SongCreateWithoutMatchesPlayingInput = {
   id: string
-  roundNumber: number
   spotifyId: string
   startTime: number
   songName: string
   artistName: string
   imageUrl?: string | null
-  createdAt: number
+  createdAt: Date | string
   tournament: Prisma.TournamentCreateNestedOneWithoutSongsInput
   player: Prisma.PlayerCreateNestedOneWithoutSongsInput
   matchesAsA?: Prisma.TournamentMatchCreateNestedManyWithoutSongAInput
@@ -892,14 +854,13 @@ export type SongCreateWithoutMatchesPlayingInput = {
 export type SongUncheckedCreateWithoutMatchesPlayingInput = {
   id: string
   tournamentId: string
-  roundNumber: number
   spotifyId: string
   playerId: string
   startTime: number
   songName: string
   artistName: string
   imageUrl?: string | null
-  createdAt: number
+  createdAt: Date | string
   matchesAsA?: Prisma.TournamentMatchUncheckedCreateNestedManyWithoutSongAInput
   matchesAsB?: Prisma.TournamentMatchUncheckedCreateNestedManyWithoutSongBInput
   votes?: Prisma.VoteUncheckedCreateNestedManyWithoutSongInput
@@ -923,13 +884,12 @@ export type SongUpdateToOneWithWhereWithoutMatchesAsAInput = {
 
 export type SongUpdateWithoutMatchesAsAInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  roundNumber?: Prisma.IntFieldUpdateOperationsInput | number
   spotifyId?: Prisma.StringFieldUpdateOperationsInput | string
   startTime?: Prisma.IntFieldUpdateOperationsInput | number
   songName?: Prisma.StringFieldUpdateOperationsInput | string
   artistName?: Prisma.StringFieldUpdateOperationsInput | string
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tournament?: Prisma.TournamentUpdateOneRequiredWithoutSongsNestedInput
   player?: Prisma.PlayerUpdateOneRequiredWithoutSongsNestedInput
   matchesAsB?: Prisma.TournamentMatchUpdateManyWithoutSongBNestedInput
@@ -940,14 +900,13 @@ export type SongUpdateWithoutMatchesAsAInput = {
 export type SongUncheckedUpdateWithoutMatchesAsAInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   tournamentId?: Prisma.StringFieldUpdateOperationsInput | string
-  roundNumber?: Prisma.IntFieldUpdateOperationsInput | number
   spotifyId?: Prisma.StringFieldUpdateOperationsInput | string
   playerId?: Prisma.StringFieldUpdateOperationsInput | string
   startTime?: Prisma.IntFieldUpdateOperationsInput | number
   songName?: Prisma.StringFieldUpdateOperationsInput | string
   artistName?: Prisma.StringFieldUpdateOperationsInput | string
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   matchesAsB?: Prisma.TournamentMatchUncheckedUpdateManyWithoutSongBNestedInput
   votes?: Prisma.VoteUncheckedUpdateManyWithoutSongNestedInput
   matchesPlaying?: Prisma.TournamentMatchUncheckedUpdateManyWithoutCurrentlyPlayingNestedInput
@@ -966,13 +925,12 @@ export type SongUpdateToOneWithWhereWithoutMatchesAsBInput = {
 
 export type SongUpdateWithoutMatchesAsBInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  roundNumber?: Prisma.IntFieldUpdateOperationsInput | number
   spotifyId?: Prisma.StringFieldUpdateOperationsInput | string
   startTime?: Prisma.IntFieldUpdateOperationsInput | number
   songName?: Prisma.StringFieldUpdateOperationsInput | string
   artistName?: Prisma.StringFieldUpdateOperationsInput | string
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tournament?: Prisma.TournamentUpdateOneRequiredWithoutSongsNestedInput
   player?: Prisma.PlayerUpdateOneRequiredWithoutSongsNestedInput
   matchesAsA?: Prisma.TournamentMatchUpdateManyWithoutSongANestedInput
@@ -983,14 +941,13 @@ export type SongUpdateWithoutMatchesAsBInput = {
 export type SongUncheckedUpdateWithoutMatchesAsBInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   tournamentId?: Prisma.StringFieldUpdateOperationsInput | string
-  roundNumber?: Prisma.IntFieldUpdateOperationsInput | number
   spotifyId?: Prisma.StringFieldUpdateOperationsInput | string
   playerId?: Prisma.StringFieldUpdateOperationsInput | string
   startTime?: Prisma.IntFieldUpdateOperationsInput | number
   songName?: Prisma.StringFieldUpdateOperationsInput | string
   artistName?: Prisma.StringFieldUpdateOperationsInput | string
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   matchesAsA?: Prisma.TournamentMatchUncheckedUpdateManyWithoutSongANestedInput
   votes?: Prisma.VoteUncheckedUpdateManyWithoutSongNestedInput
   matchesPlaying?: Prisma.TournamentMatchUncheckedUpdateManyWithoutCurrentlyPlayingNestedInput
@@ -1009,13 +966,12 @@ export type SongUpdateToOneWithWhereWithoutMatchesPlayingInput = {
 
 export type SongUpdateWithoutMatchesPlayingInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  roundNumber?: Prisma.IntFieldUpdateOperationsInput | number
   spotifyId?: Prisma.StringFieldUpdateOperationsInput | string
   startTime?: Prisma.IntFieldUpdateOperationsInput | number
   songName?: Prisma.StringFieldUpdateOperationsInput | string
   artistName?: Prisma.StringFieldUpdateOperationsInput | string
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tournament?: Prisma.TournamentUpdateOneRequiredWithoutSongsNestedInput
   player?: Prisma.PlayerUpdateOneRequiredWithoutSongsNestedInput
   matchesAsA?: Prisma.TournamentMatchUpdateManyWithoutSongANestedInput
@@ -1026,14 +982,13 @@ export type SongUpdateWithoutMatchesPlayingInput = {
 export type SongUncheckedUpdateWithoutMatchesPlayingInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   tournamentId?: Prisma.StringFieldUpdateOperationsInput | string
-  roundNumber?: Prisma.IntFieldUpdateOperationsInput | number
   spotifyId?: Prisma.StringFieldUpdateOperationsInput | string
   playerId?: Prisma.StringFieldUpdateOperationsInput | string
   startTime?: Prisma.IntFieldUpdateOperationsInput | number
   songName?: Prisma.StringFieldUpdateOperationsInput | string
   artistName?: Prisma.StringFieldUpdateOperationsInput | string
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   matchesAsA?: Prisma.TournamentMatchUncheckedUpdateManyWithoutSongANestedInput
   matchesAsB?: Prisma.TournamentMatchUncheckedUpdateManyWithoutSongBNestedInput
   votes?: Prisma.VoteUncheckedUpdateManyWithoutSongNestedInput
@@ -1041,13 +996,12 @@ export type SongUncheckedUpdateWithoutMatchesPlayingInput = {
 
 export type SongCreateWithoutVotesInput = {
   id: string
-  roundNumber: number
   spotifyId: string
   startTime: number
   songName: string
   artistName: string
   imageUrl?: string | null
-  createdAt: number
+  createdAt: Date | string
   tournament: Prisma.TournamentCreateNestedOneWithoutSongsInput
   player: Prisma.PlayerCreateNestedOneWithoutSongsInput
   matchesAsA?: Prisma.TournamentMatchCreateNestedManyWithoutSongAInput
@@ -1058,14 +1012,13 @@ export type SongCreateWithoutVotesInput = {
 export type SongUncheckedCreateWithoutVotesInput = {
   id: string
   tournamentId: string
-  roundNumber: number
   spotifyId: string
   playerId: string
   startTime: number
   songName: string
   artistName: string
   imageUrl?: string | null
-  createdAt: number
+  createdAt: Date | string
   matchesAsA?: Prisma.TournamentMatchUncheckedCreateNestedManyWithoutSongAInput
   matchesAsB?: Prisma.TournamentMatchUncheckedCreateNestedManyWithoutSongBInput
   matchesPlaying?: Prisma.TournamentMatchUncheckedCreateNestedManyWithoutCurrentlyPlayingInput
@@ -1089,13 +1042,12 @@ export type SongUpdateToOneWithWhereWithoutVotesInput = {
 
 export type SongUpdateWithoutVotesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  roundNumber?: Prisma.IntFieldUpdateOperationsInput | number
   spotifyId?: Prisma.StringFieldUpdateOperationsInput | string
   startTime?: Prisma.IntFieldUpdateOperationsInput | number
   songName?: Prisma.StringFieldUpdateOperationsInput | string
   artistName?: Prisma.StringFieldUpdateOperationsInput | string
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tournament?: Prisma.TournamentUpdateOneRequiredWithoutSongsNestedInput
   player?: Prisma.PlayerUpdateOneRequiredWithoutSongsNestedInput
   matchesAsA?: Prisma.TournamentMatchUpdateManyWithoutSongANestedInput
@@ -1106,14 +1058,13 @@ export type SongUpdateWithoutVotesInput = {
 export type SongUncheckedUpdateWithoutVotesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   tournamentId?: Prisma.StringFieldUpdateOperationsInput | string
-  roundNumber?: Prisma.IntFieldUpdateOperationsInput | number
   spotifyId?: Prisma.StringFieldUpdateOperationsInput | string
   playerId?: Prisma.StringFieldUpdateOperationsInput | string
   startTime?: Prisma.IntFieldUpdateOperationsInput | number
   songName?: Prisma.StringFieldUpdateOperationsInput | string
   artistName?: Prisma.StringFieldUpdateOperationsInput | string
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   matchesAsA?: Prisma.TournamentMatchUncheckedUpdateManyWithoutSongANestedInput
   matchesAsB?: Prisma.TournamentMatchUncheckedUpdateManyWithoutSongBNestedInput
   matchesPlaying?: Prisma.TournamentMatchUncheckedUpdateManyWithoutCurrentlyPlayingNestedInput
@@ -1121,25 +1072,23 @@ export type SongUncheckedUpdateWithoutVotesInput = {
 
 export type SongCreateManyTournamentInput = {
   id: string
-  roundNumber: number
   spotifyId: string
   playerId: string
   startTime: number
   songName: string
   artistName: string
   imageUrl?: string | null
-  createdAt: number
+  createdAt: Date | string
 }
 
 export type SongUpdateWithoutTournamentInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  roundNumber?: Prisma.IntFieldUpdateOperationsInput | number
   spotifyId?: Prisma.StringFieldUpdateOperationsInput | string
   startTime?: Prisma.IntFieldUpdateOperationsInput | number
   songName?: Prisma.StringFieldUpdateOperationsInput | string
   artistName?: Prisma.StringFieldUpdateOperationsInput | string
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   player?: Prisma.PlayerUpdateOneRequiredWithoutSongsNestedInput
   matchesAsA?: Prisma.TournamentMatchUpdateManyWithoutSongANestedInput
   matchesAsB?: Prisma.TournamentMatchUpdateManyWithoutSongBNestedInput
@@ -1149,14 +1098,13 @@ export type SongUpdateWithoutTournamentInput = {
 
 export type SongUncheckedUpdateWithoutTournamentInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  roundNumber?: Prisma.IntFieldUpdateOperationsInput | number
   spotifyId?: Prisma.StringFieldUpdateOperationsInput | string
   playerId?: Prisma.StringFieldUpdateOperationsInput | string
   startTime?: Prisma.IntFieldUpdateOperationsInput | number
   songName?: Prisma.StringFieldUpdateOperationsInput | string
   artistName?: Prisma.StringFieldUpdateOperationsInput | string
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   matchesAsA?: Prisma.TournamentMatchUncheckedUpdateManyWithoutSongANestedInput
   matchesAsB?: Prisma.TournamentMatchUncheckedUpdateManyWithoutSongBNestedInput
   votes?: Prisma.VoteUncheckedUpdateManyWithoutSongNestedInput
@@ -1165,37 +1113,34 @@ export type SongUncheckedUpdateWithoutTournamentInput = {
 
 export type SongUncheckedUpdateManyWithoutTournamentInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  roundNumber?: Prisma.IntFieldUpdateOperationsInput | number
   spotifyId?: Prisma.StringFieldUpdateOperationsInput | string
   playerId?: Prisma.StringFieldUpdateOperationsInput | string
   startTime?: Prisma.IntFieldUpdateOperationsInput | number
   songName?: Prisma.StringFieldUpdateOperationsInput | string
   artistName?: Prisma.StringFieldUpdateOperationsInput | string
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type SongCreateManyPlayerInput = {
   id: string
   tournamentId: string
-  roundNumber: number
   spotifyId: string
   startTime: number
   songName: string
   artistName: string
   imageUrl?: string | null
-  createdAt: number
+  createdAt: Date | string
 }
 
 export type SongUpdateWithoutPlayerInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  roundNumber?: Prisma.IntFieldUpdateOperationsInput | number
   spotifyId?: Prisma.StringFieldUpdateOperationsInput | string
   startTime?: Prisma.IntFieldUpdateOperationsInput | number
   songName?: Prisma.StringFieldUpdateOperationsInput | string
   artistName?: Prisma.StringFieldUpdateOperationsInput | string
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tournament?: Prisma.TournamentUpdateOneRequiredWithoutSongsNestedInput
   matchesAsA?: Prisma.TournamentMatchUpdateManyWithoutSongANestedInput
   matchesAsB?: Prisma.TournamentMatchUpdateManyWithoutSongBNestedInput
@@ -1206,13 +1151,12 @@ export type SongUpdateWithoutPlayerInput = {
 export type SongUncheckedUpdateWithoutPlayerInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   tournamentId?: Prisma.StringFieldUpdateOperationsInput | string
-  roundNumber?: Prisma.IntFieldUpdateOperationsInput | number
   spotifyId?: Prisma.StringFieldUpdateOperationsInput | string
   startTime?: Prisma.IntFieldUpdateOperationsInput | number
   songName?: Prisma.StringFieldUpdateOperationsInput | string
   artistName?: Prisma.StringFieldUpdateOperationsInput | string
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   matchesAsA?: Prisma.TournamentMatchUncheckedUpdateManyWithoutSongANestedInput
   matchesAsB?: Prisma.TournamentMatchUncheckedUpdateManyWithoutSongBNestedInput
   votes?: Prisma.VoteUncheckedUpdateManyWithoutSongNestedInput
@@ -1222,13 +1166,12 @@ export type SongUncheckedUpdateWithoutPlayerInput = {
 export type SongUncheckedUpdateManyWithoutPlayerInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   tournamentId?: Prisma.StringFieldUpdateOperationsInput | string
-  roundNumber?: Prisma.IntFieldUpdateOperationsInput | number
   spotifyId?: Prisma.StringFieldUpdateOperationsInput | string
   startTime?: Prisma.IntFieldUpdateOperationsInput | number
   songName?: Prisma.StringFieldUpdateOperationsInput | string
   artistName?: Prisma.StringFieldUpdateOperationsInput | string
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 
@@ -1292,7 +1235,6 @@ export type SongCountOutputTypeCountMatchesPlayingArgs<ExtArgs extends runtime.T
 export type SongSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   tournamentId?: boolean
-  roundNumber?: boolean
   spotifyId?: boolean
   playerId?: boolean
   startTime?: boolean
@@ -1312,7 +1254,6 @@ export type SongSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
 export type SongSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   tournamentId?: boolean
-  roundNumber?: boolean
   spotifyId?: boolean
   playerId?: boolean
   startTime?: boolean
@@ -1327,7 +1268,6 @@ export type SongSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
 export type SongSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   tournamentId?: boolean
-  roundNumber?: boolean
   spotifyId?: boolean
   playerId?: boolean
   startTime?: boolean
@@ -1342,7 +1282,6 @@ export type SongSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
 export type SongSelectScalar = {
   id?: boolean
   tournamentId?: boolean
-  roundNumber?: boolean
   spotifyId?: boolean
   playerId?: boolean
   startTime?: boolean
@@ -1352,7 +1291,7 @@ export type SongSelectScalar = {
   createdAt?: boolean
 }
 
-export type SongOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "tournamentId" | "roundNumber" | "spotifyId" | "playerId" | "startTime" | "songName" | "artistName" | "imageUrl" | "createdAt", ExtArgs["result"]["song"]>
+export type SongOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "tournamentId" | "spotifyId" | "playerId" | "startTime" | "songName" | "artistName" | "imageUrl" | "createdAt", ExtArgs["result"]["song"]>
 export type SongInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   tournament?: boolean | Prisma.TournamentDefaultArgs<ExtArgs>
   player?: boolean | Prisma.PlayerDefaultArgs<ExtArgs>
@@ -1384,14 +1323,13 @@ export type $SongPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     tournamentId: string
-    roundNumber: number
     spotifyId: string
     playerId: string
     startTime: number
     songName: string
     artistName: string
     imageUrl: string | null
-    createdAt: number
+    createdAt: Date
   }, ExtArgs["result"]["song"]>
   composites: {}
 }
@@ -1823,14 +1761,13 @@ export interface Prisma__SongClient<T, Null = never, ExtArgs extends runtime.Typ
 export interface SongFieldRefs {
   readonly id: Prisma.FieldRef<"Song", 'String'>
   readonly tournamentId: Prisma.FieldRef<"Song", 'String'>
-  readonly roundNumber: Prisma.FieldRef<"Song", 'Int'>
   readonly spotifyId: Prisma.FieldRef<"Song", 'String'>
   readonly playerId: Prisma.FieldRef<"Song", 'String'>
   readonly startTime: Prisma.FieldRef<"Song", 'Int'>
   readonly songName: Prisma.FieldRef<"Song", 'String'>
   readonly artistName: Prisma.FieldRef<"Song", 'String'>
   readonly imageUrl: Prisma.FieldRef<"Song", 'String'>
-  readonly createdAt: Prisma.FieldRef<"Song", 'Int'>
+  readonly createdAt: Prisma.FieldRef<"Song", 'DateTime'>
 }
     
 

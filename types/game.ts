@@ -1,11 +1,16 @@
 import { z } from "zod";
 
+const dateTimeSchema = z.iso
+  .datetime()
+  .transform((d) => new Date(d))
+  .or(z.date());
+
 // Session types - container for multiple tournaments
 export const SessionSchema = z.object({
   id: z.string(),
-  owner_id: z.string(),
+  ownerId: z.string(),
   status: z.enum(["active", "archived"]),
-  created_at: z.number(),
+  createdAt: dateTimeSchema,
 });
 
 export type Session = z.infer<typeof SessionSchema>;
@@ -13,7 +18,7 @@ export type Session = z.infer<typeof SessionSchema>;
 // Tournament types - individual category tournaments within a session
 export const TournamentSchema = z.object({
   id: z.string(),
-  session_id: z.string(),
+  sessionId: z.string(),
   category: z.string(),
   status: z.enum([
     "waiting",
@@ -22,11 +27,9 @@ export const TournamentSchema = z.object({
     "tournament",
     "finished",
   ]),
-  current_round: z.number().default(1),
-  current_picker_index: z.number().default(0),
-  winning_song_id: z.string().nullable().default(null),
-  eliminated_song_ids: z.string().default("[]"), // JSON-serialized array
-  created_at: z.number(),
+  currentPickerIndex: z.number().default(0),
+  winningSongId: z.string().nullable().default(null),
+  createdAt: dateTimeSchema,
 });
 
 export type Tournament = z.infer<typeof TournamentSchema>;
@@ -34,15 +37,12 @@ export type Tournament = z.infer<typeof TournamentSchema>;
 // Player types
 export const PlayerSchema = z.object({
   id: z.string(),
-  session_id: z.string(),
+  sessionId: z.string(),
   name: z.string(),
-  spotify_device_id: z.string().nullable(),
-  is_owner: z
-    .boolean()
-    .or(z.number())
-    .transform((val) => Boolean(val)),
-  join_order: z.number(),
-  created_at: z.number(),
+  spotifyDeviceId: z.string().nullable(),
+  isOwner: z.coerce.boolean(),
+  joinOrder: z.number(),
+  createdAt: dateTimeSchema,
 });
 
 export type Player = z.infer<typeof PlayerSchema>;
@@ -50,15 +50,14 @@ export type Player = z.infer<typeof PlayerSchema>;
 // Song types
 export const SongSchema = z.object({
   id: z.string(),
-  tournament_id: z.string(),
-  round_number: z.number(),
-  spotify_id: z.string(),
-  player_id: z.string(),
-  start_time: z.number(), // in seconds
-  song_name: z.string(),
-  artist_name: z.string(),
-  image_url: z.string().nullable(),
-  created_at: z.number(),
+  tournamentId: z.string(),
+  spotifyId: z.string(),
+  playerId: z.string(),
+  startTime: z.number(), // in seconds
+  songName: z.string(),
+  artistName: z.string(),
+  imageUrl: z.string().nullable(),
+  createdAt: dateTimeSchema,
 });
 
 export type Song = z.infer<typeof SongSchema>;
@@ -66,15 +65,15 @@ export type Song = z.infer<typeof SongSchema>;
 // Tournament match types
 export const TournamentMatchSchema = z.object({
   id: z.string(),
-  tournament_id: z.string(),
-  song_a_id: z.string().nullable(),
-  song_b_id: z.string().nullable(),
-  winner_id: z.string().nullable(),
+  tournamentId: z.string(),
+  songAId: z.string().nullable(),
+  songBId: z.string().nullable(),
+  winnerId: z.string().nullable(),
   status: z.enum(["pending", "playing", "voting", "completed"]),
-  votes_a: z.number().default(0),
-  votes_b: z.number().default(0),
-  currently_playing_song_id: z.string().nullable().default(null),
-  created_at: z.number(),
+  votesA: z.number().default(0),
+  votesB: z.number().default(0),
+  currentlyPlayingSongId: z.string().nullable().default(null),
+  createdAt: dateTimeSchema,
 });
 
 export type TournamentMatch = z.infer<typeof TournamentMatchSchema>;
@@ -82,10 +81,10 @@ export type TournamentMatch = z.infer<typeof TournamentMatchSchema>;
 // Vote types
 export const VoteSchema = z.object({
   id: z.string(),
-  match_id: z.string(),
-  player_id: z.string(),
-  song_id: z.string(),
-  created_at: z.number(),
+  matchId: z.string(),
+  playerId: z.string(),
+  songId: z.string(),
+  createdAt: dateTimeSchema,
 });
 
 export type Vote = z.infer<typeof VoteSchema>;
@@ -98,7 +97,7 @@ export const PlayerJoinedSchema = z.object({
 
 export const PlayerLeftSchema = z.object({
   type: z.literal("player_left"),
-  data: z.object({ player_id: z.string() }),
+  data: z.object({ playerId: z.string() }),
 });
 
 export const CategoryAnnouncedSchema = z.object({
@@ -114,34 +113,34 @@ export const SongSubmittedSchema = z.object({
 export const MatchStartedSchema = z.object({
   type: z.literal("match_started"),
   data: z.object({
-    match_id: z.string(),
-    song_a: SongSchema.nullable(),
-    song_b: SongSchema.nullable(),
-    duration_seconds: z.number(),
+    matchId: z.string(),
+    songA: SongSchema.nullable(),
+    songB: SongSchema.nullable(),
+    durationSeconds: z.number(),
   }),
 });
 
 export const MatchEndedSchema = z.object({
   type: z.literal("match_ended"),
   data: z.object({
-    match_id: z.string(),
-    winner_id: z.string(),
-    votes_a: z.number(),
-    votes_b: z.number(),
+    matchId: z.string(),
+    winnerId: z.string(),
+    votesA: z.number(),
+    votesB: z.number(),
   }),
 });
 
 export const RoundCompleteSchema = z.object({
   type: z.literal("round_complete"),
   data: z.object({
-    round_number: z.number(),
+    roundNumber: z.number(),
   }),
 });
 
 export const GameWinnerSchema = z.object({
   type: z.literal("game_winner"),
   data: z.object({
-    winning_song_id: z.string(),
+    winningSongId: z.string(),
   }),
 });
 
@@ -159,17 +158,17 @@ export const GameStateSchema = z.object({
 export const PlaybackStartedSchema = z.object({
   type: z.literal("playback_started"),
   data: z.object({
-    match_id: z.string(),
-    song_id: z.string(),
-    song_name: z.string(),
-    artist_name: z.string(),
+    matchId: z.string(),
+    songId: z.string(),
+    songName: z.string(),
+    artistName: z.string(),
   }),
 });
 
 export const PlaybackStoppedSchema = z.object({
   type: z.literal("playback_stopped"),
   data: z.object({
-    match_id: z.string(),
+    matchId: z.string(),
   }),
 });
 
@@ -205,14 +204,14 @@ export type SSEMessage = z.infer<typeof SSEMessageSchema>;
 
 // API request/response types
 export const CreateSessionRequestSchema = z.object({
-  owner_id: z.string(),
+  ownerId: z.string(),
 });
 
 export type CreateSessionRequest = z.infer<typeof CreateSessionRequestSchema>;
 
 export const JoinSessionRequestSchema = z.object({
-  session_id: z.string(),
-  player_name: z.string(),
+  sessionId: z.string(),
+  playerName: z.string(),
 });
 
 export type JoinSessionRequest = z.infer<typeof JoinSessionRequestSchema>;
@@ -224,18 +223,18 @@ export const SubmitCategoryRequestSchema = z.object({
 export type SubmitCategoryRequest = z.infer<typeof SubmitCategoryRequestSchema>;
 
 export const SubmitSongRequestSchema = z.object({
-  spotify_id: z.string(),
-  song_name: z.string(),
-  artist_name: z.string(),
-  start_time: z.number().min(0),
-  image_url: z.string().nullable().optional(),
+  spotifyId: z.string(),
+  songName: z.string(),
+  artistName: z.string(),
+  startTime: z.number().min(0),
+  imageUrl: z.string().nullable().optional(),
 });
 
 export type SubmitSongRequest = z.infer<typeof SubmitSongRequestSchema>;
 
 export const VoteRequestSchema = z.object({
-  match_id: z.string(),
-  song_id: z.string(),
+  matchId: z.string(),
+  songId: z.string(),
 });
 
 export type VoteRequest = z.infer<typeof VoteRequestSchema>;

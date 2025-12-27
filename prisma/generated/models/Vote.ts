@@ -20,18 +20,8 @@ export type VoteModel = runtime.Types.Result.DefaultSelection<Prisma.$VotePayloa
 
 export type AggregateVote = {
   _count: VoteCountAggregateOutputType | null
-  _avg: VoteAvgAggregateOutputType | null
-  _sum: VoteSumAggregateOutputType | null
   _min: VoteMinAggregateOutputType | null
   _max: VoteMaxAggregateOutputType | null
-}
-
-export type VoteAvgAggregateOutputType = {
-  createdAt: number | null
-}
-
-export type VoteSumAggregateOutputType = {
-  createdAt: number | null
 }
 
 export type VoteMinAggregateOutputType = {
@@ -39,7 +29,7 @@ export type VoteMinAggregateOutputType = {
   matchId: string | null
   playerId: string | null
   songId: string | null
-  createdAt: number | null
+  createdAt: Date | null
 }
 
 export type VoteMaxAggregateOutputType = {
@@ -47,7 +37,7 @@ export type VoteMaxAggregateOutputType = {
   matchId: string | null
   playerId: string | null
   songId: string | null
-  createdAt: number | null
+  createdAt: Date | null
 }
 
 export type VoteCountAggregateOutputType = {
@@ -59,14 +49,6 @@ export type VoteCountAggregateOutputType = {
   _all: number
 }
 
-
-export type VoteAvgAggregateInputType = {
-  createdAt?: true
-}
-
-export type VoteSumAggregateInputType = {
-  createdAt?: true
-}
 
 export type VoteMinAggregateInputType = {
   id?: true
@@ -131,18 +113,6 @@ export type VoteAggregateArgs<ExtArgs extends runtime.Types.Extensions.InternalA
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
-   * Select which fields to average
-  **/
-  _avg?: VoteAvgAggregateInputType
-  /**
-   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-   * 
-   * Select which fields to sum
-  **/
-  _sum?: VoteSumAggregateInputType
-  /**
-   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-   * 
    * Select which fields to find the minimum value
   **/
   _min?: VoteMinAggregateInputType
@@ -173,8 +143,6 @@ export type VoteGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalArg
   take?: number
   skip?: number
   _count?: VoteCountAggregateInputType | true
-  _avg?: VoteAvgAggregateInputType
-  _sum?: VoteSumAggregateInputType
   _min?: VoteMinAggregateInputType
   _max?: VoteMaxAggregateInputType
 }
@@ -184,10 +152,8 @@ export type VoteGroupByOutputType = {
   matchId: string
   playerId: string
   songId: string
-  createdAt: number
+  createdAt: Date
   _count: VoteCountAggregateOutputType | null
-  _avg: VoteAvgAggregateOutputType | null
-  _sum: VoteSumAggregateOutputType | null
   _min: VoteMinAggregateOutputType | null
   _max: VoteMaxAggregateOutputType | null
 }
@@ -215,7 +181,7 @@ export type VoteWhereInput = {
   matchId?: Prisma.StringFilter<"Vote"> | string
   playerId?: Prisma.StringFilter<"Vote"> | string
   songId?: Prisma.StringFilter<"Vote"> | string
-  createdAt?: Prisma.IntFilter<"Vote"> | number
+  createdAt?: Prisma.DateTimeFilter<"Vote"> | Date | string
   match?: Prisma.XOR<Prisma.TournamentMatchScalarRelationFilter, Prisma.TournamentMatchWhereInput>
   player?: Prisma.XOR<Prisma.PlayerScalarRelationFilter, Prisma.PlayerWhereInput>
   song?: Prisma.XOR<Prisma.SongScalarRelationFilter, Prisma.SongWhereInput>
@@ -241,7 +207,7 @@ export type VoteWhereUniqueInput = Prisma.AtLeast<{
   matchId?: Prisma.StringFilter<"Vote"> | string
   playerId?: Prisma.StringFilter<"Vote"> | string
   songId?: Prisma.StringFilter<"Vote"> | string
-  createdAt?: Prisma.IntFilter<"Vote"> | number
+  createdAt?: Prisma.DateTimeFilter<"Vote"> | Date | string
   match?: Prisma.XOR<Prisma.TournamentMatchScalarRelationFilter, Prisma.TournamentMatchWhereInput>
   player?: Prisma.XOR<Prisma.PlayerScalarRelationFilter, Prisma.PlayerWhereInput>
   song?: Prisma.XOR<Prisma.SongScalarRelationFilter, Prisma.SongWhereInput>
@@ -254,10 +220,8 @@ export type VoteOrderByWithAggregationInput = {
   songId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.VoteCountOrderByAggregateInput
-  _avg?: Prisma.VoteAvgOrderByAggregateInput
   _max?: Prisma.VoteMaxOrderByAggregateInput
   _min?: Prisma.VoteMinOrderByAggregateInput
-  _sum?: Prisma.VoteSumOrderByAggregateInput
 }
 
 export type VoteScalarWhereWithAggregatesInput = {
@@ -268,12 +232,12 @@ export type VoteScalarWhereWithAggregatesInput = {
   matchId?: Prisma.StringWithAggregatesFilter<"Vote"> | string
   playerId?: Prisma.StringWithAggregatesFilter<"Vote"> | string
   songId?: Prisma.StringWithAggregatesFilter<"Vote"> | string
-  createdAt?: Prisma.IntWithAggregatesFilter<"Vote"> | number
+  createdAt?: Prisma.DateTimeWithAggregatesFilter<"Vote"> | Date | string
 }
 
 export type VoteCreateInput = {
   id: string
-  createdAt: number
+  createdAt: Date | string
   match: Prisma.TournamentMatchCreateNestedOneWithoutVotesInput
   player: Prisma.PlayerCreateNestedOneWithoutVotesInput
   song: Prisma.SongCreateNestedOneWithoutVotesInput
@@ -284,12 +248,12 @@ export type VoteUncheckedCreateInput = {
   matchId: string
   playerId: string
   songId: string
-  createdAt: number
+  createdAt: Date | string
 }
 
 export type VoteUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   match?: Prisma.TournamentMatchUpdateOneRequiredWithoutVotesNestedInput
   player?: Prisma.PlayerUpdateOneRequiredWithoutVotesNestedInput
   song?: Prisma.SongUpdateOneRequiredWithoutVotesNestedInput
@@ -300,7 +264,7 @@ export type VoteUncheckedUpdateInput = {
   matchId?: Prisma.StringFieldUpdateOperationsInput | string
   playerId?: Prisma.StringFieldUpdateOperationsInput | string
   songId?: Prisma.StringFieldUpdateOperationsInput | string
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type VoteCreateManyInput = {
@@ -308,12 +272,12 @@ export type VoteCreateManyInput = {
   matchId: string
   playerId: string
   songId: string
-  createdAt: number
+  createdAt: Date | string
 }
 
 export type VoteUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type VoteUncheckedUpdateManyInput = {
@@ -321,7 +285,7 @@ export type VoteUncheckedUpdateManyInput = {
   matchId?: Prisma.StringFieldUpdateOperationsInput | string
   playerId?: Prisma.StringFieldUpdateOperationsInput | string
   songId?: Prisma.StringFieldUpdateOperationsInput | string
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type VoteListRelationFilter = {
@@ -347,10 +311,6 @@ export type VoteCountOrderByAggregateInput = {
   createdAt?: Prisma.SortOrder
 }
 
-export type VoteAvgOrderByAggregateInput = {
-  createdAt?: Prisma.SortOrder
-}
-
 export type VoteMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   matchId?: Prisma.SortOrder
@@ -364,10 +324,6 @@ export type VoteMinOrderByAggregateInput = {
   matchId?: Prisma.SortOrder
   playerId?: Prisma.SortOrder
   songId?: Prisma.SortOrder
-  createdAt?: Prisma.SortOrder
-}
-
-export type VoteSumOrderByAggregateInput = {
   createdAt?: Prisma.SortOrder
 }
 
@@ -499,7 +455,7 @@ export type VoteUncheckedUpdateManyWithoutMatchNestedInput = {
 
 export type VoteCreateWithoutPlayerInput = {
   id: string
-  createdAt: number
+  createdAt: Date | string
   match: Prisma.TournamentMatchCreateNestedOneWithoutVotesInput
   song: Prisma.SongCreateNestedOneWithoutVotesInput
 }
@@ -508,7 +464,7 @@ export type VoteUncheckedCreateWithoutPlayerInput = {
   id: string
   matchId: string
   songId: string
-  createdAt: number
+  createdAt: Date | string
 }
 
 export type VoteCreateOrConnectWithoutPlayerInput = {
@@ -544,12 +500,12 @@ export type VoteScalarWhereInput = {
   matchId?: Prisma.StringFilter<"Vote"> | string
   playerId?: Prisma.StringFilter<"Vote"> | string
   songId?: Prisma.StringFilter<"Vote"> | string
-  createdAt?: Prisma.IntFilter<"Vote"> | number
+  createdAt?: Prisma.DateTimeFilter<"Vote"> | Date | string
 }
 
 export type VoteCreateWithoutSongInput = {
   id: string
-  createdAt: number
+  createdAt: Date | string
   match: Prisma.TournamentMatchCreateNestedOneWithoutVotesInput
   player: Prisma.PlayerCreateNestedOneWithoutVotesInput
 }
@@ -558,7 +514,7 @@ export type VoteUncheckedCreateWithoutSongInput = {
   id: string
   matchId: string
   playerId: string
-  createdAt: number
+  createdAt: Date | string
 }
 
 export type VoteCreateOrConnectWithoutSongInput = {
@@ -588,7 +544,7 @@ export type VoteUpdateManyWithWhereWithoutSongInput = {
 
 export type VoteCreateWithoutMatchInput = {
   id: string
-  createdAt: number
+  createdAt: Date | string
   player: Prisma.PlayerCreateNestedOneWithoutVotesInput
   song: Prisma.SongCreateNestedOneWithoutVotesInput
 }
@@ -597,7 +553,7 @@ export type VoteUncheckedCreateWithoutMatchInput = {
   id: string
   playerId: string
   songId: string
-  createdAt: number
+  createdAt: Date | string
 }
 
 export type VoteCreateOrConnectWithoutMatchInput = {
@@ -629,12 +585,12 @@ export type VoteCreateManyPlayerInput = {
   id: string
   matchId: string
   songId: string
-  createdAt: number
+  createdAt: Date | string
 }
 
 export type VoteUpdateWithoutPlayerInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   match?: Prisma.TournamentMatchUpdateOneRequiredWithoutVotesNestedInput
   song?: Prisma.SongUpdateOneRequiredWithoutVotesNestedInput
 }
@@ -643,26 +599,26 @@ export type VoteUncheckedUpdateWithoutPlayerInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   matchId?: Prisma.StringFieldUpdateOperationsInput | string
   songId?: Prisma.StringFieldUpdateOperationsInput | string
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type VoteUncheckedUpdateManyWithoutPlayerInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   matchId?: Prisma.StringFieldUpdateOperationsInput | string
   songId?: Prisma.StringFieldUpdateOperationsInput | string
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type VoteCreateManySongInput = {
   id: string
   matchId: string
   playerId: string
-  createdAt: number
+  createdAt: Date | string
 }
 
 export type VoteUpdateWithoutSongInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   match?: Prisma.TournamentMatchUpdateOneRequiredWithoutVotesNestedInput
   player?: Prisma.PlayerUpdateOneRequiredWithoutVotesNestedInput
 }
@@ -671,26 +627,26 @@ export type VoteUncheckedUpdateWithoutSongInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   matchId?: Prisma.StringFieldUpdateOperationsInput | string
   playerId?: Prisma.StringFieldUpdateOperationsInput | string
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type VoteUncheckedUpdateManyWithoutSongInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   matchId?: Prisma.StringFieldUpdateOperationsInput | string
   playerId?: Prisma.StringFieldUpdateOperationsInput | string
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type VoteCreateManyMatchInput = {
   id: string
   playerId: string
   songId: string
-  createdAt: number
+  createdAt: Date | string
 }
 
 export type VoteUpdateWithoutMatchInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   player?: Prisma.PlayerUpdateOneRequiredWithoutVotesNestedInput
   song?: Prisma.SongUpdateOneRequiredWithoutVotesNestedInput
 }
@@ -699,14 +655,14 @@ export type VoteUncheckedUpdateWithoutMatchInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   playerId?: Prisma.StringFieldUpdateOperationsInput | string
   songId?: Prisma.StringFieldUpdateOperationsInput | string
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type VoteUncheckedUpdateManyWithoutMatchInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   playerId?: Prisma.StringFieldUpdateOperationsInput | string
   songId?: Prisma.StringFieldUpdateOperationsInput | string
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 
@@ -781,7 +737,7 @@ export type $VotePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     matchId: string
     playerId: string
     songId: string
-    createdAt: number
+    createdAt: Date
   }, ExtArgs["result"]["vote"]>
   composites: {}
 }
@@ -1212,7 +1168,7 @@ export interface VoteFieldRefs {
   readonly matchId: Prisma.FieldRef<"Vote", 'String'>
   readonly playerId: Prisma.FieldRef<"Vote", 'String'>
   readonly songId: Prisma.FieldRef<"Vote", 'String'>
-  readonly createdAt: Prisma.FieldRef<"Vote", 'Int'>
+  readonly createdAt: Prisma.FieldRef<"Vote", 'DateTime'>
 }
     
 

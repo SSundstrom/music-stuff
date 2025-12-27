@@ -27,15 +27,11 @@ export type AggregatePlayer = {
 }
 
 export type PlayerAvgAggregateOutputType = {
-  isOwner: number | null
   joinOrder: number | null
-  createdAt: number | null
 }
 
 export type PlayerSumAggregateOutputType = {
-  isOwner: number | null
   joinOrder: number | null
-  createdAt: number | null
 }
 
 export type PlayerMinAggregateOutputType = {
@@ -43,9 +39,9 @@ export type PlayerMinAggregateOutputType = {
   sessionId: string | null
   name: string | null
   spotifyDeviceId: string | null
-  isOwner: number | null
+  isOwner: boolean | null
   joinOrder: number | null
-  createdAt: number | null
+  createdAt: Date | null
 }
 
 export type PlayerMaxAggregateOutputType = {
@@ -53,9 +49,9 @@ export type PlayerMaxAggregateOutputType = {
   sessionId: string | null
   name: string | null
   spotifyDeviceId: string | null
-  isOwner: number | null
+  isOwner: boolean | null
   joinOrder: number | null
-  createdAt: number | null
+  createdAt: Date | null
 }
 
 export type PlayerCountAggregateOutputType = {
@@ -71,15 +67,11 @@ export type PlayerCountAggregateOutputType = {
 
 
 export type PlayerAvgAggregateInputType = {
-  isOwner?: true
   joinOrder?: true
-  createdAt?: true
 }
 
 export type PlayerSumAggregateInputType = {
-  isOwner?: true
   joinOrder?: true
-  createdAt?: true
 }
 
 export type PlayerMinAggregateInputType = {
@@ -204,9 +196,9 @@ export type PlayerGroupByOutputType = {
   sessionId: string
   name: string
   spotifyDeviceId: string | null
-  isOwner: number
+  isOwner: boolean
   joinOrder: number
-  createdAt: number
+  createdAt: Date
   _count: PlayerCountAggregateOutputType | null
   _avg: PlayerAvgAggregateOutputType | null
   _sum: PlayerSumAggregateOutputType | null
@@ -237,9 +229,9 @@ export type PlayerWhereInput = {
   sessionId?: Prisma.StringFilter<"Player"> | string
   name?: Prisma.StringFilter<"Player"> | string
   spotifyDeviceId?: Prisma.StringNullableFilter<"Player"> | string | null
-  isOwner?: Prisma.IntFilter<"Player"> | number
+  isOwner?: Prisma.BoolFilter<"Player"> | boolean
   joinOrder?: Prisma.IntFilter<"Player"> | number
-  createdAt?: Prisma.IntFilter<"Player"> | number
+  createdAt?: Prisma.DateTimeFilter<"Player"> | Date | string
   session?: Prisma.XOR<Prisma.GameSessionScalarRelationFilter, Prisma.GameSessionWhereInput>
   songs?: Prisma.SongListRelationFilter
   votes?: Prisma.VoteListRelationFilter
@@ -266,9 +258,9 @@ export type PlayerWhereUniqueInput = Prisma.AtLeast<{
   sessionId?: Prisma.StringFilter<"Player"> | string
   name?: Prisma.StringFilter<"Player"> | string
   spotifyDeviceId?: Prisma.StringNullableFilter<"Player"> | string | null
-  isOwner?: Prisma.IntFilter<"Player"> | number
+  isOwner?: Prisma.BoolFilter<"Player"> | boolean
   joinOrder?: Prisma.IntFilter<"Player"> | number
-  createdAt?: Prisma.IntFilter<"Player"> | number
+  createdAt?: Prisma.DateTimeFilter<"Player"> | Date | string
   session?: Prisma.XOR<Prisma.GameSessionScalarRelationFilter, Prisma.GameSessionWhereInput>
   songs?: Prisma.SongListRelationFilter
   votes?: Prisma.VoteListRelationFilter
@@ -297,18 +289,18 @@ export type PlayerScalarWhereWithAggregatesInput = {
   sessionId?: Prisma.StringWithAggregatesFilter<"Player"> | string
   name?: Prisma.StringWithAggregatesFilter<"Player"> | string
   spotifyDeviceId?: Prisma.StringNullableWithAggregatesFilter<"Player"> | string | null
-  isOwner?: Prisma.IntWithAggregatesFilter<"Player"> | number
+  isOwner?: Prisma.BoolWithAggregatesFilter<"Player"> | boolean
   joinOrder?: Prisma.IntWithAggregatesFilter<"Player"> | number
-  createdAt?: Prisma.IntWithAggregatesFilter<"Player"> | number
+  createdAt?: Prisma.DateTimeWithAggregatesFilter<"Player"> | Date | string
 }
 
 export type PlayerCreateInput = {
   id: string
   name: string
   spotifyDeviceId?: string | null
-  isOwner?: number
+  isOwner?: boolean
   joinOrder: number
-  createdAt: number
+  createdAt: Date | string
   session: Prisma.GameSessionCreateNestedOneWithoutPlayersInput
   songs?: Prisma.SongCreateNestedManyWithoutPlayerInput
   votes?: Prisma.VoteCreateNestedManyWithoutPlayerInput
@@ -319,9 +311,9 @@ export type PlayerUncheckedCreateInput = {
   sessionId: string
   name: string
   spotifyDeviceId?: string | null
-  isOwner?: number
+  isOwner?: boolean
   joinOrder: number
-  createdAt: number
+  createdAt: Date | string
   songs?: Prisma.SongUncheckedCreateNestedManyWithoutPlayerInput
   votes?: Prisma.VoteUncheckedCreateNestedManyWithoutPlayerInput
 }
@@ -330,9 +322,9 @@ export type PlayerUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   spotifyDeviceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  isOwner?: Prisma.IntFieldUpdateOperationsInput | number
+  isOwner?: Prisma.BoolFieldUpdateOperationsInput | boolean
   joinOrder?: Prisma.IntFieldUpdateOperationsInput | number
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   session?: Prisma.GameSessionUpdateOneRequiredWithoutPlayersNestedInput
   songs?: Prisma.SongUpdateManyWithoutPlayerNestedInput
   votes?: Prisma.VoteUpdateManyWithoutPlayerNestedInput
@@ -343,9 +335,9 @@ export type PlayerUncheckedUpdateInput = {
   sessionId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   spotifyDeviceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  isOwner?: Prisma.IntFieldUpdateOperationsInput | number
+  isOwner?: Prisma.BoolFieldUpdateOperationsInput | boolean
   joinOrder?: Prisma.IntFieldUpdateOperationsInput | number
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   songs?: Prisma.SongUncheckedUpdateManyWithoutPlayerNestedInput
   votes?: Prisma.VoteUncheckedUpdateManyWithoutPlayerNestedInput
 }
@@ -355,18 +347,18 @@ export type PlayerCreateManyInput = {
   sessionId: string
   name: string
   spotifyDeviceId?: string | null
-  isOwner?: number
+  isOwner?: boolean
   joinOrder: number
-  createdAt: number
+  createdAt: Date | string
 }
 
 export type PlayerUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   spotifyDeviceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  isOwner?: Prisma.IntFieldUpdateOperationsInput | number
+  isOwner?: Prisma.BoolFieldUpdateOperationsInput | boolean
   joinOrder?: Prisma.IntFieldUpdateOperationsInput | number
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type PlayerUncheckedUpdateManyInput = {
@@ -374,9 +366,9 @@ export type PlayerUncheckedUpdateManyInput = {
   sessionId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   spotifyDeviceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  isOwner?: Prisma.IntFieldUpdateOperationsInput | number
+  isOwner?: Prisma.BoolFieldUpdateOperationsInput | boolean
   joinOrder?: Prisma.IntFieldUpdateOperationsInput | number
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type PlayerListRelationFilter = {
@@ -400,9 +392,7 @@ export type PlayerCountOrderByAggregateInput = {
 }
 
 export type PlayerAvgOrderByAggregateInput = {
-  isOwner?: Prisma.SortOrder
   joinOrder?: Prisma.SortOrder
-  createdAt?: Prisma.SortOrder
 }
 
 export type PlayerMaxOrderByAggregateInput = {
@@ -426,9 +416,7 @@ export type PlayerMinOrderByAggregateInput = {
 }
 
 export type PlayerSumOrderByAggregateInput = {
-  isOwner?: Prisma.SortOrder
   joinOrder?: Prisma.SortOrder
-  createdAt?: Prisma.SortOrder
 }
 
 export type PlayerScalarRelationFilter = {
@@ -510,9 +498,9 @@ export type PlayerCreateWithoutSessionInput = {
   id: string
   name: string
   spotifyDeviceId?: string | null
-  isOwner?: number
+  isOwner?: boolean
   joinOrder: number
-  createdAt: number
+  createdAt: Date | string
   songs?: Prisma.SongCreateNestedManyWithoutPlayerInput
   votes?: Prisma.VoteCreateNestedManyWithoutPlayerInput
 }
@@ -521,9 +509,9 @@ export type PlayerUncheckedCreateWithoutSessionInput = {
   id: string
   name: string
   spotifyDeviceId?: string | null
-  isOwner?: number
+  isOwner?: boolean
   joinOrder: number
-  createdAt: number
+  createdAt: Date | string
   songs?: Prisma.SongUncheckedCreateNestedManyWithoutPlayerInput
   votes?: Prisma.VoteUncheckedCreateNestedManyWithoutPlayerInput
 }
@@ -561,18 +549,18 @@ export type PlayerScalarWhereInput = {
   sessionId?: Prisma.StringFilter<"Player"> | string
   name?: Prisma.StringFilter<"Player"> | string
   spotifyDeviceId?: Prisma.StringNullableFilter<"Player"> | string | null
-  isOwner?: Prisma.IntFilter<"Player"> | number
+  isOwner?: Prisma.BoolFilter<"Player"> | boolean
   joinOrder?: Prisma.IntFilter<"Player"> | number
-  createdAt?: Prisma.IntFilter<"Player"> | number
+  createdAt?: Prisma.DateTimeFilter<"Player"> | Date | string
 }
 
 export type PlayerCreateWithoutSongsInput = {
   id: string
   name: string
   spotifyDeviceId?: string | null
-  isOwner?: number
+  isOwner?: boolean
   joinOrder: number
-  createdAt: number
+  createdAt: Date | string
   session: Prisma.GameSessionCreateNestedOneWithoutPlayersInput
   votes?: Prisma.VoteCreateNestedManyWithoutPlayerInput
 }
@@ -582,9 +570,9 @@ export type PlayerUncheckedCreateWithoutSongsInput = {
   sessionId: string
   name: string
   spotifyDeviceId?: string | null
-  isOwner?: number
+  isOwner?: boolean
   joinOrder: number
-  createdAt: number
+  createdAt: Date | string
   votes?: Prisma.VoteUncheckedCreateNestedManyWithoutPlayerInput
 }
 
@@ -608,9 +596,9 @@ export type PlayerUpdateWithoutSongsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   spotifyDeviceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  isOwner?: Prisma.IntFieldUpdateOperationsInput | number
+  isOwner?: Prisma.BoolFieldUpdateOperationsInput | boolean
   joinOrder?: Prisma.IntFieldUpdateOperationsInput | number
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   session?: Prisma.GameSessionUpdateOneRequiredWithoutPlayersNestedInput
   votes?: Prisma.VoteUpdateManyWithoutPlayerNestedInput
 }
@@ -620,9 +608,9 @@ export type PlayerUncheckedUpdateWithoutSongsInput = {
   sessionId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   spotifyDeviceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  isOwner?: Prisma.IntFieldUpdateOperationsInput | number
+  isOwner?: Prisma.BoolFieldUpdateOperationsInput | boolean
   joinOrder?: Prisma.IntFieldUpdateOperationsInput | number
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   votes?: Prisma.VoteUncheckedUpdateManyWithoutPlayerNestedInput
 }
 
@@ -630,9 +618,9 @@ export type PlayerCreateWithoutVotesInput = {
   id: string
   name: string
   spotifyDeviceId?: string | null
-  isOwner?: number
+  isOwner?: boolean
   joinOrder: number
-  createdAt: number
+  createdAt: Date | string
   session: Prisma.GameSessionCreateNestedOneWithoutPlayersInput
   songs?: Prisma.SongCreateNestedManyWithoutPlayerInput
 }
@@ -642,9 +630,9 @@ export type PlayerUncheckedCreateWithoutVotesInput = {
   sessionId: string
   name: string
   spotifyDeviceId?: string | null
-  isOwner?: number
+  isOwner?: boolean
   joinOrder: number
-  createdAt: number
+  createdAt: Date | string
   songs?: Prisma.SongUncheckedCreateNestedManyWithoutPlayerInput
 }
 
@@ -668,9 +656,9 @@ export type PlayerUpdateWithoutVotesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   spotifyDeviceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  isOwner?: Prisma.IntFieldUpdateOperationsInput | number
+  isOwner?: Prisma.BoolFieldUpdateOperationsInput | boolean
   joinOrder?: Prisma.IntFieldUpdateOperationsInput | number
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   session?: Prisma.GameSessionUpdateOneRequiredWithoutPlayersNestedInput
   songs?: Prisma.SongUpdateManyWithoutPlayerNestedInput
 }
@@ -680,9 +668,9 @@ export type PlayerUncheckedUpdateWithoutVotesInput = {
   sessionId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   spotifyDeviceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  isOwner?: Prisma.IntFieldUpdateOperationsInput | number
+  isOwner?: Prisma.BoolFieldUpdateOperationsInput | boolean
   joinOrder?: Prisma.IntFieldUpdateOperationsInput | number
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   songs?: Prisma.SongUncheckedUpdateManyWithoutPlayerNestedInput
 }
 
@@ -690,18 +678,18 @@ export type PlayerCreateManySessionInput = {
   id: string
   name: string
   spotifyDeviceId?: string | null
-  isOwner?: number
+  isOwner?: boolean
   joinOrder: number
-  createdAt: number
+  createdAt: Date | string
 }
 
 export type PlayerUpdateWithoutSessionInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   spotifyDeviceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  isOwner?: Prisma.IntFieldUpdateOperationsInput | number
+  isOwner?: Prisma.BoolFieldUpdateOperationsInput | boolean
   joinOrder?: Prisma.IntFieldUpdateOperationsInput | number
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   songs?: Prisma.SongUpdateManyWithoutPlayerNestedInput
   votes?: Prisma.VoteUpdateManyWithoutPlayerNestedInput
 }
@@ -710,9 +698,9 @@ export type PlayerUncheckedUpdateWithoutSessionInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   spotifyDeviceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  isOwner?: Prisma.IntFieldUpdateOperationsInput | number
+  isOwner?: Prisma.BoolFieldUpdateOperationsInput | boolean
   joinOrder?: Prisma.IntFieldUpdateOperationsInput | number
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   songs?: Prisma.SongUncheckedUpdateManyWithoutPlayerNestedInput
   votes?: Prisma.VoteUncheckedUpdateManyWithoutPlayerNestedInput
 }
@@ -721,9 +709,9 @@ export type PlayerUncheckedUpdateManyWithoutSessionInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   spotifyDeviceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  isOwner?: Prisma.IntFieldUpdateOperationsInput | number
+  isOwner?: Prisma.BoolFieldUpdateOperationsInput | boolean
   joinOrder?: Prisma.IntFieldUpdateOperationsInput | number
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 
@@ -838,9 +826,9 @@ export type $PlayerPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     sessionId: string
     name: string
     spotifyDeviceId: string | null
-    isOwner: number
+    isOwner: boolean
     joinOrder: number
-    createdAt: number
+    createdAt: Date
   }, ExtArgs["result"]["player"]>
   composites: {}
 }
@@ -1271,9 +1259,9 @@ export interface PlayerFieldRefs {
   readonly sessionId: Prisma.FieldRef<"Player", 'String'>
   readonly name: Prisma.FieldRef<"Player", 'String'>
   readonly spotifyDeviceId: Prisma.FieldRef<"Player", 'String'>
-  readonly isOwner: Prisma.FieldRef<"Player", 'Int'>
+  readonly isOwner: Prisma.FieldRef<"Player", 'Boolean'>
   readonly joinOrder: Prisma.FieldRef<"Player", 'Int'>
-  readonly createdAt: Prisma.FieldRef<"Player", 'Int'>
+  readonly createdAt: Prisma.FieldRef<"Player", 'DateTime'>
 }
     
 

@@ -20,32 +20,22 @@ export type GameSessionModel = runtime.Types.Result.DefaultSelection<Prisma.$Gam
 
 export type AggregateGameSession = {
   _count: GameSessionCountAggregateOutputType | null
-  _avg: GameSessionAvgAggregateOutputType | null
-  _sum: GameSessionSumAggregateOutputType | null
   _min: GameSessionMinAggregateOutputType | null
   _max: GameSessionMaxAggregateOutputType | null
-}
-
-export type GameSessionAvgAggregateOutputType = {
-  createdAt: number | null
-}
-
-export type GameSessionSumAggregateOutputType = {
-  createdAt: number | null
 }
 
 export type GameSessionMinAggregateOutputType = {
   id: string | null
   ownerId: string | null
   status: $Enums.SessionStatus | null
-  createdAt: number | null
+  createdAt: Date | null
 }
 
 export type GameSessionMaxAggregateOutputType = {
   id: string | null
   ownerId: string | null
   status: $Enums.SessionStatus | null
-  createdAt: number | null
+  createdAt: Date | null
 }
 
 export type GameSessionCountAggregateOutputType = {
@@ -56,14 +46,6 @@ export type GameSessionCountAggregateOutputType = {
   _all: number
 }
 
-
-export type GameSessionAvgAggregateInputType = {
-  createdAt?: true
-}
-
-export type GameSessionSumAggregateInputType = {
-  createdAt?: true
-}
 
 export type GameSessionMinAggregateInputType = {
   id?: true
@@ -125,18 +107,6 @@ export type GameSessionAggregateArgs<ExtArgs extends runtime.Types.Extensions.In
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
-   * Select which fields to average
-  **/
-  _avg?: GameSessionAvgAggregateInputType
-  /**
-   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-   * 
-   * Select which fields to sum
-  **/
-  _sum?: GameSessionSumAggregateInputType
-  /**
-   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-   * 
    * Select which fields to find the minimum value
   **/
   _min?: GameSessionMinAggregateInputType
@@ -167,8 +137,6 @@ export type GameSessionGroupByArgs<ExtArgs extends runtime.Types.Extensions.Inte
   take?: number
   skip?: number
   _count?: GameSessionCountAggregateInputType | true
-  _avg?: GameSessionAvgAggregateInputType
-  _sum?: GameSessionSumAggregateInputType
   _min?: GameSessionMinAggregateInputType
   _max?: GameSessionMaxAggregateInputType
 }
@@ -177,10 +145,8 @@ export type GameSessionGroupByOutputType = {
   id: string
   ownerId: string
   status: $Enums.SessionStatus
-  createdAt: number
+  createdAt: Date
   _count: GameSessionCountAggregateOutputType | null
-  _avg: GameSessionAvgAggregateOutputType | null
-  _sum: GameSessionSumAggregateOutputType | null
   _min: GameSessionMinAggregateOutputType | null
   _max: GameSessionMaxAggregateOutputType | null
 }
@@ -207,7 +173,7 @@ export type GameSessionWhereInput = {
   id?: Prisma.StringFilter<"GameSession"> | string
   ownerId?: Prisma.StringFilter<"GameSession"> | string
   status?: Prisma.EnumSessionStatusFilter<"GameSession"> | $Enums.SessionStatus
-  createdAt?: Prisma.IntFilter<"GameSession"> | number
+  createdAt?: Prisma.DateTimeFilter<"GameSession"> | Date | string
   tournaments?: Prisma.TournamentListRelationFilter
   players?: Prisma.PlayerListRelationFilter
 }
@@ -228,7 +194,7 @@ export type GameSessionWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.GameSessionWhereInput | Prisma.GameSessionWhereInput[]
   ownerId?: Prisma.StringFilter<"GameSession"> | string
   status?: Prisma.EnumSessionStatusFilter<"GameSession"> | $Enums.SessionStatus
-  createdAt?: Prisma.IntFilter<"GameSession"> | number
+  createdAt?: Prisma.DateTimeFilter<"GameSession"> | Date | string
   tournaments?: Prisma.TournamentListRelationFilter
   players?: Prisma.PlayerListRelationFilter
 }, "id">
@@ -239,10 +205,8 @@ export type GameSessionOrderByWithAggregationInput = {
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.GameSessionCountOrderByAggregateInput
-  _avg?: Prisma.GameSessionAvgOrderByAggregateInput
   _max?: Prisma.GameSessionMaxOrderByAggregateInput
   _min?: Prisma.GameSessionMinOrderByAggregateInput
-  _sum?: Prisma.GameSessionSumOrderByAggregateInput
 }
 
 export type GameSessionScalarWhereWithAggregatesInput = {
@@ -252,14 +216,14 @@ export type GameSessionScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"GameSession"> | string
   ownerId?: Prisma.StringWithAggregatesFilter<"GameSession"> | string
   status?: Prisma.EnumSessionStatusWithAggregatesFilter<"GameSession"> | $Enums.SessionStatus
-  createdAt?: Prisma.IntWithAggregatesFilter<"GameSession"> | number
+  createdAt?: Prisma.DateTimeWithAggregatesFilter<"GameSession"> | Date | string
 }
 
 export type GameSessionCreateInput = {
   id: string
   ownerId: string
   status?: $Enums.SessionStatus
-  createdAt: number
+  createdAt: Date | string
   tournaments?: Prisma.TournamentCreateNestedManyWithoutSessionInput
   players?: Prisma.PlayerCreateNestedManyWithoutSessionInput
 }
@@ -268,7 +232,7 @@ export type GameSessionUncheckedCreateInput = {
   id: string
   ownerId: string
   status?: $Enums.SessionStatus
-  createdAt: number
+  createdAt: Date | string
   tournaments?: Prisma.TournamentUncheckedCreateNestedManyWithoutSessionInput
   players?: Prisma.PlayerUncheckedCreateNestedManyWithoutSessionInput
 }
@@ -277,7 +241,7 @@ export type GameSessionUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   ownerId?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumSessionStatusFieldUpdateOperationsInput | $Enums.SessionStatus
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tournaments?: Prisma.TournamentUpdateManyWithoutSessionNestedInput
   players?: Prisma.PlayerUpdateManyWithoutSessionNestedInput
 }
@@ -286,7 +250,7 @@ export type GameSessionUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   ownerId?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumSessionStatusFieldUpdateOperationsInput | $Enums.SessionStatus
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tournaments?: Prisma.TournamentUncheckedUpdateManyWithoutSessionNestedInput
   players?: Prisma.PlayerUncheckedUpdateManyWithoutSessionNestedInput
 }
@@ -295,31 +259,27 @@ export type GameSessionCreateManyInput = {
   id: string
   ownerId: string
   status?: $Enums.SessionStatus
-  createdAt: number
+  createdAt: Date | string
 }
 
 export type GameSessionUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   ownerId?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumSessionStatusFieldUpdateOperationsInput | $Enums.SessionStatus
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type GameSessionUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   ownerId?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumSessionStatusFieldUpdateOperationsInput | $Enums.SessionStatus
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type GameSessionCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   ownerId?: Prisma.SortOrder
   status?: Prisma.SortOrder
-  createdAt?: Prisma.SortOrder
-}
-
-export type GameSessionAvgOrderByAggregateInput = {
   createdAt?: Prisma.SortOrder
 }
 
@@ -337,10 +297,6 @@ export type GameSessionMinOrderByAggregateInput = {
   createdAt?: Prisma.SortOrder
 }
 
-export type GameSessionSumOrderByAggregateInput = {
-  createdAt?: Prisma.SortOrder
-}
-
 export type GameSessionScalarRelationFilter = {
   is?: Prisma.GameSessionWhereInput
   isNot?: Prisma.GameSessionWhereInput
@@ -348,14 +304,6 @@ export type GameSessionScalarRelationFilter = {
 
 export type EnumSessionStatusFieldUpdateOperationsInput = {
   set?: $Enums.SessionStatus
-}
-
-export type IntFieldUpdateOperationsInput = {
-  set?: number
-  increment?: number
-  decrement?: number
-  multiply?: number
-  divide?: number
 }
 
 export type GameSessionCreateNestedOneWithoutTournamentsInput = {
@@ -390,7 +338,7 @@ export type GameSessionCreateWithoutTournamentsInput = {
   id: string
   ownerId: string
   status?: $Enums.SessionStatus
-  createdAt: number
+  createdAt: Date | string
   players?: Prisma.PlayerCreateNestedManyWithoutSessionInput
 }
 
@@ -398,7 +346,7 @@ export type GameSessionUncheckedCreateWithoutTournamentsInput = {
   id: string
   ownerId: string
   status?: $Enums.SessionStatus
-  createdAt: number
+  createdAt: Date | string
   players?: Prisma.PlayerUncheckedCreateNestedManyWithoutSessionInput
 }
 
@@ -422,7 +370,7 @@ export type GameSessionUpdateWithoutTournamentsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   ownerId?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumSessionStatusFieldUpdateOperationsInput | $Enums.SessionStatus
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   players?: Prisma.PlayerUpdateManyWithoutSessionNestedInput
 }
 
@@ -430,7 +378,7 @@ export type GameSessionUncheckedUpdateWithoutTournamentsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   ownerId?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumSessionStatusFieldUpdateOperationsInput | $Enums.SessionStatus
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   players?: Prisma.PlayerUncheckedUpdateManyWithoutSessionNestedInput
 }
 
@@ -438,7 +386,7 @@ export type GameSessionCreateWithoutPlayersInput = {
   id: string
   ownerId: string
   status?: $Enums.SessionStatus
-  createdAt: number
+  createdAt: Date | string
   tournaments?: Prisma.TournamentCreateNestedManyWithoutSessionInput
 }
 
@@ -446,7 +394,7 @@ export type GameSessionUncheckedCreateWithoutPlayersInput = {
   id: string
   ownerId: string
   status?: $Enums.SessionStatus
-  createdAt: number
+  createdAt: Date | string
   tournaments?: Prisma.TournamentUncheckedCreateNestedManyWithoutSessionInput
 }
 
@@ -470,7 +418,7 @@ export type GameSessionUpdateWithoutPlayersInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   ownerId?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumSessionStatusFieldUpdateOperationsInput | $Enums.SessionStatus
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tournaments?: Prisma.TournamentUpdateManyWithoutSessionNestedInput
 }
 
@@ -478,7 +426,7 @@ export type GameSessionUncheckedUpdateWithoutPlayersInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   ownerId?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumSessionStatusFieldUpdateOperationsInput | $Enums.SessionStatus
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tournaments?: Prisma.TournamentUncheckedUpdateManyWithoutSessionNestedInput
 }
 
@@ -572,7 +520,7 @@ export type $GameSessionPayload<ExtArgs extends runtime.Types.Extensions.Interna
     id: string
     ownerId: string
     status: $Enums.SessionStatus
-    createdAt: number
+    createdAt: Date
   }, ExtArgs["result"]["gameSession"]>
   composites: {}
 }
@@ -1001,7 +949,7 @@ export interface GameSessionFieldRefs {
   readonly id: Prisma.FieldRef<"GameSession", 'String'>
   readonly ownerId: Prisma.FieldRef<"GameSession", 'String'>
   readonly status: Prisma.FieldRef<"GameSession", 'SessionStatus'>
-  readonly createdAt: Prisma.FieldRef<"GameSession", 'Int'>
+  readonly createdAt: Prisma.FieldRef<"GameSession", 'DateTime'>
 }
     
 

@@ -1,11 +1,18 @@
-import { getSession, getActiveTournament, updateTournament, getSongs, getPlayers, getMatches } from "@/lib/game-session";
+import {
+  getSession,
+  getActiveTournament,
+  updateTournament,
+  getSongs,
+  getPlayers,
+  getMatches,
+} from "@/lib/game-session";
 import { initializeTournament } from "@/lib/tournament";
 import { sseManager } from "@/lib/sse-manager";
 import type { SSEMessage } from "@/types/game";
 
 export async function POST(
-  request: Request,
-  { params }: { params: Promise<{ sessionId: string }> }
+  _: Request,
+  { params }: { params: Promise<{ sessionId: string }> },
 ) {
   try {
     const { sessionId } = await params;
@@ -20,21 +27,27 @@ export async function POST(
 
     const tournament = await getActiveTournament(sessionId);
     if (!tournament) {
-      return new Response(JSON.stringify({ error: "No active tournament found" }), {
-        status: 404,
-        headers: { "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({ error: "No active tournament found" }),
+        {
+          status: 404,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
     }
 
     if (tournament.status !== "song_submission") {
-      return new Response(JSON.stringify({ error: "Not in song submission phase" }), {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({ error: "Not in song submission phase" }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
     }
 
     // Get submitted songs
-    const songs = await getSongs(tournament.id, 0);
+    const songs = await getSongs(tournament.id);
 
     if (songs.length < 2) {
       return new Response(
@@ -42,12 +55,12 @@ export async function POST(
         {
           status: 400,
           headers: { "Content-Type": "application/json" },
-        }
+        },
       );
     }
 
     // Initialize tournament with first match
-    initializeTournament(tournament.id);
+    await initializeTournament(tournament.id);
 
     // Update tournament status
     await updateTournament(tournament.id, {
@@ -59,7 +72,7 @@ export async function POST(
     if (updatedTournament) {
       const [players, matches] = await Promise.all([
         getPlayers(sessionId),
-        getMatches(tournament.id, 0),
+        getMatches(tournament.id),
       ]);
 
       sseManager.broadcast(sessionId, {
@@ -83,7 +96,7 @@ export async function POST(
       {
         status: 200,
         headers: { "Content-Type": "application/json" },
-      }
+      },
     );
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";

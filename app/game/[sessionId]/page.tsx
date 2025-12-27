@@ -58,8 +58,8 @@ export default function GamePage() {
     );
   }
 
-  const isOwner = gameSession?.owner_id === authSession?.user?.id;
-  const currentPickerIndex = tournament?.current_picker_index || 0;
+  const isOwner = gameSession?.ownerId === authSession?.user?.id;
+  const currentPickerIndex = tournament?.currentPickerIndex || 0;
   const currentPicker = players[currentPickerIndex];
 
   return (

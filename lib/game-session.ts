@@ -1,4 +1,4 @@
-import { prisma } from "./db-prisma";
+import prisma from "./db-prisma";
 import { v4 as uuidv4 } from "uuid";
 import type {
   Session,
@@ -12,38 +12,31 @@ import type {
 
 export async function createSession(ownerId: string): Promise<Session> {
   const sessionId = uuidv4();
-  const now = Date.now();
+  const now = new Date();
 
-  const result = await prisma.session.create({
+  const result = await prisma.gameSession.create({
     data: {
       id: sessionId,
-      owner_id: ownerId,
+      ownerId: ownerId,
       status: "active",
-      created_at: now,
+      createdAt: now,
     },
   });
 
   return {
     id: result.id,
-    owner_id: result.owner_id,
-    status: result.status as "active" | "archived",
-    created_at: result.created_at,
+    ownerId: result.ownerId,
+    status: result.status,
+    createdAt: result.createdAt,
   };
 }
 
 export async function getSession(sessionId: string): Promise<Session | null> {
-  const result = await prisma.session.findUnique({
+  const result = await prisma.gameSession.findUnique({
     where: { id: sessionId },
   });
 
-  return result
-    ? {
-        id: result.id,
-        owner_id: result.owner_id,
-        status: result.status as "active" | "archived",
-        created_at: result.created_at,
-      }
-    : null;
+  return result;
 }
 
 export async function updateSession(
@@ -64,35 +57,26 @@ export async function updateSession(
 
 // Tournament functions
 
-export async function createTournament(
-  sessionId: string,
-  category: string,
-): Promise<Tournament> {
+export async function createTournament(data: {
+  sessionId: string;
+  category: string;
+  pickerIndex: number;
+}) {
   const tournamentId = uuidv4();
-  const now = Date.now();
 
   const result = await prisma.tournament.create({
     data: {
       id: tournamentId,
-      session_id: sessionId,
-      category,
-      status: "waiting",
-      current_round: 1,
-      current_picker_index: 0,
-      created_at: now,
+      sessionId: data.sessionId,
+      category: data.category,
+      status: "song_submission",
+      currentPickerIndex: data.pickerIndex,
+      createdAt: new Date(),
     },
+    include: { songs: true, matches: true },
   });
 
-  return {
-    id: result.id,
-    session_id: result.session_id,
-    category: result.category,
-    status: result.status,
-    current_round: result.current_round,
-    current_picker_index: result.current_picker_index,
-    winning_song_id: result.winning_song_id,
-    created_at: result.created_at,
-  };
+  return result;
 }
 
 export async function getTournament(
@@ -102,38 +86,7 @@ export async function getTournament(
     where: { id: tournamentId },
   });
 
-  return result
-    ? {
-        id: result.id,
-        session_id: result.session_id,
-        category: result.category,
-        status: result.status,
-        current_round: result.current_round,
-        current_picker_index: result.current_picker_index,
-        winning_song_id: result.winning_song_id,
-        created_at: result.created_at,
-      }
-    : null;
-}
-
-export async function getTournamentsBySession(
-  sessionId: string,
-): Promise<Tournament[]> {
-  const results = await prisma.tournament.findMany({
-    where: { session_id: sessionId },
-    orderBy: { created_at: "asc" },
-  });
-
-  return results.map((result) => ({
-    id: result.id,
-    session_id: result.session_id,
-    category: result.category,
-    status: result.status,
-    current_round: result.current_round,
-    current_picker_index: result.current_picker_index,
-    winning_song_id: result.winning_song_id,
-    created_at: result.created_at,
-  }));
+  return result;
 }
 
 export async function getActiveTournament(
@@ -141,47 +94,22 @@ export async function getActiveTournament(
 ): Promise<Tournament | null> {
   const result = await prisma.tournament.findFirst({
     where: {
-      session_id: sessionId,
+      sessionId: sessionId,
       status: { not: "finished" },
     },
-    orderBy: { created_at: "desc" },
+    orderBy: { createdAt: "desc" },
   });
 
-  return result
-    ? {
-        id: result.id,
-        session_id: result.session_id,
-        category: result.category,
-        status: result.status,
-        current_round: result.current_round,
-        current_picker_index: result.current_picker_index,
-        winning_song_id: result.winning_song_id,
-        created_at: result.created_at,
-      }
-    : null;
+  return result;
 }
 
 export async function updateTournament(
   tournamentId: string,
   updates: Partial<Tournament>,
-): Promise<void> {
-  const dataToUpdate: Record<string, string | number | null> = {};
-
-  if (updates.status !== undefined) dataToUpdate.status = updates.status;
-  if (updates.current_round !== undefined)
-    dataToUpdate.current_round = updates.current_round;
-  if (updates.current_picker_index !== undefined)
-    dataToUpdate.current_picker_index = updates.current_picker_index;
-  if (updates.winning_song_id !== undefined)
-    dataToUpdate.winning_song_id = updates.winning_song_id;
-  if (updates.eliminated_song_ids !== undefined)
-    dataToUpdate.eliminated_song_ids = updates.eliminated_song_ids;
-
-  if (Object.keys(dataToUpdate).length === 0) return;
-
-  await prisma.tournament.update({
+): Promise<Tournament> {
+  return await prisma.tournament.update({
     where: { id: tournamentId },
-    data: dataToUpdate,
+    data: updates,
   });
 }
 
@@ -191,49 +119,49 @@ export async function addPlayer(
   isOwner: boolean = false,
 ): Promise<Player> {
   const playerId = uuidv4();
-  const now = Date.now();
+  const now = new Date();
 
   // Get join order
   const count = await prisma.player.count({
-    where: { session_id: sessionId },
+    where: { sessionId: sessionId },
   });
 
   const result = await prisma.player.create({
     data: {
       id: playerId,
-      session_id: sessionId,
+      sessionId: sessionId,
       name,
-      is_owner: isOwner ? 1 : 0,
-      join_order: count,
-      created_at: now,
+      isOwner: isOwner ? 1 : 0,
+      joinOrder: count,
+      createdAt: now,
     },
   });
 
   return {
     id: result.id,
-    session_id: result.session_id,
+    sessionId: result.sessionId,
     name: result.name,
-    spotify_device_id: result.spotify_device_id,
-    is_owner: result.is_owner === 1,
-    join_order: result.join_order,
-    created_at: result.created_at,
+    spotifyDeviceId: result.spotifyDeviceId,
+    isOwner: result.isOwner === 1,
+    joinOrder: result.joinOrder,
+    createdAt: result.createdAt,
   };
 }
 
 export async function getPlayers(sessionId: string): Promise<Player[]> {
   const results = await prisma.player.findMany({
-    where: { session_id: sessionId },
-    orderBy: { join_order: "asc" },
+    where: { sessionId: sessionId },
+    orderBy: { joinOrder: "asc" },
   });
 
   return results.map((result) => ({
     id: result.id,
-    session_id: result.session_id,
+    sessionId: result.sessionId,
     name: result.name,
-    spotify_device_id: result.spotify_device_id,
-    is_owner: result.is_owner === 1,
-    join_order: result.join_order,
-    created_at: result.created_at,
+    spotifyDeviceId: result.spotifyDeviceId,
+    isOwner: result.isOwner === 1,
+    joinOrder: result.joinOrder,
+    createdAt: result.createdAt,
   }));
 }
 
@@ -245,12 +173,12 @@ export async function getPlayer(playerId: string): Promise<Player | null> {
   return result
     ? {
         id: result.id,
-        session_id: result.session_id,
+        sessionId: result.sessionId,
         name: result.name,
-        spotify_device_id: result.spotify_device_id,
-        is_owner: result.is_owner === 1,
-        join_order: result.join_order,
-        created_at: result.created_at,
+        spotifyDeviceId: result.spotifyDeviceId,
+        isOwner: result.isOwner === 1,
+        joinOrder: result.joinOrder,
+        createdAt: result.createdAt,
       }
     : null;
 }
@@ -262,8 +190,8 @@ export async function updatePlayer(
   const dataToUpdate: Record<string, string | number | boolean | null> = {};
 
   if (updates.name !== undefined) dataToUpdate.name = updates.name;
-  if (updates.spotify_device_id !== undefined)
-    dataToUpdate.spotify_device_id = updates.spotify_device_id;
+  if (updates.spotifyDeviceId !== undefined)
+    dataToUpdate.spotifyDeviceId = updates.spotifyDeviceId;
 
   if (Object.keys(dataToUpdate).length === 0) return;
 
@@ -276,7 +204,6 @@ export async function updatePlayer(
 export async function addSong(
   tournamentId: string,
   playerId: string,
-  roundNumber: number,
   spotifyId: string,
   songName: string,
   artistName: string,
@@ -284,58 +211,32 @@ export async function addSong(
   imageUrl: string | null = null,
 ): Promise<Song> {
   const songId = uuidv4();
-  const now = Date.now();
+  const now = new Date();
 
   const result = await prisma.song.create({
     data: {
       id: songId,
-      tournament_id: tournamentId,
-      round_number: roundNumber,
-      spotify_id: spotifyId,
-      player_id: playerId,
-      start_time: startTime,
-      song_name: songName,
-      artist_name: artistName,
-      image_url: imageUrl,
-      created_at: now,
+      tournamentId: tournamentId,
+      spotifyId: spotifyId,
+      playerId: playerId,
+      startTime: startTime,
+      songName: songName,
+      artistName: artistName,
+      imageUrl: imageUrl,
+      createdAt: now,
     },
   });
 
-  return {
-    id: result.id,
-    tournament_id: result.tournament_id,
-    round_number: result.round_number,
-    spotify_id: result.spotify_id,
-    player_id: result.player_id,
-    start_time: result.start_time,
-    song_name: result.song_name,
-    artist_name: result.artist_name,
-    image_url: result.image_url,
-    created_at: result.created_at,
-  };
+  return result;
 }
 
-export async function getSongs(
-  tournamentId: string,
-  roundNumber: number,
-): Promise<Song[]> {
+export async function getSongs(tournamentId: string): Promise<Song[]> {
   const results = await prisma.song.findMany({
-    where: { tournament_id: tournamentId, round_number: roundNumber },
-    orderBy: { created_at: "asc" },
+    where: { tournamentId: tournamentId },
+    orderBy: { createdAt: "asc" },
   });
 
-  return results.map((result) => ({
-    id: result.id,
-    tournament_id: result.tournament_id,
-    round_number: result.round_number,
-    spotify_id: result.spotify_id,
-    player_id: result.player_id,
-    start_time: result.start_time,
-    song_name: result.song_name,
-    artist_name: result.artist_name,
-    image_url: result.image_url,
-    created_at: result.created_at,
-  }));
+  return results;
 }
 
 export async function getSong(songId: string): Promise<Song | null> {
@@ -343,84 +244,45 @@ export async function getSong(songId: string): Promise<Song | null> {
     where: { id: songId },
   });
 
-  return result
-    ? {
-        id: result.id,
-        tournament_id: result.tournament_id,
-        round_number: result.round_number,
-        spotify_id: result.spotify_id,
-        player_id: result.player_id,
-        start_time: result.start_time,
-        song_name: result.song_name,
-        artist_name: result.artist_name,
-        image_url: result.image_url,
-        created_at: result.created_at,
-      }
-    : null;
+  return result;
 }
 
-export async function createMatch(
-  tournamentId: string,
-  roundNumber: number,
-  matchNumber: number,
-  songAId: string | null,
-  songBId: string | null,
-): Promise<TournamentMatch> {
+export async function createMatch({
+  tournamentId,
+  round,
+  songId,
+}: {
+  tournamentId: string;
+  round: number;
+  songId: string | null;
+}): Promise<TournamentMatch> {
   const matchId = uuidv4();
-  const now = Date.now();
+  const now = new Date();
 
   const result = await prisma.tournamentMatch.create({
     data: {
       id: matchId,
-      tournament_id: tournamentId,
-      round_number: roundNumber,
-      match_number: matchNumber,
-      song_a_id: songAId,
-      song_b_id: songBId,
+      tournamentId: tournamentId,
+      roundNumber: round,
+      songAId: null,
+      songBId: songId,
       status: "pending",
-      created_at: now,
+      createdAt: now,
     },
   });
 
-  return {
-    id: result.id,
-    tournament_id: result.tournament_id,
-    round_number: result.round_number,
-    match_number: result.match_number,
-    song_a_id: result.song_a_id,
-    song_b_id: result.song_b_id,
-    winner_id: result.winner_id,
-    status: result.status,
-    votes_a: result.votes_a,
-    votes_b: result.votes_b,
-    currently_playing_song_id: result.currently_playing_song_id,
-    created_at: result.created_at,
-  };
+  return result;
 }
 
 export async function getMatches(
   tournamentId: string,
-  roundNumber: number,
 ): Promise<TournamentMatch[]> {
   const results = await prisma.tournamentMatch.findMany({
-    where: { tournament_id: tournamentId, round_number: roundNumber },
-    orderBy: { match_number: "asc" },
+    where: { tournamentId: tournamentId },
+    orderBy: { roundNumber: "asc" },
   });
 
-  return results.map((result) => ({
-    id: result.id,
-    tournament_id: result.tournament_id,
-    round_number: result.round_number,
-    match_number: result.match_number,
-    song_a_id: result.song_a_id,
-    song_b_id: result.song_b_id,
-    winner_id: result.winner_id,
-    status: result.status,
-    votes_a: result.votes_a,
-    votes_b: result.votes_b,
-    currently_playing_song_id: result.currently_playing_song_id,
-    created_at: result.created_at,
-  }));
+  return results;
 }
 
 export async function getMatch(
@@ -430,54 +292,16 @@ export async function getMatch(
     where: { id: matchId },
   });
 
-  return result
-    ? {
-        id: result.id,
-        tournament_id: result.tournament_id,
-        round_number: result.round_number,
-        match_number: result.match_number,
-        song_a_id: result.song_a_id,
-        song_b_id: result.song_b_id,
-        winner_id: result.winner_id,
-        status: result.status,
-        votes_a: result.votes_a,
-        votes_b: result.votes_b,
-        currently_playing_song_id: result.currently_playing_song_id,
-        created_at: result.created_at,
-      }
-    : null;
+  return result;
 }
 
 export async function updateMatch(
   matchId: string,
   updates: Partial<TournamentMatch>,
-): Promise<void> {
-  const dataToUpdate: Record<
-    string,
-    string | number | boolean | null | undefined
-  > = {};
-
-  if (updates.round_number !== undefined)
-    dataToUpdate.round_number = updates.round_number;
-  if (updates.match_number !== undefined)
-    dataToUpdate.match_number = updates.match_number;
-  if (updates.song_a_id !== undefined)
-    dataToUpdate.song_a_id = updates.song_a_id;
-  if (updates.song_b_id !== undefined)
-    dataToUpdate.song_b_id = updates.song_b_id;
-  if (updates.winner_id !== undefined)
-    dataToUpdate.winner_id = updates.winner_id;
-  if (updates.status !== undefined) dataToUpdate.status = updates.status;
-  if (updates.votes_a !== undefined) dataToUpdate.votes_a = updates.votes_a;
-  if (updates.votes_b !== undefined) dataToUpdate.votes_b = updates.votes_b;
-  if (updates.currently_playing_song_id !== undefined)
-    dataToUpdate.currently_playing_song_id = updates.currently_playing_song_id;
-
-  if (Object.keys(dataToUpdate).length === 0) return;
-
-  await prisma.tournamentMatch.update({
+): Promise<TournamentMatch> {
+  return await prisma.tournamentMatch.update({
     where: { id: matchId },
-    data: dataToUpdate,
+    data: updates,
   });
 }
 
@@ -487,40 +311,40 @@ export async function addVote(
   songId: string,
 ): Promise<void> {
   const voteId = uuidv4();
-  const now = Date.now();
+  const now = new Date();
 
-  await prisma.vote.upsert({
-    where: { match_id_player_id: { match_id: matchId, player_id: playerId } },
-    update: { song_id: songId, created_at: now },
+  const { match } = await prisma.vote.upsert({
+    where: { matchId_playerId: { matchId: matchId, playerId: playerId } },
+    update: { songId: songId, createdAt: now },
     create: {
       id: voteId,
-      match_id: matchId,
-      player_id: playerId,
-      song_id: songId,
-      created_at: now,
+      matchId: matchId,
+      playerId: playerId,
+      songId: songId,
+      createdAt: now,
     },
+    include: { match: true },
   });
 
   // Update vote counts
-  const match = await getMatch(matchId);
   if (!match) return;
 
   let votesA = 0;
   let votesB = 0;
 
-  if (match.song_a_id) {
+  if (match.songAId) {
     votesA = await prisma.vote.count({
-      where: { match_id: matchId, song_id: match.song_a_id },
+      where: { matchId: matchId, songId: match.songAId },
     });
   }
 
-  if (match.song_b_id) {
+  if (match.songBId) {
     votesB = await prisma.vote.count({
-      where: { match_id: matchId, song_id: match.song_b_id },
+      where: { matchId: matchId, songId: match.songBId },
     });
   }
 
-  await updateMatch(matchId, { votes_a: votesA, votes_b: votesB });
+  await updateMatch(matchId, { votesA: votesA, votesB: votesB });
 }
 
 export async function getPlayerVote(
@@ -528,11 +352,11 @@ export async function getPlayerVote(
   playerId: string,
 ): Promise<string | null> {
   const result = await prisma.vote.findFirst({
-    where: { match_id: matchId, player_id: playerId },
-    select: { song_id: true },
+    where: { matchId: matchId, playerId: playerId },
+    select: { songId: true },
   });
 
-  return result?.song_id || null;
+  return result?.songId || null;
 }
 
 export async function deletePlayer(playerId: string): Promise<void> {
@@ -558,8 +382,8 @@ export async function deleteSession(sessionId: string): Promise<void> {
 
 export async function getMatchVoteCount(matchId: string): Promise<number> {
   const result = await prisma.vote.groupBy({
-    by: ["player_id"],
-    where: { match_id: matchId },
+    by: ["playerId"],
+    where: { matchId: matchId },
     _count: true,
   });
 
