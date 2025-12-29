@@ -1,14 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useParams } from "next/navigation";
 import Image from "next/image";
+import { MdSettings } from "react-icons/md";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { useGameSession } from "@/hooks/useGameSession";
 import CategoryPhase from "@/components/game/CategoryPhase";
 import SongSubmissionPhase from "@/components/game/SongSubmissionPhase";
 import TournamentPhase from "@/components/game/TournamentPhase";
 import SpotifyPlayer from "@/components/SpotifyPlayer";
+import PlayersModal from "@/components/game/PlayersModal";
 
 export default function GamePage() {
   const params = useParams();
@@ -21,6 +23,8 @@ export default function GamePage() {
     }
     return null;
   });
+  const [showPlayersModal, setShowPlayersModal] = useState(false);
+  const optionsButtonRef = useRef<HTMLButtonElement>(null);
 
   async function handleNewRound() {
     await fetch(`/api/game/${sessionId}/new-round`, {
@@ -79,8 +83,32 @@ export default function GamePage() {
         </div>
       )}
       <div className="mx-auto max-w-4xl space-y-4">
-        {isOwner && <SpotifyPlayer />}
+        {/* Top bar with options icon and Spotify player */}
+        {isOwner && (
+          <div className="flex justify-between items-center">
+            <div className="flex-1">
+              <SpotifyPlayer />
+            </div>
+            <button
+              ref={optionsButtonRef}
+              onClick={() => setShowPlayersModal(true)}
+              className="text-gray-600 hover:text-gray-900 transition-colors p-2 ml-4"
+              aria-label="Options"
+            >
+              <MdSettings size={28} />
+            </button>
+          </div>
+        )}
 
+        <PlayersModal
+          isOpen={showPlayersModal}
+          onClose={() => setShowPlayersModal(false)}
+          players={players}
+          isOwner={isOwner}
+          sessionId={sessionId}
+          currentPlayerId={currentPlayerId}
+          buttonRef={optionsButtonRef}
+        />
         {!tournament ? (
           <p>something went wrong</p>
         ) : (
