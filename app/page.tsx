@@ -109,13 +109,15 @@ export default function Home() {
         )}
 
         <div className="space-y-4">
-          <button
-            onClick={handleSignIn}
-            disabled={loading}
-            className="w-full rounded-lg bg-green-600 px-4 py-3 font-semibold text-white hover:bg-green-700 disabled:opacity-50"
-          >
-            {loading ? "Signing in..." : "Sign in with Spotify"}
-          </button>
+          {!session?.user && (
+            <button
+              onClick={handleSignIn}
+              disabled={loading}
+              className="w-full rounded-lg bg-green-600 px-4 py-3 font-semibold text-white hover:bg-green-700 disabled:opacity-50"
+            >
+              {loading ? "Signing in..." : "Sign in with Spotify"}
+            </button>
+          )}
           {session?.user && (
             <button
               onClick={handleCreateGame}

@@ -23,6 +23,9 @@ export const auth = betterAuth({
       ],
     },
   },
+  session: {
+    expiresIn: 3600,
+  },
 });
 
 const providerId = "spotify";
@@ -94,19 +97,26 @@ async function refreshSpotifyToken(
 
   const encoded = Buffer.from(`${clientId}:${clientSecret}`).toString("base64");
 
+  const body = `grant_type=refresh_token&refresh_token=${encodeURIComponent(refreshToken)}`;
+  console.log(
+    `[auth] Refresh token length: ${refreshToken.length}, body length: ${body.length}`,
+  );
+
   const response = await fetch("https://accounts.spotify.com/api/token", {
     method: "POST",
     headers: {
       Authorization: `Basic ${encoded}`,
       "Content-Type": "application/x-www-form-urlencoded",
     },
-    body: `grant_type=refresh_token&refresh_token=${encodeURIComponent(refreshToken)}`,
+    body,
   });
 
   if (!response.ok) {
+    const errorData = await response.text();
     console.error(
       `[auth] Spotify token refresh failed: ${response.status} ${response.statusText}`,
     );
+    console.error(`[auth] Spotify response: ${errorData}`);
     throw new Error(`Failed to refresh Spotify token: ${response.statusText}`);
   }
 
@@ -128,7 +138,7 @@ async function refreshSpotifyToken(
   // Update the access token and expiration time, and refresh token if Spotify provided a new one
   if (data.refresh_token) {
     console.log(`[auth] Spotify provided new refresh token, updating database`);
-    prisma.account.update({
+    await prisma.account.update({
       data: {
         accessToken: data.access_token,
         accessTokenExpiresAt: expiresAtISO,
@@ -140,7 +150,7 @@ async function refreshSpotifyToken(
     console.log(
       `[auth] No new refresh token from Spotify, keeping existing one`,
     );
-    prisma.account.update({
+    await prisma.account.update({
       data: {
         accessToken: data.access_token,
         accessTokenExpiresAt: expiresAtISO,

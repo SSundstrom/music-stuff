@@ -7,6 +7,11 @@ export function useAuthSession() {
 
   useEffect(() => {
     authClient.getSession().then(({ data: session }) => {
+      const expired = session?.session.expiresAt.getTime() ?? 0;
+      console.log({ session });
+      if (expired < Date.now()) {
+        return;
+      }
       setAuthSession(session);
     });
   }, []);

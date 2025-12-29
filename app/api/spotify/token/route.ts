@@ -18,9 +18,12 @@ export async function GET(request: Request) {
     const accessToken = await getSpotifyAccessToken(session.user.id);
 
     if (!accessToken) {
-      console.log("[token] No access token found for user");
+      console.log("[token] No access token found for user - Spotify re-authentication required");
       return new Response(
-        JSON.stringify({ error: "Not authenticated with Spotify" }),
+        JSON.stringify({
+          error: "Not authenticated with Spotify",
+          needsReauth: true,
+        }),
         {
           status: 401,
           headers: { "Content-Type": "application/json" },

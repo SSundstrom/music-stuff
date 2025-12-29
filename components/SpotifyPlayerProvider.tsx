@@ -115,9 +115,12 @@ export default function SpotifyPlayerProvider({
           err instanceof Error ? err.message : err,
         );
         if (mounted) {
+          const errorMsg = err instanceof Error ? err.message : "Unknown error";
+          const needsReauth = errorMsg.includes("401") || errorMsg.includes("Not authenticated");
           setError(
-            "Failed to get Spotify token: " +
-              (err instanceof Error ? err.message : "Unknown error"),
+            needsReauth
+              ? "Spotify authentication expired. Please sign in again to reconnect."
+              : "Failed to get Spotify token: " + errorMsg,
           );
         }
       }
