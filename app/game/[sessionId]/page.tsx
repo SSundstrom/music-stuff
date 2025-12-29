@@ -122,35 +122,37 @@ export default function GamePage() {
       )}
       <div className="mx-auto max-w-4xl space-y-4">
         {/* Show join form if player hasn't joined yet */}
-        {!hasJoined && tournament && tournament.status !== "category_selection" && (
-          <div className="rounded-lg bg-white p-6 shadow-lg">
-            <h2 className="mb-4 text-2xl font-bold text-black">Join Game</h2>
-            <p className="mb-4 text-gray-600">
-              The tournament has started. You can still join to vote!
-            </p>
-            {joinError && (
-              <div className="mb-4 rounded-lg bg-red-100 p-3 text-red-700">
-                {joinError}
+        {!hasJoined &&
+          tournament &&
+          tournament.status !== "category_selection" && (
+            <div className="rounded-lg bg-white p-6 shadow-lg">
+              <h2 className="mb-4 text-2xl font-bold text-black">Join Game</h2>
+              <p className="mb-4 text-gray-600">
+                The tournament has started. You can still join to vote!
+              </p>
+              {joinError && (
+                <div className="mb-4 rounded-lg bg-red-100 p-3 text-red-700">
+                  {joinError}
+                </div>
+              )}
+              <div className="space-y-3">
+                <input
+                  type="text"
+                  placeholder="Enter your name"
+                  value={playerName}
+                  onChange={(e) => setPlayerName(e.target.value)}
+                  className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-green-500 focus:outline-none"
+                />
+                <button
+                  onClick={handleJoinGame}
+                  disabled={joinLoading}
+                  className="w-full rounded-lg bg-green-600 px-4 py-3 font-semibold text-white hover:bg-green-700 disabled:opacity-50"
+                >
+                  {joinLoading ? "Joining..." : "Join Game"}
+                </button>
               </div>
-            )}
-            <div className="space-y-3">
-              <input
-                type="text"
-                placeholder="Enter your name"
-                value={playerName}
-                onChange={(e) => setPlayerName(e.target.value)}
-                className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-green-500 focus:outline-none"
-              />
-              <button
-                onClick={handleJoinGame}
-                disabled={joinLoading}
-                className="w-full rounded-lg bg-green-600 px-4 py-3 font-semibold text-white hover:bg-green-700 disabled:opacity-50"
-              >
-                {joinLoading ? "Joining..." : "Join Game"}
-              </button>
             </div>
-          </div>
-        )}
+          )}
 
         {/* Top bar with options icon and Spotify player */}
         {isOwner && (
@@ -247,12 +249,14 @@ export default function GamePage() {
                         Tournament winner determined!
                       </p>
                     )}
-                    <button
-                      onClick={handleNewRound}
-                      className="w-full rounded-lg bg-green-600 px-4 py-3 font-semibold text-white hover:bg-green-700 disabled:opacity-50"
-                    >
-                      {"Pick new category!"}
-                    </button>
+                    {isOwner && (
+                      <button
+                        onClick={handleNewRound}
+                        className="w-full rounded-lg bg-green-600 px-4 py-3 font-semibold text-white hover:bg-green-700 disabled:opacity-50"
+                      >
+                        {"Pick new category!"}
+                      </button>
+                    )}
                   </div>
                 );
               })()}
