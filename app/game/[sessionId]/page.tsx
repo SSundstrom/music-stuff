@@ -6,6 +6,7 @@ import Image from "next/image";
 import { MdSettings } from "react-icons/md";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { useGameSession } from "@/hooks/useGameSession";
+import type { JoinSessionRequest, Player } from "@/types/game";
 import CategoryPhase from "@/components/game/CategoryPhase";
 import SongSubmissionPhase from "@/components/game/SongSubmissionPhase";
 import TournamentPhase from "@/components/game/TournamentPhase";
@@ -17,13 +18,16 @@ export default function GamePage() {
   const authSession = useAuthSession();
   const sessionId = params.sessionId as string;
 
-  const [currentPlayerId] = useState<string | null>(() => {
+  const [currentPlayerId, setCurrentPlayerId] = useState<string | null>(() => {
     if (typeof window !== "undefined") {
       return localStorage.getItem(`player_${sessionId}`);
     }
     return null;
   });
   const [showPlayersModal, setShowPlayersModal] = useState(false);
+  const [playerName, setPlayerName] = useState("");
+  const [joinLoading, setJoinLoading] = useState(false);
+  const [joinError, setJoinError] = useState("");
   const optionsButtonRef = useRef<HTMLButtonElement>(null);
 
   async function handleNewRound() {
@@ -31,6 +35,39 @@ export default function GamePage() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
     });
+  }
+
+  async function handleJoinGame() {
+    if (!playerName.trim()) {
+      setJoinError("Please enter your name");
+      return;
+    }
+
+    setJoinLoading(true);
+    setJoinError("");
+
+    try {
+      const response = await fetch(`/api/game/${sessionId}/join`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          playerName,
+          sessionId,
+        } satisfies JoinSessionRequest),
+      });
+
+      if (!response.ok) throw new Error("Failed to join game");
+
+      const player = (await response.json()) as Player;
+      setCurrentPlayerId(player.id);
+      localStorage.setItem(`player_${sessionId}`, player.id);
+      setPlayerName("");
+      // SSE will automatically update the players list
+    } catch (err) {
+      setJoinError(err instanceof Error ? err.message : "An error occurred");
+    } finally {
+      setJoinLoading(false);
+    }
   }
 
   const {
@@ -71,6 +108,7 @@ export default function GamePage() {
   const isOwner = gameSession?.ownerId === authSession?.user?.id;
   const currentPickerIndex = tournament?.currentPickerIndex || 0;
   const currentPicker = players[currentPickerIndex];
+  const hasJoined = !!currentPlayerId;
 
   return (
     <div className="min-h-screen bg-linear-to-br from-green-500 to-green-700 p-4">
@@ -83,6 +121,37 @@ export default function GamePage() {
         </div>
       )}
       <div className="mx-auto max-w-4xl space-y-4">
+        {/* Show join form if player hasn't joined yet */}
+        {!hasJoined && tournament && tournament.status !== "category_selection" && (
+          <div className="rounded-lg bg-white p-6 shadow-lg">
+            <h2 className="mb-4 text-2xl font-bold text-black">Join Game</h2>
+            <p className="mb-4 text-gray-600">
+              The tournament has started. You can still join to vote!
+            </p>
+            {joinError && (
+              <div className="mb-4 rounded-lg bg-red-100 p-3 text-red-700">
+                {joinError}
+              </div>
+            )}
+            <div className="space-y-3">
+              <input
+                type="text"
+                placeholder="Enter your name"
+                value={playerName}
+                onChange={(e) => setPlayerName(e.target.value)}
+                className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-green-500 focus:outline-none"
+              />
+              <button
+                onClick={handleJoinGame}
+                disabled={joinLoading}
+                className="w-full rounded-lg bg-green-600 px-4 py-3 font-semibold text-white hover:bg-green-700 disabled:opacity-50"
+              >
+                {joinLoading ? "Joining..." : "Join Game"}
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Top bar with options icon and Spotify player */}
         {isOwner && (
           <div className="flex justify-between items-center">
