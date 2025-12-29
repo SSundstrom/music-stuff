@@ -108,6 +108,34 @@ export function useGameSession({ sessionId, playerId }: UseGameSessionOptions) {
           // Game winner announced - tournament status is updated via game_state event
           return prevState;
 
+        case "playback_started":
+          // Update the match with the currently playing song
+          return {
+            ...prevState,
+            matches: prevState.matches.map((m) =>
+              m.id === message.data.matchId
+                ? {
+                    ...m,
+                    currentlyPlayingSongId: message.data.songId,
+                  }
+                : m,
+            ),
+          };
+
+        case "playback_stopped":
+          // Clear the currently playing song
+          return {
+            ...prevState,
+            matches: prevState.matches.map((m) =>
+              m.id === message.data.matchId
+                ? {
+                    ...m,
+                    currentlyPlayingSongId: null,
+                  }
+                : m,
+            ),
+          };
+
         default:
           return prevState;
       }

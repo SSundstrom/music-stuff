@@ -8,6 +8,7 @@ import {
   VoteRequest,
 } from "@/types/game";
 import { useSpotifyPlayer } from "../SpotifyPlayerProvider";
+import SongMatchCard from "./SongMatchCard";
 
 interface MatchDisplayProps {
   match: TournamentMatch;
@@ -107,6 +108,12 @@ export default function MatchDisplay({
       return;
     }
 
+    // If this song is already playing, pause it instead
+    if (match.currentlyPlayingSongId === songId && isPlaying) {
+      await handlePauseSong();
+      return;
+    }
+
     setLoading(true);
     setError("");
 
@@ -124,6 +131,19 @@ export default function MatchDisplay({
       await seek(startTimeMs);
 
       setIsPlaying(true);
+
+      // Notify server that playback started
+      await fetch(`/api/game/${sessionId}/playback`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "started",
+          matchId: match.id,
+          songId: song.id,
+          songName: song.songName,
+          artistName: song.artistName,
+        }),
+      });
 
       // Auto-pause after duration (default to 30 seconds)
       const duration = 30;
@@ -147,6 +167,16 @@ export default function MatchDisplay({
     try {
       await pause();
       setIsPlaying(false);
+
+      // Notify server that playback stopped
+      await fetch(`/api/game/${sessionId}/playback`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "stopped",
+          matchId: match.id,
+        }),
+      });
     } catch (err) {
       console.error("Failed to pause:", err);
     }
@@ -173,102 +203,32 @@ export default function MatchDisplay({
 
       {/* Song Comparison */}
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-        {/* Song A */}
-        <div
-          className={`order-1 rounded-lg border-2 p-6 relative ${
-            match.votesA > match.votesB
-              ? "border-green-500 bg-green-50"
-              : match.currentlyPlayingSongId === songA.id
-                ? "border-blue-500 bg-blue-50"
-                : "border-gray-300"
-          }`}
-        >
-          {match.currentlyPlayingSongId === songA.id && (
-            <div className="absolute top-2 right-2 flex items-center gap-1 rounded-full bg-blue-600 px-3 py-1 text-sm font-semibold text-white">
-              <span className="inline-block h-2 w-2 rounded-full bg-white animate-pulse" />
-              Now Playing
-            </div>
-          )}
+        <SongMatchCard
+          song={songA}
+          isPlaying={isPlaying}
+          isCurrentlyPlaying={match.currentlyPlayingSongId === songA.id}
+          userVoted={userVote === songA.id}
+          isLoading={loading}
+          isOwner={isOwner}
+          duration={duration}
+          onPlay={handlePlaySong}
+          onVote={handleVote}
+          orderClass="order-1"
+        />
 
-          <div className="space-y-3">
-            {/* Play Button (Owner only) */}
-            {isOwner && (
-              <button
-                onClick={() => handlePlaySong(songA.id)}
-                disabled={loading || isPlaying}
-                className="w-full rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
-              >
-                {isPlaying ? "Playing..." : `Play (${duration}s)`}
-              </button>
-            )}
+        <SongMatchCard
+          song={songB}
+          isPlaying={isPlaying}
+          isCurrentlyPlaying={match.currentlyPlayingSongId === songB.id}
+          userVoted={userVote === songB.id}
+          isLoading={loading}
+          isOwner={isOwner}
+          duration={duration}
+          onPlay={handlePlaySong}
+          onVote={handleVote}
+          orderClass="order-3 md:order-2"
+        />
 
-            {/* Vote Button */}
-            <button
-              onClick={() => handleVote(songA.id)}
-              disabled={loading}
-              className={`w-full rounded-lg px-4 py-2 font-semibold ${
-                userVote === songA.id
-                  ? "bg-green-600 text-white"
-                  : "border-2 border-gray-300 text-black hover:border-green-600"
-              }`}
-            >
-              {userVote === songA.id ? "✓ You voted" : "Vote"}
-            </button>
-
-            {/* Vote Count */}
-            <div className="text-center text-base font-semibold text-black">
-              Votes: {match.votesA}
-            </div>
-          </div>
-        </div>
-
-        {/* Song B */}
-        <div
-          className={`order-3 md:order-2 rounded-lg border-2 p-6 relative ${
-            match.votesB > match.votesA
-              ? "border-green-500 bg-green-50"
-              : match.currentlyPlayingSongId === songB.id
-                ? "border-blue-500 bg-blue-50"
-                : "border-gray-300"
-          }`}
-        >
-          {match.currentlyPlayingSongId === songB.id && (
-            <div className="absolute top-2 right-2 flex items-center gap-1 rounded-full bg-blue-600 px-3 py-1 text-sm font-semibold text-white">
-              <span className="inline-block h-2 w-2 rounded-full bg-white animate-pulse" />
-              Now Playing
-            </div>
-          )}
-
-          <div className="space-y-3">
-            {/* Play Button (Owner only) */}
-            {isOwner && (
-              <button
-                onClick={() => handlePlaySong(songB.id)}
-                disabled={loading || isPlaying}
-                className="w-full rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
-              >
-                {isPlaying ? "Playing..." : `Play (${duration}s)`}
-              </button>
-            )}
-
-            <button
-              onClick={() => handleVote(songB.id)}
-              disabled={loading}
-              className={`w-full rounded-lg px-4 py-2 font-semibold ${
-                userVote === songB.id
-                  ? "bg-green-600 text-white"
-                  : "border-2 border-gray-300 text-black hover:border-green-600"
-              }`}
-            >
-              {userVote === songB.id ? "✓ You voted" : "Vote"}
-            </button>
-
-            {/* Vote Count */}
-            <div className="text-center text-base font-semibold text-black">
-              Votes: {match.votesB}
-            </div>
-          </div>
-        </div>
         <div className="order-2 md:order-3 md:col-span-2 flex items-center justify-center gap-3">
           <div className="flex-1 border-t-2 border-gray-300" />
           <span className="text-lg font-bold text-gray-800">VS</span>

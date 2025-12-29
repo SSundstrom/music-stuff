@@ -4,16 +4,11 @@ import {
   getPlayer,
   addVote,
   getMatch,
-  getPlayers,
-  getSongs,
-  getMatches,
 } from "@/lib/game-session";
 import {
-  GameStateMessage,
   VoteRequestSchema,
   type Session,
 } from "@/types/game";
-import { sseManager } from "@/lib/sse-manager";
 import { eventBus } from "@/lib/event-bus";
 
 function errorResponse(message: string, status: number): Response {
@@ -70,38 +65,6 @@ async function validateMatch(
   return match;
 }
 
-async function broadcastMatchVotes(
-  sessionId: string,
-  matchId: string,
-  tournamentId: string,
-): Promise<void> {
-  const match = await getMatch(matchId);
-  if (!match) return;
-
-  const session = await getSession(sessionId);
-  if (!session) return;
-
-  const tournament = await getActiveTournament(sessionId);
-  if (!tournament) return;
-
-  const [players, songs, matches] = await Promise.all([
-    getPlayers(sessionId),
-    getSongs(tournamentId),
-    getMatches(tournamentId),
-  ]);
-
-  sseManager.broadcast(sessionId, {
-    type: "game_state",
-    data: {
-      session,
-      tournament,
-      players,
-      songs,
-      matches,
-    },
-  } satisfies GameStateMessage);
-}
-
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ sessionId: string }> },
@@ -136,9 +99,6 @@ export async function POST(
 
     // Record vote
     await addVote(validated.matchId, playerId!, validated.songId);
-
-    // Broadcast updated vote counts to all clients
-    await broadcastMatchVotes(sessionId, validated.matchId, tournament.id);
 
     // Emit vote:cast event for async processing
     // Event handlers will determine if the match/round/game is complete
