@@ -2,44 +2,50 @@
 
 import { useSpotifyPlayer } from "./SpotifyPlayerProvider";
 
-export default function SpotifyPlayer() {
-  const { state, pause, resume, seek } = useSpotifyPlayer();
+const PLACEHOLDER_TRACK_ID = "placeholder-sims-2-theme";
+const SIMS_THEME_SPOTIFY_ID = "30xHm3p2stFpmHyq0Rfm9x";
 
-  if (!state.isReady) {
-    return (
-      <div className="flex items-center justify-center">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-gray-700 border-t-green-500" />
-        <p className="mx-1">Spotify error: try reauthenticting</p>
-      </div>
-    );
-  }
+export default function SpotifyPlayer() {
+  const { state, pause, resume, seek, play } = useSpotifyPlayer();
 
   if (!state.currentTrack) {
     return null;
   }
 
-  const progressPercent = (state.position / state.duration) * 100;
+  const progressPercent = state.duration > 0 ? (state.position / state.duration) * 100 : 0;
 
   return (
     <div className="flex items-center gap-4">
       {/* Progress Bar */}
-      <div className="flex-1 bg-gray-700 h-1 rounded-full overflow-hidden cursor-pointer group">
+      <div className="flex-1 relative cursor-pointer group h-1">
+        <div className="absolute inset-0 bg-gray-700 rounded-full" />
         <div
-          className="bg-green-500 h-full group-hover:bg-green-400 transition-colors"
+          className="absolute inset-y-0 left-0 bg-green-500 group-hover:bg-green-400 transition-colors rounded-full"
           style={{ width: `${progressPercent}%` }}
+        />
+        <div
+          className="absolute inset-0 rounded-full"
           onClick={(e) => {
-            const rect = e.currentTarget.parentElement?.getBoundingClientRect();
-            if (rect) {
-              const percent = (e.clientX - rect.left) / rect.width;
-              seek(percent * state.duration);
-            }
+            const rect = e.currentTarget.getBoundingClientRect();
+            const percent = (e.clientX - rect.left) / rect.width;
+            seek(percent * state.duration);
           }}
         />
       </div>
 
       {/* Play/Pause Button */}
       <button
-        onClick={state.isPaused ? resume : pause}
+        onClick={() => {
+          if (state.isPaused) {
+            if (state.currentTrack?.id === PLACEHOLDER_TRACK_ID) {
+              play(SIMS_THEME_SPOTIFY_ID);
+            } else {
+              resume();
+            }
+          } else {
+            pause();
+          }
+        }}
         className="w-8 h-8 rounded-full bg-green-500 hover:bg-green-400 text-white flex items-center justify-center transition-colors shrink-0"
         aria-label={state.isPaused ? "Play" : "Pause"}
       >

@@ -46,6 +46,9 @@ export function useSpotifyPlayer() {
   return context;
 }
 
+const PLACEHOLDER_TRACK_ID = "placeholder-sims-2-theme";
+const SIMS_THEME_SPOTIFY_ID = "30xHm3p2stFpmHyq0Rfm9x";
+
 export default function SpotifyPlayerProvider({
   children,
 }: {
@@ -61,9 +64,14 @@ export default function SpotifyPlayerProvider({
     deviceId: null,
     isReady: false,
     isPaused: true,
-    currentTrack: null,
+    currentTrack: {
+      id: PLACEHOLDER_TRACK_ID,
+      name: "The Sims 2 Theme",
+      artist: "Goldmund",
+      image: "https://i.scdn.co/image/ab67616d0000b273e0b4b7c0e0b4b7c0e0b4b7c0",
+    },
     position: 0,
-    duration: 0,
+    duration: 59000,
   });
   const [error, setError] = useState<string | null>(null);
 
