@@ -5,7 +5,7 @@ import type { SSEMessage } from "@/types/game";
 
 export async function DELETE(
   request: Request,
-  { params }: { params: Promise<{ sessionId: string }> }
+  { params }: { params: Promise<{ sessionId: string }> },
 ) {
   try {
     const { sessionId } = await params;
@@ -31,10 +31,13 @@ export async function DELETE(
       headers: request.headers,
     });
     if (session.ownerId !== authSession?.user?.id) {
-      return new Response(JSON.stringify({ error: "Only the owner can kick players" }), {
-        status: 403,
-        headers: { "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({ error: "Only the owner can kick players" }),
+        {
+          status: 403,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
     }
 
     const player = await getPlayer(playerId);
@@ -58,6 +61,7 @@ export async function DELETE(
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
+    console.error(error);
     const message = error instanceof Error ? error.message : "Unknown error";
     return new Response(JSON.stringify({ error: message }), {
       status: 400,

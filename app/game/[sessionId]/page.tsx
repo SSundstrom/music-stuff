@@ -3,7 +3,7 @@
 import { useState, useRef } from "react";
 import { useParams } from "next/navigation";
 import Image from "next/image";
-import { MdSettings } from "react-icons/md";
+import { MdSettings, MdQrCode2 } from "react-icons/md";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { useGameSession } from "@/hooks/useGameSession";
 import type { JoinSessionRequest, Player } from "@/types/game";
@@ -12,6 +12,7 @@ import SongSubmissionPhase from "@/components/game/SongSubmissionPhase";
 import TournamentPhase from "@/components/game/TournamentPhase";
 import SpotifyPlayer from "@/components/SpotifyPlayer";
 import PlayersModal from "@/components/game/PlayersModal";
+import QRCodeModal from "@/components/game/QRCodeModal";
 
 export default function GamePage() {
   const params = useParams();
@@ -25,10 +26,12 @@ export default function GamePage() {
     return null;
   });
   const [showPlayersModal, setShowPlayersModal] = useState(false);
+  const [showQRModal, setShowQRModal] = useState(false);
   const [playerName, setPlayerName] = useState("");
   const [joinLoading, setJoinLoading] = useState(false);
   const [joinError, setJoinError] = useState("");
   const optionsButtonRef = useRef<HTMLButtonElement>(null);
+  const qrButtonRef = useRef<HTMLButtonElement>(null);
 
   async function handleNewRound() {
     await fetch(`/api/game/${sessionId}/new-round`, {
@@ -161,15 +164,30 @@ export default function GamePage() {
               <SpotifyPlayer />
             </div>
             <button
+              ref={qrButtonRef}
+              onClick={() => setShowQRModal(true)}
+              className="text-gray-600 hover:text-gray-900 transition-colors p-2 ml-2"
+              aria-label="Share QR Code"
+            >
+              <MdQrCode2 size={28} />
+            </button>
+            <button
               ref={optionsButtonRef}
               onClick={() => setShowPlayersModal(true)}
-              className="text-gray-600 hover:text-gray-900 transition-colors p-2 ml-4"
+              className="text-gray-600 hover:text-gray-900 transition-colors p-2 ml-2"
               aria-label="Options"
             >
               <MdSettings size={28} />
             </button>
           </div>
         )}
+
+        <QRCodeModal
+          isOpen={showQRModal}
+          onClose={() => setShowQRModal(false)}
+          sessionId={sessionId}
+          buttonRef={qrButtonRef}
+        />
 
         <PlayersModal
           isOpen={showPlayersModal}
