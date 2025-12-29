@@ -17,7 +17,7 @@ export default function SongSearcher({
   const [results, setResults] = useState<SpotifySearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [selectedTime, setSelectedTime] = useState(0);
+  const [selectedTimeMap, setSelectedTimeMap] = useState<Record<string, number>>({});
 
   useEffect(() => {
     if (!query || query.length < 2) {
@@ -54,7 +54,7 @@ export default function SongSearcher({
       ...song,
       preview_url: song.preview_url,
       duration_ms: song.duration_ms,
-      startTimeS: selectedTime,
+      startTimeS: selectedTimeMap[song.id] || 0,
     });
   };
 
@@ -78,57 +78,65 @@ export default function SongSearcher({
 
       {results.length > 0 && (
         <div className="space-y-2 max-h-96 overflow-y-auto">
-          {results.map((song) => (
-            <div
-              key={song.id}
-              className="rounded-lg border border-gray-200 p-3 hover:bg-gray-50"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex-1">
-                  <p className="text-base font-semibold text-black">
-                    {song.name}
-                  </p>
-                  <p className="text-base text-gray-700">
-                    {song.artists[0]?.name || "Unknown"}
-                  </p>
+          {results.map((song) => {
+            const songDurationS = Math.floor(song.duration_ms / 1000);
+            const currentStartTime = selectedTimeMap[song.id] || 0;
+
+            return (
+              <div
+                key={song.id}
+                className="rounded-lg border border-gray-200 p-3 hover:bg-gray-50"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1">
+                    <p className="text-base font-semibold text-black">
+                      {song.name}
+                    </p>
+                    <p className="text-base text-gray-700">
+                      {song.artists[0]?.name || "Unknown"}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      {songDurationS}s
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => handleSelectSong(song)}
+                    disabled={disabled}
+                    className="rounded bg-green-600 px-3 py-2 text-sm font-semibold text-white hover:bg-green-700 disabled:opacity-50"
+                  >
+                    Select
+                  </button>
+                </div>
+
+                {song.preview_url && (
+                  <div className="mt-2">
+                    <audio src={song.preview_url} controls className="w-full" />
+                  </div>
+                )}
+
+                {/* Start time selector */}
+                <div className="mt-3 space-y-2">
+                  <label className="text-sm font-semibold text-gray-700">
+                    Start time (seconds)
+                  </label>
+                  <input
+                    type="range"
+                    min="0"
+                    max={songDurationS}
+                    value={currentStartTime}
+                    onChange={(e) => setSelectedTimeMap((prev) => ({
+                      ...prev,
+                      [song.id]: parseInt(e.target.value),
+                    }))}
+                    className="w-full"
+                  />
                   <p className="text-sm text-gray-600">
-                    {Math.floor(song.duration_ms / 1000)}s
+                    Start at {currentStartTime}s
                   </p>
                 </div>
-                <button
-                  onClick={() => handleSelectSong(song)}
-                  disabled={disabled}
-                  className="rounded bg-green-600 px-3 py-2 text-sm font-semibold text-white hover:bg-green-700 disabled:opacity-50"
-                >
-                  Select
-                </button>
               </div>
-
-              {song.preview_url && (
-                <div className="mt-2">
-                  <audio src={song.preview_url} controls className="w-full" />
-                </div>
-              )}
-
-              {/* Start time selector */}
-              <div className="mt-3 space-y-2">
-                <label className="text-sm font-semibold text-gray-700">
-                  Start time (seconds)
-                </label>
-                <input
-                  type="range"
-                  min="0"
-                  max={Math.floor(song.duration_ms / 1000)}
-                  value={selectedTime}
-                  onChange={(e) => setSelectedTime(parseInt(e.target.value))}
-                  className="w-full"
-                />
-                <p className="text-sm text-gray-600">
-                  Start at {selectedTime}s
-                </p>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 

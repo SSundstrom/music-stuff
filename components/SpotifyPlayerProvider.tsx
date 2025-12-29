@@ -343,6 +343,13 @@ export default function SpotifyPlayerProvider({
     if (!playerRef.current) return;
     try {
       await playerRef.current.seek(positionMs);
+      // Update position tracking refs after seeking
+      lastPositionRef.current = positionMs;
+      lastTimestampRef.current = Date.now();
+      setState((prev) => ({
+        ...prev,
+        position: positionMs,
+      }));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Seek failed");
     }
