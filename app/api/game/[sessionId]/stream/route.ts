@@ -69,7 +69,8 @@ export async function GET(
         );
       });
 
-      // Send keepalive comment every 30 seconds to keep connection alive
+      // Send keepalive comment every 15 seconds to keep connection alive
+      // (Vercel serverless timeout is 25s, so we need to send before that)
       keepaliveInterval = setInterval(() => {
         try {
           ctrl.enqueue(new TextEncoder().encode(":keepalive\n\n"));
@@ -79,7 +80,7 @@ export async function GET(
             keepaliveInterval = null;
           }
         }
-      }, 30000);
+      }, 15000);
     },
     cancel() {
       if (controller) {
