@@ -1,6 +1,4 @@
 import type { SSEMessage } from "@/types/game";
-import { eventBus } from "./event-bus";
-import { getMatch } from "./game-session";
 
 interface SSEConnection {
   controller: ReadableStreamDefaultController<Uint8Array>;
@@ -10,7 +8,6 @@ interface SSEConnection {
 
 class SSEManager {
   private sessions: Map<string, SSEConnection[]> = new Map();
-  private eventHandlersInitialized = false;
 
   addConnection(
     sessionId: string,
@@ -113,51 +110,6 @@ class SSEManager {
 
   getSessionConnections(sessionId: string): SSEConnection[] {
     return this.sessions.get(sessionId) || [];
-  }
-
-  registerEventListeners(): void {
-    if (this.eventHandlersInitialized) return;
-    this.eventHandlersInitialized = true;
-
-    // Listen to match:completed event and broadcast match_ended
-    eventBus.on("match:completed", async (data) => {
-      const { sessionId, matchId } = data;
-      const match = await getMatch(matchId);
-
-      if (match) {
-        this.broadcast(sessionId, {
-          type: "match_ended",
-          data: {
-            matchId,
-            winnerId: match.winnerId || "",
-            votesA: match.votesA,
-            votesB: match.votesB,
-          },
-        } satisfies SSEMessage);
-      }
-    });
-
-    // Listen to round:advanced event and broadcast round_complete
-    eventBus.on("round:advanced", async (data) => {
-      const { sessionId, roundNumber } = data;
-      this.broadcast(sessionId, {
-        type: "round_complete",
-        data: {
-          roundNumber: roundNumber,
-        },
-      } satisfies SSEMessage);
-    });
-
-    // Listen to game:finished event and broadcast game_winner
-    eventBus.on("game:finished", async (data) => {
-      const { sessionId, winningSongId } = data;
-      this.broadcast(sessionId, {
-        type: "game_winner",
-        data: {
-          winningSongId: winningSongId,
-        },
-      } satisfies SSEMessage);
-    });
   }
 }
 

@@ -1,7 +1,25 @@
 import { shuffle } from "./arrayHelper";
 import prisma from "./db-prisma";
-import { createMatch, getSongs, updateMatch } from "./game-session";
-import type { Song, TournamentMatch, Tournament } from "@/types/game";
+import {
+  createMatch,
+  getMatch,
+  getMatches,
+  getMatchVoteCount,
+  getPlayers,
+  getSession,
+  getSongs,
+  getTournament,
+  updateMatch,
+  updateTournament,
+} from "./game-session";
+import type {
+  Song,
+  TournamentMatch,
+  Tournament,
+  MatchEndedMessage,
+  SSEMessage,
+} from "@/types/game";
+import { sseManager } from "./sse-manager";
 
 /**
  * Initializes tournament with single-elimination format
@@ -40,7 +58,7 @@ export async function advanceToNextMatch(tournamentId: string): Promise<
       finished: true;
       winningSongId: string;
     }
-  | { finished: false }
+  | { finished: false; roundNumber: number }
 > {
   const tournament = await prisma.tournament.findUnique({
     where: { id: tournamentId },
@@ -79,14 +97,16 @@ export async function advanceToNextMatch(tournamentId: string): Promise<
     data: { songAId: winnerId, status: "playing" },
   });
 
+  const roundNumber = currentRound + 1;
   // Update the roundNumber in tournament
   await prisma.tournament.update({
     where: { id: tournament.id },
-    data: { currentRound: currentRound + 1 },
+    data: { currentRound: roundNumber },
   });
 
   return {
     finished: false,
+    roundNumber,
   };
 }
 
@@ -118,4 +138,136 @@ export function nextPicker(
 ): number {
   const currentPicker = t?.currentPickerIndex ?? -1;
   return (currentPicker + 1) % nbrOfPlayers;
+}
+
+type MatchIds = {
+  sessionId: string;
+  tournamentId: string;
+  matchId: string;
+};
+export async function voteValidation(data: MatchIds) {
+  const { sessionId, matchId } = data;
+
+  // Check if all players have voted
+  const voteCount = await getMatchVoteCount(matchId);
+  const players = await getPlayers(sessionId);
+
+  if (voteCount === players.length) {
+    // All players have voted, emit match:completed event
+    await matchCompletionValidation(data);
+  }
+}
+
+export async function matchCompletionValidation(data: MatchIds) {
+  const { sessionId, tournamentId, matchId } = data;
+
+  const match = await getMatch(matchId);
+  if (!match) return;
+
+  const tournament = await getTournament(tournamentId);
+  if (!tournament) return;
+
+  // Determine the winner
+  const winnerId = determineMatchWinner(match);
+
+  // Update match with winner
+  await updateMatch(matchId, {
+    winnerId: winnerId,
+    status: "completed",
+  });
+
+  sseManager.broadcast(sessionId, {
+    type: "match_ended",
+    data: {
+      matchId,
+      winnerId,
+      votesA: match.votesA,
+      votesB: match.votesB,
+    },
+  } satisfies MatchEndedMessage);
+
+  // Process elimination and check if tournament is over
+  const result = await advanceToNextMatch(tournamentId);
+
+  if (result.finished) {
+    await finishTournament({
+      tournamentId,
+      sessionId,
+      winningSongId: result.winningSongId,
+    });
+  } else {
+    sseManager.broadcast(sessionId, {
+      type: "round_complete",
+      data: {
+        roundNumber: result.roundNumber,
+      },
+    } satisfies SSEMessage);
+    try {
+      // Broadcast updated game state
+      const session = await getSession(sessionId);
+      const updatedTournament = await getTournament(tournamentId);
+      if (session && updatedTournament) {
+        const [players, songs, matches] = await Promise.all([
+          getPlayers(sessionId),
+          getSongs(tournamentId),
+          getMatches(tournamentId),
+        ]);
+        sseManager.broadcast(sessionId, {
+          type: "game_state",
+          data: {
+            session,
+            tournament: updatedTournament,
+            players,
+            songs,
+            matches,
+          },
+        } satisfies SSEMessage);
+      }
+    } catch (error) {
+      console.error("[EventHandler] Error creating next match:", error);
+    }
+  }
+}
+
+async function finishTournament({
+  tournamentId,
+  winningSongId,
+  sessionId,
+}: {
+  tournamentId: string;
+  sessionId: string;
+  winningSongId: string;
+}) {
+  // Tournament finished
+  await updateTournament(tournamentId, {
+    status: "finished",
+    winningSongId: winningSongId,
+  });
+
+  // Broadcast updated game state after tournament is updated
+  const session = await getSession(sessionId);
+  const updatedTournament = await getTournament(tournamentId);
+  if (session && updatedTournament) {
+    const [players, songs, matches] = await Promise.all([
+      getPlayers(sessionId),
+      getSongs(tournamentId),
+      getMatches(tournamentId),
+    ]);
+    sseManager.broadcast(sessionId, {
+      type: "game_winner",
+      data: {
+        winningSongId: winningSongId,
+      },
+    } satisfies SSEMessage);
+    sseManager.broadcast(sessionId, {
+      type: "game_state",
+      data: {
+        session,
+        tournament: updatedTournament,
+        players,
+        songs,
+        matches,
+      },
+    } satisfies SSEMessage);
+  }
 }

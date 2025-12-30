@@ -5,11 +5,8 @@ import {
   addVote,
   getMatch,
 } from "@/lib/game-session";
-import {
-  VoteRequestSchema,
-  type Session,
-} from "@/types/game";
-import { eventBus } from "@/lib/event-bus";
+import { VoteRequestSchema, type Session } from "@/types/game";
+import { voteValidation } from "@/lib/tournament";
 
 function errorResponse(message: string, status: number): Response {
   return new Response(JSON.stringify({ error: message }), {
@@ -102,10 +99,8 @@ export async function POST(
 
     // Emit vote:cast event for async processing
     // Event handlers will determine if the match/round/game is complete
-    eventBus.emit("vote:cast", {
-      playerId: playerId!,
+    await voteValidation({
       matchId: validated.matchId,
-      songId: validated.songId,
       sessionId,
       tournamentId: tournament.id,
     });
