@@ -46,7 +46,6 @@ export function useSSEStream({
           console.log("[SSE] Received message:", rawMessage.type);
           const message = SSEMessageSchema.safeParse(rawMessage);
           if (!message.success) {
-            console.dir(rawMessage, { depth: null });
             console.error(message.error);
             return;
           }
