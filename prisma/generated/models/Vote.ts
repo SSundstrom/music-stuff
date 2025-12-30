@@ -474,6 +474,7 @@ export type VoteCreateOrConnectWithoutPlayerInput = {
 
 export type VoteCreateManyPlayerInputEnvelope = {
   data: Prisma.VoteCreateManyPlayerInput | Prisma.VoteCreateManyPlayerInput[]
+  skipDuplicates?: boolean
 }
 
 export type VoteUpsertWithWhereUniqueWithoutPlayerInput = {
@@ -524,6 +525,7 @@ export type VoteCreateOrConnectWithoutSongInput = {
 
 export type VoteCreateManySongInputEnvelope = {
   data: Prisma.VoteCreateManySongInput | Prisma.VoteCreateManySongInput[]
+  skipDuplicates?: boolean
 }
 
 export type VoteUpsertWithWhereUniqueWithoutSongInput = {
@@ -563,6 +565,7 @@ export type VoteCreateOrConnectWithoutMatchInput = {
 
 export type VoteCreateManyMatchInputEnvelope = {
   data: Prisma.VoteCreateManyMatchInput | Prisma.VoteCreateManyMatchInput[]
+  skipDuplicates?: boolean
 }
 
 export type VoteUpsertWithWhereUniqueWithoutMatchInput = {
@@ -1398,6 +1401,7 @@ export type VoteCreateManyArgs<ExtArgs extends runtime.Types.Extensions.Internal
    * The data used to create many Votes.
    */
   data: Prisma.VoteCreateManyInput | Prisma.VoteCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**
@@ -1416,6 +1420,7 @@ export type VoteCreateManyAndReturnArgs<ExtArgs extends runtime.Types.Extensions
    * The data used to create many Votes.
    */
   data: Prisma.VoteCreateManyInput | Prisma.VoteCreateManyInput[]
+  skipDuplicates?: boolean
   /**
    * Choose, which related nodes to fetch as well
    */

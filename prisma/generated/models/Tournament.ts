@@ -565,6 +565,7 @@ export type TournamentCreateOrConnectWithoutSessionInput = {
 
 export type TournamentCreateManySessionInputEnvelope = {
   data: Prisma.TournamentCreateManySessionInput | Prisma.TournamentCreateManySessionInput[]
+  skipDuplicates?: boolean
 }
 
 export type TournamentUpsertWithWhereUniqueWithoutSessionInput = {
@@ -1552,6 +1553,7 @@ export type TournamentCreateManyArgs<ExtArgs extends runtime.Types.Extensions.In
    * The data used to create many Tournaments.
    */
   data: Prisma.TournamentCreateManyInput | Prisma.TournamentCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**
@@ -1570,6 +1572,7 @@ export type TournamentCreateManyAndReturnArgs<ExtArgs extends runtime.Types.Exte
    * The data used to create many Tournaments.
    */
   data: Prisma.TournamentCreateManyInput | Prisma.TournamentCreateManyInput[]
+  skipDuplicates?: boolean
   /**
    * Choose, which related nodes to fetch as well
    */

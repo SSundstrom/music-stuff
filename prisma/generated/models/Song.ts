@@ -678,6 +678,7 @@ export type SongCreateOrConnectWithoutTournamentInput = {
 
 export type SongCreateManyTournamentInputEnvelope = {
   data: Prisma.SongCreateManyTournamentInput | Prisma.SongCreateManyTournamentInput[]
+  skipDuplicates?: boolean
 }
 
 export type SongUpsertWithWhereUniqueWithoutTournamentInput = {
@@ -748,6 +749,7 @@ export type SongCreateOrConnectWithoutPlayerInput = {
 
 export type SongCreateManyPlayerInputEnvelope = {
   data: Prisma.SongCreateManyPlayerInput | Prisma.SongCreateManyPlayerInput[]
+  skipDuplicates?: boolean
 }
 
 export type SongUpsertWithWhereUniqueWithoutPlayerInput = {
@@ -1997,6 +1999,7 @@ export type SongCreateManyArgs<ExtArgs extends runtime.Types.Extensions.Internal
    * The data used to create many Songs.
    */
   data: Prisma.SongCreateManyInput | Prisma.SongCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**
@@ -2015,6 +2018,7 @@ export type SongCreateManyAndReturnArgs<ExtArgs extends runtime.Types.Extensions
    * The data used to create many Songs.
    */
   data: Prisma.SongCreateManyInput | Prisma.SongCreateManyInput[]
+  skipDuplicates?: boolean
   /**
    * Choose, which related nodes to fetch as well
    */

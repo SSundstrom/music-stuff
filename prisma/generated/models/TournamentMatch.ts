@@ -744,6 +744,7 @@ export type TournamentMatchCreateOrConnectWithoutTournamentInput = {
 
 export type TournamentMatchCreateManyTournamentInputEnvelope = {
   data: Prisma.TournamentMatchCreateManyTournamentInput | Prisma.TournamentMatchCreateManyTournamentInput[]
+  skipDuplicates?: boolean
 }
 
 export type TournamentMatchUpsertWithWhereUniqueWithoutTournamentInput = {
@@ -814,6 +815,7 @@ export type TournamentMatchCreateOrConnectWithoutSongAInput = {
 
 export type TournamentMatchCreateManySongAInputEnvelope = {
   data: Prisma.TournamentMatchCreateManySongAInput | Prisma.TournamentMatchCreateManySongAInput[]
+  skipDuplicates?: boolean
 }
 
 export type TournamentMatchCreateWithoutSongBInput = {
@@ -851,6 +853,7 @@ export type TournamentMatchCreateOrConnectWithoutSongBInput = {
 
 export type TournamentMatchCreateManySongBInputEnvelope = {
   data: Prisma.TournamentMatchCreateManySongBInput | Prisma.TournamentMatchCreateManySongBInput[]
+  skipDuplicates?: boolean
 }
 
 export type TournamentMatchCreateWithoutCurrentlyPlayingInput = {
@@ -888,6 +891,7 @@ export type TournamentMatchCreateOrConnectWithoutCurrentlyPlayingInput = {
 
 export type TournamentMatchCreateManyCurrentlyPlayingInputEnvelope = {
   data: Prisma.TournamentMatchCreateManyCurrentlyPlayingInput | Prisma.TournamentMatchCreateManyCurrentlyPlayingInput[]
+  skipDuplicates?: boolean
 }
 
 export type TournamentMatchUpsertWithWhereUniqueWithoutSongAInput = {
@@ -2038,6 +2042,7 @@ export type TournamentMatchCreateManyArgs<ExtArgs extends runtime.Types.Extensio
    * The data used to create many TournamentMatches.
    */
   data: Prisma.TournamentMatchCreateManyInput | Prisma.TournamentMatchCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**
@@ -2056,6 +2061,7 @@ export type TournamentMatchCreateManyAndReturnArgs<ExtArgs extends runtime.Types
    * The data used to create many TournamentMatches.
    */
   data: Prisma.TournamentMatchCreateManyInput | Prisma.TournamentMatchCreateManyInput[]
+  skipDuplicates?: boolean
   /**
    * Choose, which related nodes to fetch as well
    */

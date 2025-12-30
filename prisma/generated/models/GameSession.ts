@@ -1179,6 +1179,7 @@ export type GameSessionCreateManyArgs<ExtArgs extends runtime.Types.Extensions.I
    * The data used to create many GameSessions.
    */
   data: Prisma.GameSessionCreateManyInput | Prisma.GameSessionCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**
@@ -1197,6 +1198,7 @@ export type GameSessionCreateManyAndReturnArgs<ExtArgs extends runtime.Types.Ext
    * The data used to create many GameSessions.
    */
   data: Prisma.GameSessionCreateManyInput | Prisma.GameSessionCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**
