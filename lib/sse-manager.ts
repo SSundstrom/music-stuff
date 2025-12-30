@@ -1,4 +1,5 @@
 import type { SSEMessage } from "@/types/game";
+import { Redis } from "@upstash/redis";
 
 interface SSEConnection {
   controller: ReadableStreamDefaultController<Uint8Array>;
@@ -39,18 +40,49 @@ class SSEManager {
     }
   }
 
-  broadcast(sessionId: string, message: SSEMessage): void {
-    const connections = this.sessions.get(sessionId);
-    if (!connections) {
-      console.log(
-        `[SSE] No connections for session ${sessionId} to broadcast to`,
+  async broadcast(sessionId: string, message: SSEMessage): Promise<void> {
+    console.log(
+      `[SSE] Broadcasting ${message.type} to session ${sessionId}`,
+    );
+
+    // Publish to Redis so other instances receive it
+    const messageStr = JSON.stringify(message);
+    try {
+      const redis = Redis.fromEnv();
+      await redis.publish(
+        `tournament:sessions:${sessionId}:broadcast`,
+        messageStr,
       );
-      return;
+    } catch (error) {
+      console.error("[Redis] Publish error:", error);
     }
 
-    console.log(
-      `[SSE] Broadcasting ${message.type} to ${connections.length} clients in session ${sessionId}`,
-    );
+    // Also deliver locally to this instance's connections
+    this.deliverToSession(sessionId, message);
+  }
+
+  async sendToPlayer(sessionId: string, playerId: string, message: SSEMessage): Promise<void> {
+    // Publish to Redis so other instances receive it
+    const messageStr = JSON.stringify(message);
+    try {
+      const redis = Redis.fromEnv();
+      await redis.publish(
+        `tournament:sessions:${sessionId}:player:${playerId}`,
+        messageStr,
+      );
+    } catch (error) {
+      console.error("[Redis] Publish error:", error);
+    }
+
+    // Also deliver locally to this instance's player connection
+    this.deliverToPlayer(sessionId, playerId, message);
+  }
+
+  private deliverToSession(sessionId: string, message: SSEMessage): void {
+    const connections = this.sessions.get(sessionId);
+    if (!connections) {
+      return;
+    }
 
     const sseMessage = `data: ${JSON.stringify(message)}\n\n`;
     const encoder = new TextEncoder();
@@ -77,7 +109,7 @@ class SSEManager {
     }
   }
 
-  sendToPlayer(sessionId: string, playerId: string, message: SSEMessage): void {
+  private deliverToPlayer(sessionId: string, playerId: string, message: SSEMessage): void {
     const connections = this.sessions.get(sessionId);
     if (!connections) return;
 

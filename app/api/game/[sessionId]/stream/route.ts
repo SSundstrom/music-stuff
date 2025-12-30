@@ -1,3 +1,4 @@
+import { Redis } from "@upstash/redis";
 import { sseManager } from "@/lib/sse-manager";
 import {
   getSession,
@@ -7,6 +8,7 @@ import {
   getMatches,
 } from "@/lib/game-session";
 import type { SSEMessage } from "@/types/game";
+import { SSEMessageSchema } from "@/types/game";
 
 export async function GET(
   request: Request,
@@ -65,6 +67,9 @@ export async function GET(
         );
       });
 
+      // Start listening to Redis messages
+      startRedisListener(sessionId, playerId, ctrl);
+
       // Send keepalive comment every 15 seconds to keep connection alive
       // (Vercel serverless timeout is 25s, so we need to send before that)
       keepaliveInterval = setInterval(() => {
@@ -101,4 +106,52 @@ export async function GET(
       Pragma: "no-cache",
     },
   });
+}
+
+async function startRedisListener(
+  sessionId: string,
+  playerId: string,
+  ctrl: ReadableStreamDefaultController<Uint8Array>,
+) {
+  const redis = Redis.fromEnv();
+  const encoder = new TextEncoder();
+
+  const broadcastChannel = `tournament:sessions:${sessionId}:broadcast`;
+  const playerChannel = `tournament:sessions:${sessionId}:player:${playerId}`;
+
+  try {
+    // Subscribe to both channels using array
+    const subscription = await redis.subscribe(
+      [broadcastChannel, playerChannel],
+    );
+
+    // Handle messages from subscribed channels
+    subscription.on("message", (messageData: unknown) => {
+      try {
+        // messageData is BaseMessageData with a 'message' property
+        const messageObj = messageData as { message?: string };
+        if (!messageObj.message) {
+          console.error("[Redis] No message content in Redis message");
+          return;
+        }
+
+        const parsed = JSON.parse(messageObj.message);
+        const validated = SSEMessageSchema.safeParse(parsed);
+        if (validated.success) {
+          const sseMessage = `data: ${JSON.stringify(validated.data)}\n\n`;
+          ctrl.enqueue(encoder.encode(sseMessage));
+        } else {
+          console.error("[Redis] Invalid message format:", validated.error);
+        }
+      } catch (error) {
+        console.error("[Redis] Failed to parse message:", error);
+      }
+    });
+
+    // Store subscription in case we need to unsubscribe later
+    (ctrl as unknown as { __redisSubscription?: unknown }).__redisSubscription =
+      subscription;
+  } catch (error) {
+    console.error("[Redis] Subscription error:", error);
+  }
 }
