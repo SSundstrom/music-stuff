@@ -27,7 +27,7 @@ export default function MatchDisplay({
   isOwner,
   sessionId,
 }: MatchDisplayProps) {
-  const { play, pause, seek } = useSpotifyPlayer();
+  const { play, pause } = useSpotifyPlayer();
   const [userVote, setUserVote] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -45,11 +45,9 @@ export default function MatchDisplay({
 
     eventSource.addEventListener("message", (event) => {
       try {
-        const parsedEvent = SSEMessageSchema.parse(JSON.parse(event.data));
+        SSEMessageSchema.parse(JSON.parse(event.data));
         // We don't manage state here - just keep connection alive
         // State updates come from parent props via useGameSession hook
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const _unused = parsedEvent;
       } catch (err) {
         console.error("Failed to parse SSE message:", err);
       }
@@ -123,12 +121,7 @@ export default function MatchDisplay({
 
       // Use Web Playback SDK to play the song
       const spotifyId = song.spotifyId || song.id;
-      await play(spotifyId);
-
-      // Seek to the start time if specified (convert seconds to milliseconds)
-      const startTimeMs = song.startTime * 1000;
-      await new Promise((resolve) => setTimeout(resolve, 100)); // Small delay to ensure playback started
-      await seek(startTimeMs);
+      await play(spotifyId, song.startTime * 1000);
 
       setIsPlaying(true);
 

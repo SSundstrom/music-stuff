@@ -1,6 +1,6 @@
 "use client";
 
-import React, {
+import {
   createContext,
   useContext,
   useEffect,
@@ -26,7 +26,7 @@ interface PlayerState {
 
 interface SpotifyPlayerContextType {
   state: PlayerState;
-  play: (spotifyId: string) => Promise<void>;
+  play: (spotifyId: string, positionMs?: number) => Promise<void>;
   pause: () => Promise<void>;
   resume: () => Promise<void>;
   seek: (positionMs: number) => Promise<void>;
@@ -34,20 +34,21 @@ interface SpotifyPlayerContextType {
   error: string | null;
 }
 
-const SpotifyPlayerContext = createContext<SpotifyPlayerContextType | undefined>(
-  undefined,
-);
+const SpotifyPlayerContext = createContext<
+  SpotifyPlayerContextType | undefined
+>(undefined);
 
 export function useSpotifyPlayer() {
   const context = useContext(SpotifyPlayerContext);
   if (!context) {
-    throw new Error("useSpotifyPlayer must be used within SpotifyPlayerProvider");
+    throw new Error(
+      "useSpotifyPlayer must be used within SpotifyPlayerProvider",
+    );
   }
   return context;
 }
 
 const PLACEHOLDER_TRACK_ID = "placeholder-sims-2-theme";
-const SIMS_THEME_SPOTIFY_ID = "30xHm3p2stFpmHyq0Rfm9x";
 
 export default function SpotifyPlayerProvider({
   children,
@@ -58,7 +59,9 @@ export default function SpotifyPlayerProvider({
   const playerRef = useRef<Spotify.Player | null>(null);
   const lastPositionRef = useRef<number>(0);
   const lastTimestampRef = useRef<number>(0);
-  const tokenCacheRef = useRef<{ token: string; expiresAt: number } | null>(null);
+  const tokenCacheRef = useRef<{ token: string; expiresAt: number } | null>(
+    null,
+  );
   const tokenRefreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const [state, setState] = useState<PlayerState>({
     deviceId: null,
@@ -88,17 +91,25 @@ export default function SpotifyPlayerProvider({
         // Check if we have a cached token that's still valid
         const now = Date.now();
         if (tokenCacheRef.current && tokenCacheRef.current.expiresAt > now) {
-          const timeLeft = Math.round((tokenCacheRef.current.expiresAt - now) / 1000);
-          console.log(`[SpotifyPlayer] Using cached token, expires in ${timeLeft}s`);
+          const timeLeft = Math.round(
+            (tokenCacheRef.current.expiresAt - now) / 1000,
+          );
+          console.log(
+            `[SpotifyPlayer] Using cached token, expires in ${timeLeft}s`,
+          );
           callback(tokenCacheRef.current.token);
           return;
         }
 
-        console.log(`[SpotifyPlayer] Fetching new token from /api/spotify/token`);
+        console.log(
+          `[SpotifyPlayer] Fetching new token from /api/spotify/token`,
+        );
         // Fetch a new token from the server
         const res = await fetch("/api/spotify/token");
         if (!res.ok) {
-          throw new Error(`Failed to get token: ${res.status} ${res.statusText}`);
+          throw new Error(
+            `Failed to get token: ${res.status} ${res.statusText}`,
+          );
         }
 
         const data = (await res.json()) as { accessToken: string };
@@ -124,7 +135,8 @@ export default function SpotifyPlayerProvider({
         );
         if (mounted) {
           const errorMsg = err instanceof Error ? err.message : "Unknown error";
-          const needsReauth = errorMsg.includes("401") || errorMsg.includes("Not authenticated");
+          const needsReauth =
+            errorMsg.includes("401") || errorMsg.includes("Not authenticated");
           setError(
             needsReauth
               ? "Spotify authentication expired. Please sign in again to reconnect."
@@ -188,8 +200,7 @@ export default function SpotifyPlayerProvider({
               id: track.id,
               name: track.name,
               artist: artists,
-              image:
-                track.album.images[0]?.url || "/placeholder-album.png",
+              image: track.album.images[0]?.url || "/placeholder-album.png",
             },
           }));
         });
@@ -211,9 +222,7 @@ export default function SpotifyPlayerProvider({
       } catch (err) {
         if (mounted) {
           setError(
-            err instanceof Error
-              ? err.message
-              : "Failed to initialize player",
+            err instanceof Error ? err.message : "Failed to initialize player",
           );
         }
       }
@@ -304,7 +313,7 @@ export default function SpotifyPlayerProvider({
     };
   }, [state.isReady, state.isPaused, state.currentTrack]);
 
-  const play = async (spotifyId: string) => {
+  const play = async (spotifyId: string, positionMs?: number) => {
     if (!playerRef.current || !state.deviceId) {
       setError("Player not ready");
       return;
@@ -317,6 +326,7 @@ export default function SpotifyPlayerProvider({
         body: JSON.stringify({
           spotifyId,
           deviceId: state.deviceId,
+          positionMs,
         }),
       });
 

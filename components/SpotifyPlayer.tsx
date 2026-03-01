@@ -12,7 +12,8 @@ export default function SpotifyPlayer() {
     return null;
   }
 
-  const progressPercent = state.duration > 0 ? (state.position / state.duration) * 100 : 0;
+  const progressPercent =
+    state.duration > 0 ? (state.position / state.duration) * 100 : 0;
 
   return (
     <div className="flex items-center gap-4">

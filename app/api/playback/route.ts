@@ -30,6 +30,7 @@ export async function POST(request: Request) {
     const body = (await request.json()) as {
       spotifyId: string;
       deviceId: string;
+      positionMs?: number;
     };
 
     if (!body.spotifyId || !body.deviceId) {
@@ -43,7 +44,12 @@ export async function POST(request: Request) {
     }
 
     // Start playback using Spotify API
-    await startPlayback(body.deviceId, body.spotifyId, accessToken);
+    await startPlayback(
+      body.deviceId,
+      body.spotifyId,
+      accessToken,
+      body.positionMs,
+    );
 
     return new Response(
       JSON.stringify({
