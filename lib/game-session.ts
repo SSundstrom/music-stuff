@@ -6,11 +6,15 @@ import type {
   Player,
   Song,
   TournamentMatch,
+  GameType,
 } from "@/types/game";
 
 // Session functions
 
-export async function createSession(ownerId: string): Promise<Session> {
+export async function createSession(
+  ownerId: string,
+  gameType: GameType = "tournament",
+): Promise<Session> {
   const sessionId = uuidv4();
   const now = new Date();
 
@@ -18,6 +22,7 @@ export async function createSession(ownerId: string): Promise<Session> {
     data: {
       id: sessionId,
       ownerId: ownerId,
+      gameType,
       status: "active",
       createdAt: now,
     },
@@ -26,6 +31,7 @@ export async function createSession(ownerId: string): Promise<Session> {
   return {
     id: result.id,
     ownerId: result.ownerId,
+    gameType: result.gameType as GameType,
     status: result.status,
     createdAt: result.createdAt,
   };
@@ -36,7 +42,15 @@ export async function getSession(sessionId: string): Promise<Session | null> {
     where: { id: sessionId },
   });
 
-  return result;
+  if (!result) return null;
+
+  return {
+    id: result.id,
+    ownerId: result.ownerId,
+    gameType: result.gameType as GameType,
+    status: result.status,
+    createdAt: result.createdAt,
+  };
 }
 
 export async function updateSession(

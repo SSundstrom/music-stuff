@@ -6,6 +6,7 @@ import {
   getSongs,
   getMatches,
 } from "@/lib/game-session";
+import { getGuessState } from "@/lib/guess-game";
 import type { SSEMessage } from "@/types/game";
 
 export async function GET(
@@ -40,6 +41,11 @@ export async function GET(
         tournament ? getMatches(tournament.id) : Promise.resolve([]),
       ]);
 
+      const guessState =
+        session.gameType === "guess_the_song"
+          ? await getGuessState(sessionId)
+          : undefined;
+
       const initialState = {
         type: "game_state",
         data: {
@@ -48,6 +54,7 @@ export async function GET(
           players,
           songs,
           matches,
+          guessState,
         },
       } satisfies SSEMessage;
 

@@ -67,3 +67,18 @@ export type TournamentMatch = Prisma.TournamentMatchModel
  * 
  */
 export type Vote = Prisma.VoteModel
+/**
+ * Model GuessConfig
+ * 
+ */
+export type GuessConfig = Prisma.GuessConfigModel
+/**
+ * Model GuessTurn
+ * 
+ */
+export type GuessTurn = Prisma.GuessTurnModel
+/**
+ * Model Guess
+ * 
+ */
+export type Guess = Prisma.GuessModel

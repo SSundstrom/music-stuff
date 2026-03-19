@@ -235,6 +235,8 @@ export type PlayerWhereInput = {
   session?: Prisma.XOR<Prisma.GameSessionScalarRelationFilter, Prisma.GameSessionWhereInput>
   songs?: Prisma.SongListRelationFilter
   votes?: Prisma.VoteListRelationFilter
+  guessTurnsPicked?: Prisma.GuessTurnListRelationFilter
+  guesses?: Prisma.GuessListRelationFilter
 }
 
 export type PlayerOrderByWithRelationInput = {
@@ -248,6 +250,8 @@ export type PlayerOrderByWithRelationInput = {
   session?: Prisma.GameSessionOrderByWithRelationInput
   songs?: Prisma.SongOrderByRelationAggregateInput
   votes?: Prisma.VoteOrderByRelationAggregateInput
+  guessTurnsPicked?: Prisma.GuessTurnOrderByRelationAggregateInput
+  guesses?: Prisma.GuessOrderByRelationAggregateInput
 }
 
 export type PlayerWhereUniqueInput = Prisma.AtLeast<{
@@ -264,6 +268,8 @@ export type PlayerWhereUniqueInput = Prisma.AtLeast<{
   session?: Prisma.XOR<Prisma.GameSessionScalarRelationFilter, Prisma.GameSessionWhereInput>
   songs?: Prisma.SongListRelationFilter
   votes?: Prisma.VoteListRelationFilter
+  guessTurnsPicked?: Prisma.GuessTurnListRelationFilter
+  guesses?: Prisma.GuessListRelationFilter
 }, "id">
 
 export type PlayerOrderByWithAggregationInput = {
@@ -304,6 +310,8 @@ export type PlayerCreateInput = {
   session: Prisma.GameSessionCreateNestedOneWithoutPlayersInput
   songs?: Prisma.SongCreateNestedManyWithoutPlayerInput
   votes?: Prisma.VoteCreateNestedManyWithoutPlayerInput
+  guessTurnsPicked?: Prisma.GuessTurnCreateNestedManyWithoutPickerInput
+  guesses?: Prisma.GuessCreateNestedManyWithoutPlayerInput
 }
 
 export type PlayerUncheckedCreateInput = {
@@ -316,6 +324,8 @@ export type PlayerUncheckedCreateInput = {
   createdAt: Date | string
   songs?: Prisma.SongUncheckedCreateNestedManyWithoutPlayerInput
   votes?: Prisma.VoteUncheckedCreateNestedManyWithoutPlayerInput
+  guessTurnsPicked?: Prisma.GuessTurnUncheckedCreateNestedManyWithoutPickerInput
+  guesses?: Prisma.GuessUncheckedCreateNestedManyWithoutPlayerInput
 }
 
 export type PlayerUpdateInput = {
@@ -328,6 +338,8 @@ export type PlayerUpdateInput = {
   session?: Prisma.GameSessionUpdateOneRequiredWithoutPlayersNestedInput
   songs?: Prisma.SongUpdateManyWithoutPlayerNestedInput
   votes?: Prisma.VoteUpdateManyWithoutPlayerNestedInput
+  guessTurnsPicked?: Prisma.GuessTurnUpdateManyWithoutPickerNestedInput
+  guesses?: Prisma.GuessUpdateManyWithoutPlayerNestedInput
 }
 
 export type PlayerUncheckedUpdateInput = {
@@ -340,6 +352,8 @@ export type PlayerUncheckedUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   songs?: Prisma.SongUncheckedUpdateManyWithoutPlayerNestedInput
   votes?: Prisma.VoteUncheckedUpdateManyWithoutPlayerNestedInput
+  guessTurnsPicked?: Prisma.GuessTurnUncheckedUpdateManyWithoutPickerNestedInput
+  guesses?: Prisma.GuessUncheckedUpdateManyWithoutPlayerNestedInput
 }
 
 export type PlayerCreateManyInput = {
@@ -494,6 +508,34 @@ export type PlayerUpdateOneRequiredWithoutVotesNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.PlayerUpdateToOneWithWhereWithoutVotesInput, Prisma.PlayerUpdateWithoutVotesInput>, Prisma.PlayerUncheckedUpdateWithoutVotesInput>
 }
 
+export type PlayerCreateNestedOneWithoutGuessTurnsPickedInput = {
+  create?: Prisma.XOR<Prisma.PlayerCreateWithoutGuessTurnsPickedInput, Prisma.PlayerUncheckedCreateWithoutGuessTurnsPickedInput>
+  connectOrCreate?: Prisma.PlayerCreateOrConnectWithoutGuessTurnsPickedInput
+  connect?: Prisma.PlayerWhereUniqueInput
+}
+
+export type PlayerUpdateOneRequiredWithoutGuessTurnsPickedNestedInput = {
+  create?: Prisma.XOR<Prisma.PlayerCreateWithoutGuessTurnsPickedInput, Prisma.PlayerUncheckedCreateWithoutGuessTurnsPickedInput>
+  connectOrCreate?: Prisma.PlayerCreateOrConnectWithoutGuessTurnsPickedInput
+  upsert?: Prisma.PlayerUpsertWithoutGuessTurnsPickedInput
+  connect?: Prisma.PlayerWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.PlayerUpdateToOneWithWhereWithoutGuessTurnsPickedInput, Prisma.PlayerUpdateWithoutGuessTurnsPickedInput>, Prisma.PlayerUncheckedUpdateWithoutGuessTurnsPickedInput>
+}
+
+export type PlayerCreateNestedOneWithoutGuessesInput = {
+  create?: Prisma.XOR<Prisma.PlayerCreateWithoutGuessesInput, Prisma.PlayerUncheckedCreateWithoutGuessesInput>
+  connectOrCreate?: Prisma.PlayerCreateOrConnectWithoutGuessesInput
+  connect?: Prisma.PlayerWhereUniqueInput
+}
+
+export type PlayerUpdateOneRequiredWithoutGuessesNestedInput = {
+  create?: Prisma.XOR<Prisma.PlayerCreateWithoutGuessesInput, Prisma.PlayerUncheckedCreateWithoutGuessesInput>
+  connectOrCreate?: Prisma.PlayerCreateOrConnectWithoutGuessesInput
+  upsert?: Prisma.PlayerUpsertWithoutGuessesInput
+  connect?: Prisma.PlayerWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.PlayerUpdateToOneWithWhereWithoutGuessesInput, Prisma.PlayerUpdateWithoutGuessesInput>, Prisma.PlayerUncheckedUpdateWithoutGuessesInput>
+}
+
 export type PlayerCreateWithoutSessionInput = {
   id: string
   name: string
@@ -503,6 +545,8 @@ export type PlayerCreateWithoutSessionInput = {
   createdAt: Date | string
   songs?: Prisma.SongCreateNestedManyWithoutPlayerInput
   votes?: Prisma.VoteCreateNestedManyWithoutPlayerInput
+  guessTurnsPicked?: Prisma.GuessTurnCreateNestedManyWithoutPickerInput
+  guesses?: Prisma.GuessCreateNestedManyWithoutPlayerInput
 }
 
 export type PlayerUncheckedCreateWithoutSessionInput = {
@@ -514,6 +558,8 @@ export type PlayerUncheckedCreateWithoutSessionInput = {
   createdAt: Date | string
   songs?: Prisma.SongUncheckedCreateNestedManyWithoutPlayerInput
   votes?: Prisma.VoteUncheckedCreateNestedManyWithoutPlayerInput
+  guessTurnsPicked?: Prisma.GuessTurnUncheckedCreateNestedManyWithoutPickerInput
+  guesses?: Prisma.GuessUncheckedCreateNestedManyWithoutPlayerInput
 }
 
 export type PlayerCreateOrConnectWithoutSessionInput = {
@@ -564,6 +610,8 @@ export type PlayerCreateWithoutSongsInput = {
   createdAt: Date | string
   session: Prisma.GameSessionCreateNestedOneWithoutPlayersInput
   votes?: Prisma.VoteCreateNestedManyWithoutPlayerInput
+  guessTurnsPicked?: Prisma.GuessTurnCreateNestedManyWithoutPickerInput
+  guesses?: Prisma.GuessCreateNestedManyWithoutPlayerInput
 }
 
 export type PlayerUncheckedCreateWithoutSongsInput = {
@@ -575,6 +623,8 @@ export type PlayerUncheckedCreateWithoutSongsInput = {
   joinOrder: number
   createdAt: Date | string
   votes?: Prisma.VoteUncheckedCreateNestedManyWithoutPlayerInput
+  guessTurnsPicked?: Prisma.GuessTurnUncheckedCreateNestedManyWithoutPickerInput
+  guesses?: Prisma.GuessUncheckedCreateNestedManyWithoutPlayerInput
 }
 
 export type PlayerCreateOrConnectWithoutSongsInput = {
@@ -602,6 +652,8 @@ export type PlayerUpdateWithoutSongsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   session?: Prisma.GameSessionUpdateOneRequiredWithoutPlayersNestedInput
   votes?: Prisma.VoteUpdateManyWithoutPlayerNestedInput
+  guessTurnsPicked?: Prisma.GuessTurnUpdateManyWithoutPickerNestedInput
+  guesses?: Prisma.GuessUpdateManyWithoutPlayerNestedInput
 }
 
 export type PlayerUncheckedUpdateWithoutSongsInput = {
@@ -613,6 +665,8 @@ export type PlayerUncheckedUpdateWithoutSongsInput = {
   joinOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   votes?: Prisma.VoteUncheckedUpdateManyWithoutPlayerNestedInput
+  guessTurnsPicked?: Prisma.GuessTurnUncheckedUpdateManyWithoutPickerNestedInput
+  guesses?: Prisma.GuessUncheckedUpdateManyWithoutPlayerNestedInput
 }
 
 export type PlayerCreateWithoutVotesInput = {
@@ -624,6 +678,8 @@ export type PlayerCreateWithoutVotesInput = {
   createdAt: Date | string
   session: Prisma.GameSessionCreateNestedOneWithoutPlayersInput
   songs?: Prisma.SongCreateNestedManyWithoutPlayerInput
+  guessTurnsPicked?: Prisma.GuessTurnCreateNestedManyWithoutPickerInput
+  guesses?: Prisma.GuessCreateNestedManyWithoutPlayerInput
 }
 
 export type PlayerUncheckedCreateWithoutVotesInput = {
@@ -635,6 +691,8 @@ export type PlayerUncheckedCreateWithoutVotesInput = {
   joinOrder: number
   createdAt: Date | string
   songs?: Prisma.SongUncheckedCreateNestedManyWithoutPlayerInput
+  guessTurnsPicked?: Prisma.GuessTurnUncheckedCreateNestedManyWithoutPickerInput
+  guesses?: Prisma.GuessUncheckedCreateNestedManyWithoutPlayerInput
 }
 
 export type PlayerCreateOrConnectWithoutVotesInput = {
@@ -662,6 +720,8 @@ export type PlayerUpdateWithoutVotesInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   session?: Prisma.GameSessionUpdateOneRequiredWithoutPlayersNestedInput
   songs?: Prisma.SongUpdateManyWithoutPlayerNestedInput
+  guessTurnsPicked?: Prisma.GuessTurnUpdateManyWithoutPickerNestedInput
+  guesses?: Prisma.GuessUpdateManyWithoutPlayerNestedInput
 }
 
 export type PlayerUncheckedUpdateWithoutVotesInput = {
@@ -673,6 +733,144 @@ export type PlayerUncheckedUpdateWithoutVotesInput = {
   joinOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   songs?: Prisma.SongUncheckedUpdateManyWithoutPlayerNestedInput
+  guessTurnsPicked?: Prisma.GuessTurnUncheckedUpdateManyWithoutPickerNestedInput
+  guesses?: Prisma.GuessUncheckedUpdateManyWithoutPlayerNestedInput
+}
+
+export type PlayerCreateWithoutGuessTurnsPickedInput = {
+  id: string
+  name: string
+  spotifyDeviceId?: string | null
+  isOwner?: boolean
+  joinOrder: number
+  createdAt: Date | string
+  session: Prisma.GameSessionCreateNestedOneWithoutPlayersInput
+  songs?: Prisma.SongCreateNestedManyWithoutPlayerInput
+  votes?: Prisma.VoteCreateNestedManyWithoutPlayerInput
+  guesses?: Prisma.GuessCreateNestedManyWithoutPlayerInput
+}
+
+export type PlayerUncheckedCreateWithoutGuessTurnsPickedInput = {
+  id: string
+  sessionId: string
+  name: string
+  spotifyDeviceId?: string | null
+  isOwner?: boolean
+  joinOrder: number
+  createdAt: Date | string
+  songs?: Prisma.SongUncheckedCreateNestedManyWithoutPlayerInput
+  votes?: Prisma.VoteUncheckedCreateNestedManyWithoutPlayerInput
+  guesses?: Prisma.GuessUncheckedCreateNestedManyWithoutPlayerInput
+}
+
+export type PlayerCreateOrConnectWithoutGuessTurnsPickedInput = {
+  where: Prisma.PlayerWhereUniqueInput
+  create: Prisma.XOR<Prisma.PlayerCreateWithoutGuessTurnsPickedInput, Prisma.PlayerUncheckedCreateWithoutGuessTurnsPickedInput>
+}
+
+export type PlayerUpsertWithoutGuessTurnsPickedInput = {
+  update: Prisma.XOR<Prisma.PlayerUpdateWithoutGuessTurnsPickedInput, Prisma.PlayerUncheckedUpdateWithoutGuessTurnsPickedInput>
+  create: Prisma.XOR<Prisma.PlayerCreateWithoutGuessTurnsPickedInput, Prisma.PlayerUncheckedCreateWithoutGuessTurnsPickedInput>
+  where?: Prisma.PlayerWhereInput
+}
+
+export type PlayerUpdateToOneWithWhereWithoutGuessTurnsPickedInput = {
+  where?: Prisma.PlayerWhereInput
+  data: Prisma.XOR<Prisma.PlayerUpdateWithoutGuessTurnsPickedInput, Prisma.PlayerUncheckedUpdateWithoutGuessTurnsPickedInput>
+}
+
+export type PlayerUpdateWithoutGuessTurnsPickedInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  spotifyDeviceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isOwner?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  joinOrder?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  session?: Prisma.GameSessionUpdateOneRequiredWithoutPlayersNestedInput
+  songs?: Prisma.SongUpdateManyWithoutPlayerNestedInput
+  votes?: Prisma.VoteUpdateManyWithoutPlayerNestedInput
+  guesses?: Prisma.GuessUpdateManyWithoutPlayerNestedInput
+}
+
+export type PlayerUncheckedUpdateWithoutGuessTurnsPickedInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  sessionId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  spotifyDeviceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isOwner?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  joinOrder?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  songs?: Prisma.SongUncheckedUpdateManyWithoutPlayerNestedInput
+  votes?: Prisma.VoteUncheckedUpdateManyWithoutPlayerNestedInput
+  guesses?: Prisma.GuessUncheckedUpdateManyWithoutPlayerNestedInput
+}
+
+export type PlayerCreateWithoutGuessesInput = {
+  id: string
+  name: string
+  spotifyDeviceId?: string | null
+  isOwner?: boolean
+  joinOrder: number
+  createdAt: Date | string
+  session: Prisma.GameSessionCreateNestedOneWithoutPlayersInput
+  songs?: Prisma.SongCreateNestedManyWithoutPlayerInput
+  votes?: Prisma.VoteCreateNestedManyWithoutPlayerInput
+  guessTurnsPicked?: Prisma.GuessTurnCreateNestedManyWithoutPickerInput
+}
+
+export type PlayerUncheckedCreateWithoutGuessesInput = {
+  id: string
+  sessionId: string
+  name: string
+  spotifyDeviceId?: string | null
+  isOwner?: boolean
+  joinOrder: number
+  createdAt: Date | string
+  songs?: Prisma.SongUncheckedCreateNestedManyWithoutPlayerInput
+  votes?: Prisma.VoteUncheckedCreateNestedManyWithoutPlayerInput
+  guessTurnsPicked?: Prisma.GuessTurnUncheckedCreateNestedManyWithoutPickerInput
+}
+
+export type PlayerCreateOrConnectWithoutGuessesInput = {
+  where: Prisma.PlayerWhereUniqueInput
+  create: Prisma.XOR<Prisma.PlayerCreateWithoutGuessesInput, Prisma.PlayerUncheckedCreateWithoutGuessesInput>
+}
+
+export type PlayerUpsertWithoutGuessesInput = {
+  update: Prisma.XOR<Prisma.PlayerUpdateWithoutGuessesInput, Prisma.PlayerUncheckedUpdateWithoutGuessesInput>
+  create: Prisma.XOR<Prisma.PlayerCreateWithoutGuessesInput, Prisma.PlayerUncheckedCreateWithoutGuessesInput>
+  where?: Prisma.PlayerWhereInput
+}
+
+export type PlayerUpdateToOneWithWhereWithoutGuessesInput = {
+  where?: Prisma.PlayerWhereInput
+  data: Prisma.XOR<Prisma.PlayerUpdateWithoutGuessesInput, Prisma.PlayerUncheckedUpdateWithoutGuessesInput>
+}
+
+export type PlayerUpdateWithoutGuessesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  spotifyDeviceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isOwner?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  joinOrder?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  session?: Prisma.GameSessionUpdateOneRequiredWithoutPlayersNestedInput
+  songs?: Prisma.SongUpdateManyWithoutPlayerNestedInput
+  votes?: Prisma.VoteUpdateManyWithoutPlayerNestedInput
+  guessTurnsPicked?: Prisma.GuessTurnUpdateManyWithoutPickerNestedInput
+}
+
+export type PlayerUncheckedUpdateWithoutGuessesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  sessionId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  spotifyDeviceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isOwner?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  joinOrder?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  songs?: Prisma.SongUncheckedUpdateManyWithoutPlayerNestedInput
+  votes?: Prisma.VoteUncheckedUpdateManyWithoutPlayerNestedInput
+  guessTurnsPicked?: Prisma.GuessTurnUncheckedUpdateManyWithoutPickerNestedInput
 }
 
 export type PlayerCreateManySessionInput = {
@@ -693,6 +891,8 @@ export type PlayerUpdateWithoutSessionInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   songs?: Prisma.SongUpdateManyWithoutPlayerNestedInput
   votes?: Prisma.VoteUpdateManyWithoutPlayerNestedInput
+  guessTurnsPicked?: Prisma.GuessTurnUpdateManyWithoutPickerNestedInput
+  guesses?: Prisma.GuessUpdateManyWithoutPlayerNestedInput
 }
 
 export type PlayerUncheckedUpdateWithoutSessionInput = {
@@ -704,6 +904,8 @@ export type PlayerUncheckedUpdateWithoutSessionInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   songs?: Prisma.SongUncheckedUpdateManyWithoutPlayerNestedInput
   votes?: Prisma.VoteUncheckedUpdateManyWithoutPlayerNestedInput
+  guessTurnsPicked?: Prisma.GuessTurnUncheckedUpdateManyWithoutPickerNestedInput
+  guesses?: Prisma.GuessUncheckedUpdateManyWithoutPlayerNestedInput
 }
 
 export type PlayerUncheckedUpdateManyWithoutSessionInput = {
@@ -723,11 +925,15 @@ export type PlayerUncheckedUpdateManyWithoutSessionInput = {
 export type PlayerCountOutputType = {
   songs: number
   votes: number
+  guessTurnsPicked: number
+  guesses: number
 }
 
 export type PlayerCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   songs?: boolean | PlayerCountOutputTypeCountSongsArgs
   votes?: boolean | PlayerCountOutputTypeCountVotesArgs
+  guessTurnsPicked?: boolean | PlayerCountOutputTypeCountGuessTurnsPickedArgs
+  guesses?: boolean | PlayerCountOutputTypeCountGuessesArgs
 }
 
 /**
@@ -754,6 +960,20 @@ export type PlayerCountOutputTypeCountVotesArgs<ExtArgs extends runtime.Types.Ex
   where?: Prisma.VoteWhereInput
 }
 
+/**
+ * PlayerCountOutputType without action
+ */
+export type PlayerCountOutputTypeCountGuessTurnsPickedArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.GuessTurnWhereInput
+}
+
+/**
+ * PlayerCountOutputType without action
+ */
+export type PlayerCountOutputTypeCountGuessesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.GuessWhereInput
+}
+
 
 export type PlayerSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -766,6 +986,8 @@ export type PlayerSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   session?: boolean | Prisma.GameSessionDefaultArgs<ExtArgs>
   songs?: boolean | Prisma.Player$songsArgs<ExtArgs>
   votes?: boolean | Prisma.Player$votesArgs<ExtArgs>
+  guessTurnsPicked?: boolean | Prisma.Player$guessTurnsPickedArgs<ExtArgs>
+  guesses?: boolean | Prisma.Player$guessesArgs<ExtArgs>
   _count?: boolean | Prisma.PlayerCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["player"]>
 
@@ -806,6 +1028,8 @@ export type PlayerInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   session?: boolean | Prisma.GameSessionDefaultArgs<ExtArgs>
   songs?: boolean | Prisma.Player$songsArgs<ExtArgs>
   votes?: boolean | Prisma.Player$votesArgs<ExtArgs>
+  guessTurnsPicked?: boolean | Prisma.Player$guessTurnsPickedArgs<ExtArgs>
+  guesses?: boolean | Prisma.Player$guessesArgs<ExtArgs>
   _count?: boolean | Prisma.PlayerCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type PlayerIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -821,6 +1045,8 @@ export type $PlayerPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     session: Prisma.$GameSessionPayload<ExtArgs>
     songs: Prisma.$SongPayload<ExtArgs>[]
     votes: Prisma.$VotePayload<ExtArgs>[]
+    guessTurnsPicked: Prisma.$GuessTurnPayload<ExtArgs>[]
+    guesses: Prisma.$GuessPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1227,6 +1453,8 @@ export interface Prisma__PlayerClient<T, Null = never, ExtArgs extends runtime.T
   session<T extends Prisma.GameSessionDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.GameSessionDefaultArgs<ExtArgs>>): Prisma.Prisma__GameSessionClient<runtime.Types.Result.GetResult<Prisma.$GameSessionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   songs<T extends Prisma.Player$songsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Player$songsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SongPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   votes<T extends Prisma.Player$votesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Player$votesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$VotePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  guessTurnsPicked<T extends Prisma.Player$guessTurnsPickedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Player$guessTurnsPickedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$GuessTurnPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  guesses<T extends Prisma.Player$guessesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Player$guessesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$GuessPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1459,6 +1687,11 @@ export type PlayerFindManyArgs<ExtArgs extends runtime.Types.Extensions.Internal
    * Skip the first `n` Players.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of Players.
+   */
   distinct?: Prisma.PlayerScalarFieldEnum | Prisma.PlayerScalarFieldEnum[]
 }
 
@@ -1704,6 +1937,54 @@ export type Player$votesArgs<ExtArgs extends runtime.Types.Extensions.InternalAr
   take?: number
   skip?: number
   distinct?: Prisma.VoteScalarFieldEnum | Prisma.VoteScalarFieldEnum[]
+}
+
+/**
+ * Player.guessTurnsPicked
+ */
+export type Player$guessTurnsPickedArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the GuessTurn
+   */
+  select?: Prisma.GuessTurnSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the GuessTurn
+   */
+  omit?: Prisma.GuessTurnOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.GuessTurnInclude<ExtArgs> | null
+  where?: Prisma.GuessTurnWhereInput
+  orderBy?: Prisma.GuessTurnOrderByWithRelationInput | Prisma.GuessTurnOrderByWithRelationInput[]
+  cursor?: Prisma.GuessTurnWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.GuessTurnScalarFieldEnum | Prisma.GuessTurnScalarFieldEnum[]
+}
+
+/**
+ * Player.guesses
+ */
+export type Player$guessesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Guess
+   */
+  select?: Prisma.GuessSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Guess
+   */
+  omit?: Prisma.GuessOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.GuessInclude<ExtArgs> | null
+  where?: Prisma.GuessWhereInput
+  orderBy?: Prisma.GuessOrderByWithRelationInput | Prisma.GuessOrderByWithRelationInput[]
+  cursor?: Prisma.GuessWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.GuessScalarFieldEnum | Prisma.GuessScalarFieldEnum[]
 }
 
 /**

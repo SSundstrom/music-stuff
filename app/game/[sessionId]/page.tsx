@@ -13,6 +13,11 @@ import TournamentPhase from "@/components/game/TournamentPhase";
 import SpotifyPlayer from "@/components/SpotifyPlayer";
 import PlayersModal from "@/components/game/PlayersModal";
 import QRCodeModal from "@/components/game/QRCodeModal";
+import dynamic from "next/dynamic";
+
+const GuessGameOrchestrator = dynamic(
+  () => import("@/components/game/guess/GuessGameOrchestrator"),
+);
 
 export default function GamePage() {
   const params = useParams();
@@ -79,6 +84,9 @@ export default function GamePage() {
     players,
     songs,
     matches,
+    guessState,
+    lastTurnResults,
+    lastGuessEndsAt,
     loading,
     error,
     isConnected,
@@ -195,88 +203,103 @@ export default function GamePage() {
           currentPlayerId={currentPlayerId}
           buttonRef={optionsButtonRef}
         />
-        {!tournament ? (
-          <p>something went wrong</p>
-        ) : (
-          <>
-            {tournament.status === "category_selection" && (
-              <CategoryPhase
-                sessionId={sessionId}
-                tournamentId={tournament.id}
-                currentPicker={currentPicker}
-                isCurrentPicker={currentPlayerId === currentPicker?.id}
-              />
-            )}
-            {tournament.status === "song_submission" && (
-              <SongSubmissionPhase
-                sessionId={sessionId}
-                category={tournament.category || ""}
-                currentPlayerId={currentPlayerId}
-                isOwner={isOwner}
-                submittedCount={songs.length}
-                playerCount={players.length}
-              />
-            )}
-
-            {tournament.status === "tournament" && (
-              <TournamentPhase
-                sessionId={sessionId}
-                roundNumber={tournament.currentRound}
-                isOwner={isOwner}
-                currentPlayerId={currentPlayerId}
-                songs={songs}
-                matches={matches}
-              />
-            )}
-
-            {tournament.status === "finished" &&
-              (() => {
-                const winningSong = songs.find(
-                  (song) => song.id === tournament.winningSongId,
-                );
-                return (
-                  <div className="rounded-lg bg-white p-8 shadow-lg text-center">
-                    <h1 className="mb-4 text-4xl font-bold text-green-600">
-                      🎉 Tournament Complete!
-                    </h1>
-                    {winningSong ? (
-                      <div className="space-y-4">
-                        {winningSong.imageUrl && (
-                          <Image
-                            src={winningSong.imageUrl}
-                            alt={winningSong.songName}
-                            width={192}
-                            height={192}
-                            className="mx-auto h-48 w-48 rounded-lg object-cover shadow"
-                          />
-                        )}
-                        <div>
-                          <p className="text-2xl font-bold text-gray-900">
-                            {winningSong.songName}
-                          </p>
-                          <p className="text-lg text-gray-600">
-                            by {winningSong.artistName}
-                          </p>
-                        </div>
-                      </div>
-                    ) : (
-                      <p className="text-lg text-gray-700">
-                        Tournament winner determined!
-                      </p>
-                    )}
-                    {isOwner && (
-                      <button
-                        onClick={handleNewRound}
-                        className="w-full rounded-lg bg-green-600 px-4 py-3 font-semibold text-white hover:bg-green-700 disabled:opacity-50"
-                      >
-                        {"Pick new category!"}
-                      </button>
-                    )}
-                  </div>
-                );
-              })()}
-          </>
+        {/* Guess the Song mode */}
+        {gameSession?.gameType === "guess_the_song" && guessState && currentPlayerId && (
+          <GuessGameOrchestrator
+            sessionId={sessionId}
+            playerId={currentPlayerId}
+            players={players}
+            guessState={guessState}
+            isOwner={isOwner}
+            turnResults={lastTurnResults}
+            endsAt={lastGuessEndsAt}
+          />
         )}
+
+        {/* Tournament mode */}
+        {gameSession?.gameType !== "guess_the_song" &&
+          (!tournament ? (
+            <p>something went wrong</p>
+          ) : (
+            <>
+              {tournament.status === "category_selection" && (
+                <CategoryPhase
+                  sessionId={sessionId}
+                  tournamentId={tournament.id}
+                  currentPicker={currentPicker}
+                  isCurrentPicker={currentPlayerId === currentPicker?.id}
+                />
+              )}
+              {tournament.status === "song_submission" && (
+                <SongSubmissionPhase
+                  sessionId={sessionId}
+                  category={tournament.category || ""}
+                  currentPlayerId={currentPlayerId}
+                  isOwner={isOwner}
+                  submittedCount={songs.length}
+                  playerCount={players.length}
+                />
+              )}
+
+              {tournament.status === "tournament" && (
+                <TournamentPhase
+                  sessionId={sessionId}
+                  roundNumber={tournament.currentRound}
+                  isOwner={isOwner}
+                  currentPlayerId={currentPlayerId}
+                  songs={songs}
+                  matches={matches}
+                />
+              )}
+
+              {tournament.status === "finished" &&
+                (() => {
+                  const winningSong = songs.find(
+                    (song) => song.id === tournament.winningSongId,
+                  );
+                  return (
+                    <div className="rounded-lg bg-white p-8 shadow-lg text-center">
+                      <h1 className="mb-4 text-4xl font-bold text-green-600">
+                        Tournament Complete!
+                      </h1>
+                      {winningSong ? (
+                        <div className="space-y-4">
+                          {winningSong.imageUrl && (
+                            <Image
+                              src={winningSong.imageUrl}
+                              alt={winningSong.songName}
+                              width={192}
+                              height={192}
+                              className="mx-auto h-48 w-48 rounded-lg object-cover shadow"
+                            />
+                          )}
+                          <div>
+                            <p className="text-2xl font-bold text-gray-900">
+                              {winningSong.songName}
+                            </p>
+                            <p className="text-lg text-gray-600">
+                              by {winningSong.artistName}
+                            </p>
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="text-lg text-gray-700">
+                          Tournament winner determined!
+                        </p>
+                      )}
+                      {isOwner && (
+                        <button
+                          onClick={handleNewRound}
+                          className="w-full rounded-lg bg-green-600 px-4 py-3 font-semibold text-white hover:bg-green-700 disabled:opacity-50"
+                        >
+                          {"Pick new category!"}
+                        </button>
+                      )}
+                    </div>
+                  );
+                })()}
+            </>
+          ))}
       </div>
     </div>
   );

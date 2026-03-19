@@ -3,15 +3,23 @@ enum SessionStatus {
   archived
 }
 
+enum GameType {
+  tournament
+  guess_the_song
+}
+
 // Container for multiple tournaments
 model GameSession {
   id        String        @id
   ownerId   String
+  gameType  GameType      @default(tournament)
   status    SessionStatus @default(active)
   createdAt DateTime
 
   tournaments Tournament[]
   players     Player[]
+  guessConfig GuessConfig?
+  guessTurns  GuessTurn[]
 
   @@index([ownerId], map: "idx_sessions_owner")
 }
@@ -53,9 +61,11 @@ model Player {
   joinOrder       Int
   createdAt       DateTime
 
-  session GameSession @relation(fields: [sessionId], references: [id])
-  songs   Song[]
-  votes   Vote[]
+  session            GameSession @relation(fields: [sessionId], references: [id])
+  songs              Song[]
+  votes              Vote[]
+  guessTurnsPicked   GuessTurn[] @relation("guessTurnPicker")
+  guesses            Guess[]
 
   @@index([sessionId], map: "idx_players_session")
 }
@@ -128,4 +138,66 @@ model Vote {
 
   @@unique([matchId, playerId], map: "votes_match_id_player_id_key")
   @@index([matchId], map: "idx_votes_match")
+}
+
+// Guess the Song game mode
+
+model GuessConfig {
+  id           String      @id
+  sessionId    String      @unique
+  maxRounds    Int?
+  guessTimeSec Int         @default(30)
+  hostPlays    Boolean     @default(false)
+
+  session GameSession @relation(fields: [sessionId], references: [id])
+}
+
+enum GuessTurnStatus {
+  picking
+  countdown
+  guessing
+  scoreboard
+}
+
+model GuessTurn {
+  id               String          @id
+  sessionId        String
+  roundNumber      Int
+  turnNumber       Int
+  pickerId         String
+  spotifyId        String?
+  songName         String?
+  artistName       String?
+  imageUrl         String?
+  startTime        Int             @default(0)
+  status           GuessTurnStatus @default(picking)
+  guessingStartedAt DateTime?
+  createdAt        DateTime
+
+  session  GameSession @relation(fields: [sessionId], references: [id])
+  picker   Player     @relation("guessTurnPicker", fields: [pickerId], references: [id])
+  guesses  Guess[]
+
+  @@unique([sessionId, turnNumber])
+  @@index([sessionId])
+}
+
+model Guess {
+  id            String   @id
+  guessTurnId   String
+  playerId      String
+  spotifyId     String
+  songName      String
+  artistName    String
+  guessedAt     DateTime
+  songCorrect   Boolean  @default(false)
+  artistCorrect Boolean  @default(false)
+  points        Int      @default(0)
+  createdAt     DateTime
+
+  guessTurn GuessTurn @relation(fields: [guessTurnId], references: [id])
+  player    Player    @relation(fields: [playerId], references: [id])
+
+  @@unique([guessTurnId, playerId])
+  @@index([guessTurnId])
 }

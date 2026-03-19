@@ -27,6 +27,7 @@ export type AggregateGameSession = {
 export type GameSessionMinAggregateOutputType = {
   id: string | null
   ownerId: string | null
+  gameType: $Enums.GameType | null
   status: $Enums.SessionStatus | null
   createdAt: Date | null
 }
@@ -34,6 +35,7 @@ export type GameSessionMinAggregateOutputType = {
 export type GameSessionMaxAggregateOutputType = {
   id: string | null
   ownerId: string | null
+  gameType: $Enums.GameType | null
   status: $Enums.SessionStatus | null
   createdAt: Date | null
 }
@@ -41,6 +43,7 @@ export type GameSessionMaxAggregateOutputType = {
 export type GameSessionCountAggregateOutputType = {
   id: number
   ownerId: number
+  gameType: number
   status: number
   createdAt: number
   _all: number
@@ -50,6 +53,7 @@ export type GameSessionCountAggregateOutputType = {
 export type GameSessionMinAggregateInputType = {
   id?: true
   ownerId?: true
+  gameType?: true
   status?: true
   createdAt?: true
 }
@@ -57,6 +61,7 @@ export type GameSessionMinAggregateInputType = {
 export type GameSessionMaxAggregateInputType = {
   id?: true
   ownerId?: true
+  gameType?: true
   status?: true
   createdAt?: true
 }
@@ -64,6 +69,7 @@ export type GameSessionMaxAggregateInputType = {
 export type GameSessionCountAggregateInputType = {
   id?: true
   ownerId?: true
+  gameType?: true
   status?: true
   createdAt?: true
   _all?: true
@@ -144,6 +150,7 @@ export type GameSessionGroupByArgs<ExtArgs extends runtime.Types.Extensions.Inte
 export type GameSessionGroupByOutputType = {
   id: string
   ownerId: string
+  gameType: $Enums.GameType
   status: $Enums.SessionStatus
   createdAt: Date
   _count: GameSessionCountAggregateOutputType | null
@@ -172,19 +179,25 @@ export type GameSessionWhereInput = {
   NOT?: Prisma.GameSessionWhereInput | Prisma.GameSessionWhereInput[]
   id?: Prisma.StringFilter<"GameSession"> | string
   ownerId?: Prisma.StringFilter<"GameSession"> | string
+  gameType?: Prisma.EnumGameTypeFilter<"GameSession"> | $Enums.GameType
   status?: Prisma.EnumSessionStatusFilter<"GameSession"> | $Enums.SessionStatus
   createdAt?: Prisma.DateTimeFilter<"GameSession"> | Date | string
   tournaments?: Prisma.TournamentListRelationFilter
   players?: Prisma.PlayerListRelationFilter
+  guessConfig?: Prisma.XOR<Prisma.GuessConfigNullableScalarRelationFilter, Prisma.GuessConfigWhereInput> | null
+  guessTurns?: Prisma.GuessTurnListRelationFilter
 }
 
 export type GameSessionOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   ownerId?: Prisma.SortOrder
+  gameType?: Prisma.SortOrder
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   tournaments?: Prisma.TournamentOrderByRelationAggregateInput
   players?: Prisma.PlayerOrderByRelationAggregateInput
+  guessConfig?: Prisma.GuessConfigOrderByWithRelationInput
+  guessTurns?: Prisma.GuessTurnOrderByRelationAggregateInput
 }
 
 export type GameSessionWhereUniqueInput = Prisma.AtLeast<{
@@ -193,15 +206,19 @@ export type GameSessionWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.GameSessionWhereInput[]
   NOT?: Prisma.GameSessionWhereInput | Prisma.GameSessionWhereInput[]
   ownerId?: Prisma.StringFilter<"GameSession"> | string
+  gameType?: Prisma.EnumGameTypeFilter<"GameSession"> | $Enums.GameType
   status?: Prisma.EnumSessionStatusFilter<"GameSession"> | $Enums.SessionStatus
   createdAt?: Prisma.DateTimeFilter<"GameSession"> | Date | string
   tournaments?: Prisma.TournamentListRelationFilter
   players?: Prisma.PlayerListRelationFilter
+  guessConfig?: Prisma.XOR<Prisma.GuessConfigNullableScalarRelationFilter, Prisma.GuessConfigWhereInput> | null
+  guessTurns?: Prisma.GuessTurnListRelationFilter
 }, "id">
 
 export type GameSessionOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   ownerId?: Prisma.SortOrder
+  gameType?: Prisma.SortOrder
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.GameSessionCountOrderByAggregateInput
@@ -215,6 +232,7 @@ export type GameSessionScalarWhereWithAggregatesInput = {
   NOT?: Prisma.GameSessionScalarWhereWithAggregatesInput | Prisma.GameSessionScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"GameSession"> | string
   ownerId?: Prisma.StringWithAggregatesFilter<"GameSession"> | string
+  gameType?: Prisma.EnumGameTypeWithAggregatesFilter<"GameSession"> | $Enums.GameType
   status?: Prisma.EnumSessionStatusWithAggregatesFilter<"GameSession"> | $Enums.SessionStatus
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"GameSession"> | Date | string
 }
@@ -222,42 +240,55 @@ export type GameSessionScalarWhereWithAggregatesInput = {
 export type GameSessionCreateInput = {
   id: string
   ownerId: string
+  gameType?: $Enums.GameType
   status?: $Enums.SessionStatus
   createdAt: Date | string
   tournaments?: Prisma.TournamentCreateNestedManyWithoutSessionInput
   players?: Prisma.PlayerCreateNestedManyWithoutSessionInput
+  guessConfig?: Prisma.GuessConfigCreateNestedOneWithoutSessionInput
+  guessTurns?: Prisma.GuessTurnCreateNestedManyWithoutSessionInput
 }
 
 export type GameSessionUncheckedCreateInput = {
   id: string
   ownerId: string
+  gameType?: $Enums.GameType
   status?: $Enums.SessionStatus
   createdAt: Date | string
   tournaments?: Prisma.TournamentUncheckedCreateNestedManyWithoutSessionInput
   players?: Prisma.PlayerUncheckedCreateNestedManyWithoutSessionInput
+  guessConfig?: Prisma.GuessConfigUncheckedCreateNestedOneWithoutSessionInput
+  guessTurns?: Prisma.GuessTurnUncheckedCreateNestedManyWithoutSessionInput
 }
 
 export type GameSessionUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   ownerId?: Prisma.StringFieldUpdateOperationsInput | string
+  gameType?: Prisma.EnumGameTypeFieldUpdateOperationsInput | $Enums.GameType
   status?: Prisma.EnumSessionStatusFieldUpdateOperationsInput | $Enums.SessionStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tournaments?: Prisma.TournamentUpdateManyWithoutSessionNestedInput
   players?: Prisma.PlayerUpdateManyWithoutSessionNestedInput
+  guessConfig?: Prisma.GuessConfigUpdateOneWithoutSessionNestedInput
+  guessTurns?: Prisma.GuessTurnUpdateManyWithoutSessionNestedInput
 }
 
 export type GameSessionUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   ownerId?: Prisma.StringFieldUpdateOperationsInput | string
+  gameType?: Prisma.EnumGameTypeFieldUpdateOperationsInput | $Enums.GameType
   status?: Prisma.EnumSessionStatusFieldUpdateOperationsInput | $Enums.SessionStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tournaments?: Prisma.TournamentUncheckedUpdateManyWithoutSessionNestedInput
   players?: Prisma.PlayerUncheckedUpdateManyWithoutSessionNestedInput
+  guessConfig?: Prisma.GuessConfigUncheckedUpdateOneWithoutSessionNestedInput
+  guessTurns?: Prisma.GuessTurnUncheckedUpdateManyWithoutSessionNestedInput
 }
 
 export type GameSessionCreateManyInput = {
   id: string
   ownerId: string
+  gameType?: $Enums.GameType
   status?: $Enums.SessionStatus
   createdAt: Date | string
 }
@@ -265,6 +296,7 @@ export type GameSessionCreateManyInput = {
 export type GameSessionUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   ownerId?: Prisma.StringFieldUpdateOperationsInput | string
+  gameType?: Prisma.EnumGameTypeFieldUpdateOperationsInput | $Enums.GameType
   status?: Prisma.EnumSessionStatusFieldUpdateOperationsInput | $Enums.SessionStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -272,6 +304,7 @@ export type GameSessionUpdateManyMutationInput = {
 export type GameSessionUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   ownerId?: Prisma.StringFieldUpdateOperationsInput | string
+  gameType?: Prisma.EnumGameTypeFieldUpdateOperationsInput | $Enums.GameType
   status?: Prisma.EnumSessionStatusFieldUpdateOperationsInput | $Enums.SessionStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -279,6 +312,7 @@ export type GameSessionUncheckedUpdateManyInput = {
 export type GameSessionCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   ownerId?: Prisma.SortOrder
+  gameType?: Prisma.SortOrder
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
@@ -286,6 +320,7 @@ export type GameSessionCountOrderByAggregateInput = {
 export type GameSessionMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   ownerId?: Prisma.SortOrder
+  gameType?: Prisma.SortOrder
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
@@ -293,6 +328,7 @@ export type GameSessionMaxOrderByAggregateInput = {
 export type GameSessionMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   ownerId?: Prisma.SortOrder
+  gameType?: Prisma.SortOrder
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
@@ -300,6 +336,10 @@ export type GameSessionMinOrderByAggregateInput = {
 export type GameSessionScalarRelationFilter = {
   is?: Prisma.GameSessionWhereInput
   isNot?: Prisma.GameSessionWhereInput
+}
+
+export type EnumGameTypeFieldUpdateOperationsInput = {
+  set?: $Enums.GameType
 }
 
 export type EnumSessionStatusFieldUpdateOperationsInput = {
@@ -334,20 +374,54 @@ export type GameSessionUpdateOneRequiredWithoutPlayersNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.GameSessionUpdateToOneWithWhereWithoutPlayersInput, Prisma.GameSessionUpdateWithoutPlayersInput>, Prisma.GameSessionUncheckedUpdateWithoutPlayersInput>
 }
 
+export type GameSessionCreateNestedOneWithoutGuessConfigInput = {
+  create?: Prisma.XOR<Prisma.GameSessionCreateWithoutGuessConfigInput, Prisma.GameSessionUncheckedCreateWithoutGuessConfigInput>
+  connectOrCreate?: Prisma.GameSessionCreateOrConnectWithoutGuessConfigInput
+  connect?: Prisma.GameSessionWhereUniqueInput
+}
+
+export type GameSessionUpdateOneRequiredWithoutGuessConfigNestedInput = {
+  create?: Prisma.XOR<Prisma.GameSessionCreateWithoutGuessConfigInput, Prisma.GameSessionUncheckedCreateWithoutGuessConfigInput>
+  connectOrCreate?: Prisma.GameSessionCreateOrConnectWithoutGuessConfigInput
+  upsert?: Prisma.GameSessionUpsertWithoutGuessConfigInput
+  connect?: Prisma.GameSessionWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.GameSessionUpdateToOneWithWhereWithoutGuessConfigInput, Prisma.GameSessionUpdateWithoutGuessConfigInput>, Prisma.GameSessionUncheckedUpdateWithoutGuessConfigInput>
+}
+
+export type GameSessionCreateNestedOneWithoutGuessTurnsInput = {
+  create?: Prisma.XOR<Prisma.GameSessionCreateWithoutGuessTurnsInput, Prisma.GameSessionUncheckedCreateWithoutGuessTurnsInput>
+  connectOrCreate?: Prisma.GameSessionCreateOrConnectWithoutGuessTurnsInput
+  connect?: Prisma.GameSessionWhereUniqueInput
+}
+
+export type GameSessionUpdateOneRequiredWithoutGuessTurnsNestedInput = {
+  create?: Prisma.XOR<Prisma.GameSessionCreateWithoutGuessTurnsInput, Prisma.GameSessionUncheckedCreateWithoutGuessTurnsInput>
+  connectOrCreate?: Prisma.GameSessionCreateOrConnectWithoutGuessTurnsInput
+  upsert?: Prisma.GameSessionUpsertWithoutGuessTurnsInput
+  connect?: Prisma.GameSessionWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.GameSessionUpdateToOneWithWhereWithoutGuessTurnsInput, Prisma.GameSessionUpdateWithoutGuessTurnsInput>, Prisma.GameSessionUncheckedUpdateWithoutGuessTurnsInput>
+}
+
 export type GameSessionCreateWithoutTournamentsInput = {
   id: string
   ownerId: string
+  gameType?: $Enums.GameType
   status?: $Enums.SessionStatus
   createdAt: Date | string
   players?: Prisma.PlayerCreateNestedManyWithoutSessionInput
+  guessConfig?: Prisma.GuessConfigCreateNestedOneWithoutSessionInput
+  guessTurns?: Prisma.GuessTurnCreateNestedManyWithoutSessionInput
 }
 
 export type GameSessionUncheckedCreateWithoutTournamentsInput = {
   id: string
   ownerId: string
+  gameType?: $Enums.GameType
   status?: $Enums.SessionStatus
   createdAt: Date | string
   players?: Prisma.PlayerUncheckedCreateNestedManyWithoutSessionInput
+  guessConfig?: Prisma.GuessConfigUncheckedCreateNestedOneWithoutSessionInput
+  guessTurns?: Prisma.GuessTurnUncheckedCreateNestedManyWithoutSessionInput
 }
 
 export type GameSessionCreateOrConnectWithoutTournamentsInput = {
@@ -369,33 +443,45 @@ export type GameSessionUpdateToOneWithWhereWithoutTournamentsInput = {
 export type GameSessionUpdateWithoutTournamentsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   ownerId?: Prisma.StringFieldUpdateOperationsInput | string
+  gameType?: Prisma.EnumGameTypeFieldUpdateOperationsInput | $Enums.GameType
   status?: Prisma.EnumSessionStatusFieldUpdateOperationsInput | $Enums.SessionStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   players?: Prisma.PlayerUpdateManyWithoutSessionNestedInput
+  guessConfig?: Prisma.GuessConfigUpdateOneWithoutSessionNestedInput
+  guessTurns?: Prisma.GuessTurnUpdateManyWithoutSessionNestedInput
 }
 
 export type GameSessionUncheckedUpdateWithoutTournamentsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   ownerId?: Prisma.StringFieldUpdateOperationsInput | string
+  gameType?: Prisma.EnumGameTypeFieldUpdateOperationsInput | $Enums.GameType
   status?: Prisma.EnumSessionStatusFieldUpdateOperationsInput | $Enums.SessionStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   players?: Prisma.PlayerUncheckedUpdateManyWithoutSessionNestedInput
+  guessConfig?: Prisma.GuessConfigUncheckedUpdateOneWithoutSessionNestedInput
+  guessTurns?: Prisma.GuessTurnUncheckedUpdateManyWithoutSessionNestedInput
 }
 
 export type GameSessionCreateWithoutPlayersInput = {
   id: string
   ownerId: string
+  gameType?: $Enums.GameType
   status?: $Enums.SessionStatus
   createdAt: Date | string
   tournaments?: Prisma.TournamentCreateNestedManyWithoutSessionInput
+  guessConfig?: Prisma.GuessConfigCreateNestedOneWithoutSessionInput
+  guessTurns?: Prisma.GuessTurnCreateNestedManyWithoutSessionInput
 }
 
 export type GameSessionUncheckedCreateWithoutPlayersInput = {
   id: string
   ownerId: string
+  gameType?: $Enums.GameType
   status?: $Enums.SessionStatus
   createdAt: Date | string
   tournaments?: Prisma.TournamentUncheckedCreateNestedManyWithoutSessionInput
+  guessConfig?: Prisma.GuessConfigUncheckedCreateNestedOneWithoutSessionInput
+  guessTurns?: Prisma.GuessTurnUncheckedCreateNestedManyWithoutSessionInput
 }
 
 export type GameSessionCreateOrConnectWithoutPlayersInput = {
@@ -417,17 +503,143 @@ export type GameSessionUpdateToOneWithWhereWithoutPlayersInput = {
 export type GameSessionUpdateWithoutPlayersInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   ownerId?: Prisma.StringFieldUpdateOperationsInput | string
+  gameType?: Prisma.EnumGameTypeFieldUpdateOperationsInput | $Enums.GameType
   status?: Prisma.EnumSessionStatusFieldUpdateOperationsInput | $Enums.SessionStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tournaments?: Prisma.TournamentUpdateManyWithoutSessionNestedInput
+  guessConfig?: Prisma.GuessConfigUpdateOneWithoutSessionNestedInput
+  guessTurns?: Prisma.GuessTurnUpdateManyWithoutSessionNestedInput
 }
 
 export type GameSessionUncheckedUpdateWithoutPlayersInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   ownerId?: Prisma.StringFieldUpdateOperationsInput | string
+  gameType?: Prisma.EnumGameTypeFieldUpdateOperationsInput | $Enums.GameType
   status?: Prisma.EnumSessionStatusFieldUpdateOperationsInput | $Enums.SessionStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tournaments?: Prisma.TournamentUncheckedUpdateManyWithoutSessionNestedInput
+  guessConfig?: Prisma.GuessConfigUncheckedUpdateOneWithoutSessionNestedInput
+  guessTurns?: Prisma.GuessTurnUncheckedUpdateManyWithoutSessionNestedInput
+}
+
+export type GameSessionCreateWithoutGuessConfigInput = {
+  id: string
+  ownerId: string
+  gameType?: $Enums.GameType
+  status?: $Enums.SessionStatus
+  createdAt: Date | string
+  tournaments?: Prisma.TournamentCreateNestedManyWithoutSessionInput
+  players?: Prisma.PlayerCreateNestedManyWithoutSessionInput
+  guessTurns?: Prisma.GuessTurnCreateNestedManyWithoutSessionInput
+}
+
+export type GameSessionUncheckedCreateWithoutGuessConfigInput = {
+  id: string
+  ownerId: string
+  gameType?: $Enums.GameType
+  status?: $Enums.SessionStatus
+  createdAt: Date | string
+  tournaments?: Prisma.TournamentUncheckedCreateNestedManyWithoutSessionInput
+  players?: Prisma.PlayerUncheckedCreateNestedManyWithoutSessionInput
+  guessTurns?: Prisma.GuessTurnUncheckedCreateNestedManyWithoutSessionInput
+}
+
+export type GameSessionCreateOrConnectWithoutGuessConfigInput = {
+  where: Prisma.GameSessionWhereUniqueInput
+  create: Prisma.XOR<Prisma.GameSessionCreateWithoutGuessConfigInput, Prisma.GameSessionUncheckedCreateWithoutGuessConfigInput>
+}
+
+export type GameSessionUpsertWithoutGuessConfigInput = {
+  update: Prisma.XOR<Prisma.GameSessionUpdateWithoutGuessConfigInput, Prisma.GameSessionUncheckedUpdateWithoutGuessConfigInput>
+  create: Prisma.XOR<Prisma.GameSessionCreateWithoutGuessConfigInput, Prisma.GameSessionUncheckedCreateWithoutGuessConfigInput>
+  where?: Prisma.GameSessionWhereInput
+}
+
+export type GameSessionUpdateToOneWithWhereWithoutGuessConfigInput = {
+  where?: Prisma.GameSessionWhereInput
+  data: Prisma.XOR<Prisma.GameSessionUpdateWithoutGuessConfigInput, Prisma.GameSessionUncheckedUpdateWithoutGuessConfigInput>
+}
+
+export type GameSessionUpdateWithoutGuessConfigInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  ownerId?: Prisma.StringFieldUpdateOperationsInput | string
+  gameType?: Prisma.EnumGameTypeFieldUpdateOperationsInput | $Enums.GameType
+  status?: Prisma.EnumSessionStatusFieldUpdateOperationsInput | $Enums.SessionStatus
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  tournaments?: Prisma.TournamentUpdateManyWithoutSessionNestedInput
+  players?: Prisma.PlayerUpdateManyWithoutSessionNestedInput
+  guessTurns?: Prisma.GuessTurnUpdateManyWithoutSessionNestedInput
+}
+
+export type GameSessionUncheckedUpdateWithoutGuessConfigInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  ownerId?: Prisma.StringFieldUpdateOperationsInput | string
+  gameType?: Prisma.EnumGameTypeFieldUpdateOperationsInput | $Enums.GameType
+  status?: Prisma.EnumSessionStatusFieldUpdateOperationsInput | $Enums.SessionStatus
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  tournaments?: Prisma.TournamentUncheckedUpdateManyWithoutSessionNestedInput
+  players?: Prisma.PlayerUncheckedUpdateManyWithoutSessionNestedInput
+  guessTurns?: Prisma.GuessTurnUncheckedUpdateManyWithoutSessionNestedInput
+}
+
+export type GameSessionCreateWithoutGuessTurnsInput = {
+  id: string
+  ownerId: string
+  gameType?: $Enums.GameType
+  status?: $Enums.SessionStatus
+  createdAt: Date | string
+  tournaments?: Prisma.TournamentCreateNestedManyWithoutSessionInput
+  players?: Prisma.PlayerCreateNestedManyWithoutSessionInput
+  guessConfig?: Prisma.GuessConfigCreateNestedOneWithoutSessionInput
+}
+
+export type GameSessionUncheckedCreateWithoutGuessTurnsInput = {
+  id: string
+  ownerId: string
+  gameType?: $Enums.GameType
+  status?: $Enums.SessionStatus
+  createdAt: Date | string
+  tournaments?: Prisma.TournamentUncheckedCreateNestedManyWithoutSessionInput
+  players?: Prisma.PlayerUncheckedCreateNestedManyWithoutSessionInput
+  guessConfig?: Prisma.GuessConfigUncheckedCreateNestedOneWithoutSessionInput
+}
+
+export type GameSessionCreateOrConnectWithoutGuessTurnsInput = {
+  where: Prisma.GameSessionWhereUniqueInput
+  create: Prisma.XOR<Prisma.GameSessionCreateWithoutGuessTurnsInput, Prisma.GameSessionUncheckedCreateWithoutGuessTurnsInput>
+}
+
+export type GameSessionUpsertWithoutGuessTurnsInput = {
+  update: Prisma.XOR<Prisma.GameSessionUpdateWithoutGuessTurnsInput, Prisma.GameSessionUncheckedUpdateWithoutGuessTurnsInput>
+  create: Prisma.XOR<Prisma.GameSessionCreateWithoutGuessTurnsInput, Prisma.GameSessionUncheckedCreateWithoutGuessTurnsInput>
+  where?: Prisma.GameSessionWhereInput
+}
+
+export type GameSessionUpdateToOneWithWhereWithoutGuessTurnsInput = {
+  where?: Prisma.GameSessionWhereInput
+  data: Prisma.XOR<Prisma.GameSessionUpdateWithoutGuessTurnsInput, Prisma.GameSessionUncheckedUpdateWithoutGuessTurnsInput>
+}
+
+export type GameSessionUpdateWithoutGuessTurnsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  ownerId?: Prisma.StringFieldUpdateOperationsInput | string
+  gameType?: Prisma.EnumGameTypeFieldUpdateOperationsInput | $Enums.GameType
+  status?: Prisma.EnumSessionStatusFieldUpdateOperationsInput | $Enums.SessionStatus
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  tournaments?: Prisma.TournamentUpdateManyWithoutSessionNestedInput
+  players?: Prisma.PlayerUpdateManyWithoutSessionNestedInput
+  guessConfig?: Prisma.GuessConfigUpdateOneWithoutSessionNestedInput
+}
+
+export type GameSessionUncheckedUpdateWithoutGuessTurnsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  ownerId?: Prisma.StringFieldUpdateOperationsInput | string
+  gameType?: Prisma.EnumGameTypeFieldUpdateOperationsInput | $Enums.GameType
+  status?: Prisma.EnumSessionStatusFieldUpdateOperationsInput | $Enums.SessionStatus
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  tournaments?: Prisma.TournamentUncheckedUpdateManyWithoutSessionNestedInput
+  players?: Prisma.PlayerUncheckedUpdateManyWithoutSessionNestedInput
+  guessConfig?: Prisma.GuessConfigUncheckedUpdateOneWithoutSessionNestedInput
 }
 
 
@@ -438,11 +650,13 @@ export type GameSessionUncheckedUpdateWithoutPlayersInput = {
 export type GameSessionCountOutputType = {
   tournaments: number
   players: number
+  guessTurns: number
 }
 
 export type GameSessionCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   tournaments?: boolean | GameSessionCountOutputTypeCountTournamentsArgs
   players?: boolean | GameSessionCountOutputTypeCountPlayersArgs
+  guessTurns?: boolean | GameSessionCountOutputTypeCountGuessTurnsArgs
 }
 
 /**
@@ -469,20 +683,31 @@ export type GameSessionCountOutputTypeCountPlayersArgs<ExtArgs extends runtime.T
   where?: Prisma.PlayerWhereInput
 }
 
+/**
+ * GameSessionCountOutputType without action
+ */
+export type GameSessionCountOutputTypeCountGuessTurnsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.GuessTurnWhereInput
+}
+
 
 export type GameSessionSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   ownerId?: boolean
+  gameType?: boolean
   status?: boolean
   createdAt?: boolean
   tournaments?: boolean | Prisma.GameSession$tournamentsArgs<ExtArgs>
   players?: boolean | Prisma.GameSession$playersArgs<ExtArgs>
+  guessConfig?: boolean | Prisma.GameSession$guessConfigArgs<ExtArgs>
+  guessTurns?: boolean | Prisma.GameSession$guessTurnsArgs<ExtArgs>
   _count?: boolean | Prisma.GameSessionCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["gameSession"]>
 
 export type GameSessionSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   ownerId?: boolean
+  gameType?: boolean
   status?: boolean
   createdAt?: boolean
 }, ExtArgs["result"]["gameSession"]>
@@ -490,6 +715,7 @@ export type GameSessionSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
 export type GameSessionSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   ownerId?: boolean
+  gameType?: boolean
   status?: boolean
   createdAt?: boolean
 }, ExtArgs["result"]["gameSession"]>
@@ -497,14 +723,17 @@ export type GameSessionSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
 export type GameSessionSelectScalar = {
   id?: boolean
   ownerId?: boolean
+  gameType?: boolean
   status?: boolean
   createdAt?: boolean
 }
 
-export type GameSessionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "ownerId" | "status" | "createdAt", ExtArgs["result"]["gameSession"]>
+export type GameSessionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "ownerId" | "gameType" | "status" | "createdAt", ExtArgs["result"]["gameSession"]>
 export type GameSessionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   tournaments?: boolean | Prisma.GameSession$tournamentsArgs<ExtArgs>
   players?: boolean | Prisma.GameSession$playersArgs<ExtArgs>
+  guessConfig?: boolean | Prisma.GameSession$guessConfigArgs<ExtArgs>
+  guessTurns?: boolean | Prisma.GameSession$guessTurnsArgs<ExtArgs>
   _count?: boolean | Prisma.GameSessionCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type GameSessionIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -515,10 +744,13 @@ export type $GameSessionPayload<ExtArgs extends runtime.Types.Extensions.Interna
   objects: {
     tournaments: Prisma.$TournamentPayload<ExtArgs>[]
     players: Prisma.$PlayerPayload<ExtArgs>[]
+    guessConfig: Prisma.$GuessConfigPayload<ExtArgs> | null
+    guessTurns: Prisma.$GuessTurnPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     ownerId: string
+    gameType: $Enums.GameType
     status: $Enums.SessionStatus
     createdAt: Date
   }, ExtArgs["result"]["gameSession"]>
@@ -917,6 +1149,8 @@ export interface Prisma__GameSessionClient<T, Null = never, ExtArgs extends runt
   readonly [Symbol.toStringTag]: "PrismaPromise"
   tournaments<T extends Prisma.GameSession$tournamentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.GameSession$tournamentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TournamentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   players<T extends Prisma.GameSession$playersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.GameSession$playersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PlayerPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  guessConfig<T extends Prisma.GameSession$guessConfigArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.GameSession$guessConfigArgs<ExtArgs>>): Prisma.Prisma__GuessConfigClient<runtime.Types.Result.GetResult<Prisma.$GuessConfigPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  guessTurns<T extends Prisma.GameSession$guessTurnsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.GameSession$guessTurnsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$GuessTurnPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -948,6 +1182,7 @@ export interface Prisma__GameSessionClient<T, Null = never, ExtArgs extends runt
 export interface GameSessionFieldRefs {
   readonly id: Prisma.FieldRef<"GameSession", 'String'>
   readonly ownerId: Prisma.FieldRef<"GameSession", 'String'>
+  readonly gameType: Prisma.FieldRef<"GameSession", 'GameType'>
   readonly status: Prisma.FieldRef<"GameSession", 'SessionStatus'>
   readonly createdAt: Prisma.FieldRef<"GameSession", 'DateTime'>
 }
@@ -1146,6 +1381,11 @@ export type GameSessionFindManyArgs<ExtArgs extends runtime.Types.Extensions.Int
    * Skip the first `n` GameSessions.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of GameSessions.
+   */
   distinct?: Prisma.GameSessionScalarFieldEnum | Prisma.GameSessionScalarFieldEnum[]
 }
 
@@ -1383,6 +1623,49 @@ export type GameSession$playersArgs<ExtArgs extends runtime.Types.Extensions.Int
   take?: number
   skip?: number
   distinct?: Prisma.PlayerScalarFieldEnum | Prisma.PlayerScalarFieldEnum[]
+}
+
+/**
+ * GameSession.guessConfig
+ */
+export type GameSession$guessConfigArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the GuessConfig
+   */
+  select?: Prisma.GuessConfigSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the GuessConfig
+   */
+  omit?: Prisma.GuessConfigOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.GuessConfigInclude<ExtArgs> | null
+  where?: Prisma.GuessConfigWhereInput
+}
+
+/**
+ * GameSession.guessTurns
+ */
+export type GameSession$guessTurnsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the GuessTurn
+   */
+  select?: Prisma.GuessTurnSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the GuessTurn
+   */
+  omit?: Prisma.GuessTurnOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.GuessTurnInclude<ExtArgs> | null
+  where?: Prisma.GuessTurnWhereInput
+  orderBy?: Prisma.GuessTurnOrderByWithRelationInput | Prisma.GuessTurnOrderByWithRelationInput[]
+  cursor?: Prisma.GuessTurnWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.GuessTurnScalarFieldEnum | Prisma.GuessTurnScalarFieldEnum[]
 }
 
 /**

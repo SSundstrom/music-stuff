@@ -6,6 +6,11 @@ import { QRCodeSVG } from "qrcode.react";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { useGameSession } from "@/hooks/useGameSession";
 import type { JoinSessionRequest, NewRoundRequest, Player } from "@/types/game";
+import dynamic from "next/dynamic";
+
+const GuessConfigPanel = dynamic(
+  () => import("@/components/game/guess/GuessConfigPanel"),
+);
 
 export default function LobbyPage() {
   const params = useParams();
@@ -27,6 +32,7 @@ export default function LobbyPage() {
     session: gameSession,
     tournament,
     players,
+    guessState,
     error: sessionError,
     isConnected,
   } = useGameSession({
@@ -36,6 +42,7 @@ export default function LobbyPage() {
 
   const isOwner = gameSession?.ownerId === authSession?.user?.id;
   const hasJoined = !!currentPlayerId;
+  const isGuessMode = gameSession?.gameType === "guess_the_song";
 
   const [joinError, setJoinError] = useState("");
 
@@ -44,7 +51,10 @@ export default function LobbyPage() {
     if (hasJoined && tournament?.status === "category_selection") {
       router.push(`/game/${sessionId}`);
     }
-  }, [tournament?.status, hasJoined, sessionId, router]);
+    if (hasJoined && isGuessMode && guessState?.status === "playing") {
+      router.push(`/game/${sessionId}`);
+    }
+  }, [tournament?.status, hasJoined, sessionId, router, isGuessMode, guessState?.status]);
 
   const handleJoinGame = async () => {
     if (!playerName.trim()) {
@@ -85,15 +95,22 @@ export default function LobbyPage() {
     setJoinError("");
 
     try {
-      const response = await fetch(`/api/game/${sessionId}/new-round`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          sessionId,
-        } satisfies NewRoundRequest),
-      });
-
-      if (!response.ok) throw new Error("Failed to create new round");
+      if (isGuessMode) {
+        const response = await fetch(`/api/game/${sessionId}/guess/start`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+        });
+        if (!response.ok) throw new Error("Failed to start guess game");
+      } else {
+        const response = await fetch(`/api/game/${sessionId}/new-round`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            sessionId,
+          } satisfies NewRoundRequest),
+        });
+        if (!response.ok) throw new Error("Failed to create new round");
+      }
     } catch (err) {
       setJoinError(err instanceof Error ? err.message : "An error occurred");
     } finally {
@@ -145,7 +162,7 @@ export default function LobbyPage() {
 
         <div className="rounded-lg bg-white p-8 shadow-lg">
           <h1 className="mb-2 text-3xl font-bold text-black">
-            Spotify Tournament
+            {isGuessMode ? "Guess the Song" : "Spotify Tournament"}
           </h1>
           <p className="mb-6 text-gray-600">Game Lobby</p>
 
@@ -222,6 +239,17 @@ export default function LobbyPage() {
               ))}
             </div>
           </div>
+
+          {/* Game config for guess mode */}
+          {isGuessMode && isOwner && hasJoined && (
+            <div className="mb-6">
+              <GuessConfigPanel
+                sessionId={sessionId}
+                config={guessState?.config}
+                onConfigUpdated={() => {}}
+              />
+            </div>
+          )}
 
           {/* Join or Start */}
           {!hasJoined ? (

@@ -60,7 +60,10 @@ export const ModelName = {
   Player: 'Player',
   Song: 'Song',
   TournamentMatch: 'TournamentMatch',
-  Vote: 'Vote'
+  Vote: 'Vote',
+  GuessConfig: 'GuessConfig',
+  GuessTurn: 'GuessTurn',
+  Guess: 'Guess'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -69,12 +72,12 @@ export type ModelName = (typeof ModelName)[keyof typeof ModelName]
  * Enums
  */
 
-export const TransactionIsolationLevel = {
+export const TransactionIsolationLevel = runtime.makeStrictEnum({
   ReadUncommitted: 'ReadUncommitted',
   ReadCommitted: 'ReadCommitted',
   RepeatableRead: 'RepeatableRead',
   Serializable: 'Serializable'
-} as const
+} as const)
 
 export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel]
 
@@ -140,6 +143,7 @@ export type VerificationScalarFieldEnum = (typeof VerificationScalarFieldEnum)[k
 export const GameSessionScalarFieldEnum = {
   id: 'id',
   ownerId: 'ownerId',
+  gameType: 'gameType',
   status: 'status',
   createdAt: 'createdAt'
 } as const
@@ -215,6 +219,53 @@ export const VoteScalarFieldEnum = {
 } as const
 
 export type VoteScalarFieldEnum = (typeof VoteScalarFieldEnum)[keyof typeof VoteScalarFieldEnum]
+
+
+export const GuessConfigScalarFieldEnum = {
+  id: 'id',
+  sessionId: 'sessionId',
+  maxRounds: 'maxRounds',
+  guessTimeSec: 'guessTimeSec',
+  hostPlays: 'hostPlays'
+} as const
+
+export type GuessConfigScalarFieldEnum = (typeof GuessConfigScalarFieldEnum)[keyof typeof GuessConfigScalarFieldEnum]
+
+
+export const GuessTurnScalarFieldEnum = {
+  id: 'id',
+  sessionId: 'sessionId',
+  roundNumber: 'roundNumber',
+  turnNumber: 'turnNumber',
+  pickerId: 'pickerId',
+  spotifyId: 'spotifyId',
+  songName: 'songName',
+  artistName: 'artistName',
+  imageUrl: 'imageUrl',
+  startTime: 'startTime',
+  status: 'status',
+  guessingStartedAt: 'guessingStartedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type GuessTurnScalarFieldEnum = (typeof GuessTurnScalarFieldEnum)[keyof typeof GuessTurnScalarFieldEnum]
+
+
+export const GuessScalarFieldEnum = {
+  id: 'id',
+  guessTurnId: 'guessTurnId',
+  playerId: 'playerId',
+  spotifyId: 'spotifyId',
+  songName: 'songName',
+  artistName: 'artistName',
+  guessedAt: 'guessedAt',
+  songCorrect: 'songCorrect',
+  artistCorrect: 'artistCorrect',
+  points: 'points',
+  createdAt: 'createdAt'
+} as const
+
+export type GuessScalarFieldEnum = (typeof GuessScalarFieldEnum)[keyof typeof GuessScalarFieldEnum]
 
 
 export const SortOrder = {

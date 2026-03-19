@@ -29,7 +29,10 @@ export async function POST(request: Request) {
     }
 
     // Create the session
-    const gameSession = await createSession(session.user.id);
+    const gameSession = await createSession(
+      session.user.id,
+      validated.gameType,
+    );
 
     return new Response(JSON.stringify(gameSession), {
       status: 201,
