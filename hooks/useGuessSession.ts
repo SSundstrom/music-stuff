@@ -164,6 +164,21 @@ export function useGuessSession({
               : prev.guessState,
           };
 
+        case "guess_game_restarted":
+          return {
+            ...prev,
+            lastTurnResults: [],
+            lastGuessEndsAt: null,
+            guessState: prev.guessState
+              ? {
+                  ...prev.guessState,
+                  status: "lobby" as const,
+                  currentTurn: null,
+                  scores: [],
+                }
+              : prev.guessState,
+          };
+
         default:
           return prev;
       }

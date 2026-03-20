@@ -28,6 +28,7 @@ import {
   GuessSubmittedSchema,
   GuessTurnEndedSchema,
   GuessGameEndedSchema,
+  GuessGameRestartedSchema,
 } from "./guess";
 
 // The combined GameStateSchema that the server sends (has both tournament and guess fields)
@@ -69,6 +70,7 @@ export const SSEMessageSchema = z.discriminatedUnion("type", [
   GuessSubmittedSchema,
   GuessTurnEndedSchema,
   GuessGameEndedSchema,
+  GuessGameRestartedSchema,
 ]);
 
 export type SSEMessage = z.infer<typeof SSEMessageSchema>;

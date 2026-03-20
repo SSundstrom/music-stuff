@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { useParams } from "next/navigation";
+import { useState, useMemo, useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { useGuessSession } from "@/hooks/useGuessSession";
 import GameShell from "@/components/game/GameShell";
@@ -13,6 +13,7 @@ const GuessGameOrchestrator = dynamic(
 
 export default function GuessPage() {
   const params = useParams();
+  const router = useRouter();
   const authSession = useAuthSession();
   const sessionId = params.sessionId as string;
 
@@ -35,6 +36,13 @@ export default function GuessPage() {
   } = useGuessSession({ sessionId, playerId: currentPlayerId });
 
   const isOwner = gameSession?.ownerId === authSession?.user?.id;
+
+  // Redirect back to lobby when game is restarted
+  useEffect(() => {
+    if (guessState?.status === "lobby") {
+      router.push(`/lobby/${sessionId}`);
+    }
+  }, [guessState?.status, sessionId, router]);
 
   // During countdown or guessing phases, provide the current song to the top player
   // so the host can pause/play/restart from the correct position

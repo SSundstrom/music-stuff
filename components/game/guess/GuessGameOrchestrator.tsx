@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import type { GuessState } from "@/types/guess";
 import type { Player } from "@/types/shared";
 import type { TurnResult } from "@/hooks/useGuessSession";
@@ -30,6 +31,7 @@ export default function GuessGameOrchestrator({
   turnResults,
   endsAt,
 }: GuessGameOrchestratorProps) {
+  const router = useRouter();
   const { play } = useSpotifyPlayer();
   const currentTurn = guessState.currentTurn;
   const isCurrentPicker = useMemo(
@@ -68,8 +70,27 @@ export default function GuessGameOrchestrator({
     }
   }, [sessionId]);
 
+  const handlePlayAgain = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/game/${sessionId}/guess/restart`, {
+        method: "POST",
+      });
+      if (res.ok) {
+        router.push(`/lobby/${sessionId}`);
+      }
+    } catch {
+      // silently fail
+    }
+  }, [sessionId, router]);
+
   if (guessState.status === "ended") {
-    return <FinalScoreboard scores={guessState.scores} />;
+    return (
+      <FinalScoreboard
+        scores={guessState.scores}
+        isOwner={isOwner}
+        onPlayAgain={handlePlayAgain}
+      />
+    );
   }
 
   if (!currentTurn) {

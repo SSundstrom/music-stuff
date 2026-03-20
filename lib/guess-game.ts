@@ -370,6 +370,28 @@ export async function getScores(sessionId: string): Promise<PlayerScore[]> {
   }));
 }
 
+export async function restartGuessGame(sessionId: string): Promise<void> {
+  // Delete all guesses for this session's turns
+  const turnIds = await prisma.guessTurn.findMany({
+    where: { sessionId },
+    select: { id: true },
+  });
+
+  if (turnIds.length > 0) {
+    await prisma.guess.deleteMany({
+      where: { guessTurnId: { in: turnIds.map((t) => t.id) } },
+    });
+  }
+
+  // Delete all turns
+  await prisma.guessTurn.deleteMany({ where: { sessionId } });
+
+  sseManager.broadcast(sessionId, {
+    type: "guess_game_restarted",
+    data: {},
+  } satisfies SSEMessage);
+}
+
 export async function getGuessState(sessionId: string): Promise<GuessState> {
   const [config, currentTurn, scores] = await Promise.all([
     prisma.guessConfig.findUnique({ where: { sessionId } }),

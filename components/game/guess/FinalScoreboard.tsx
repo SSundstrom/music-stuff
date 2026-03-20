@@ -4,9 +4,11 @@ import type { PlayerScore } from "@/types/game";
 
 interface FinalScoreboardProps {
   scores: PlayerScore[];
+  isOwner: boolean;
+  onPlayAgain: () => void;
 }
 
-export default function FinalScoreboard({ scores }: FinalScoreboardProps) {
+export default function FinalScoreboard({ scores, isOwner, onPlayAgain }: FinalScoreboardProps) {
   const sortedScores = [...scores].sort(
     (a, b) => b.totalPoints - a.totalPoints,
   );
@@ -55,6 +57,15 @@ export default function FinalScoreboard({ scores }: FinalScoreboardProps) {
           </div>
         ))}
       </div>
+
+      {isOwner && (
+        <button
+          onClick={onPlayAgain}
+          className="mt-6 w-full rounded-lg bg-green-600 px-6 py-3 font-semibold text-white hover:bg-green-700"
+        >
+          Play Again
+        </button>
+      )}
     </div>
   );
 }

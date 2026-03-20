@@ -156,6 +156,11 @@ export const GuessGameEndedSchema = z.object({
   }),
 });
 
+export const GuessGameRestartedSchema = z.object({
+  type: z.literal("guess_game_restarted"),
+  data: z.object({}),
+});
+
 export const GuessGameStateSchema = z.object({
   type: z.literal("game_state"),
   data: z.object({
@@ -173,6 +178,7 @@ export type GuessPhaseStartedMessage = z.infer<typeof GuessPhaseStartedSchema>;
 export type GuessSubmittedMessage = z.infer<typeof GuessSubmittedSchema>;
 export type GuessTurnEndedMessage = z.infer<typeof GuessTurnEndedSchema>;
 export type GuessGameEndedMessage = z.infer<typeof GuessGameEndedSchema>;
+export type GuessGameRestartedMessage = z.infer<typeof GuessGameRestartedSchema>;
 export type GuessGameStateMessage = z.infer<typeof GuessGameStateSchema>;
 
 // Guess SSE union
@@ -186,6 +192,7 @@ export const GuessSSEMessageSchema = z.discriminatedUnion("type", [
   GuessSubmittedSchema,
   GuessTurnEndedSchema,
   GuessGameEndedSchema,
+  GuessGameRestartedSchema,
 ]);
 
 export type GuessSSEMessage = z.infer<typeof GuessSSEMessageSchema>;
