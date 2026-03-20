@@ -47,14 +47,16 @@ export default function LobbyPage() {
   const [joinError, setJoinError] = useState("");
 
   // Auto-redirect to game page when game starts
+  // Owner always redirects (they control the game), others only if they've joined
   useEffect(() => {
-    if (hasJoined && tournament?.status === "category_selection") {
-      router.push(`/game/${sessionId}`);
+    const canRedirect = hasJoined || isOwner;
+    if (canRedirect && tournament?.status === "category_selection") {
+      router.push(`/tournament/${sessionId}`);
     }
-    if (hasJoined && isGuessMode && guessState?.status === "playing") {
-      router.push(`/game/${sessionId}`);
+    if (canRedirect && isGuessMode && guessState?.status === "playing") {
+      router.push(`/guess/${sessionId}`);
     }
-  }, [tournament?.status, hasJoined, sessionId, router, isGuessMode, guessState?.status]);
+  }, [tournament?.status, hasJoined, isOwner, sessionId, router, isGuessMode, guessState?.status]);
 
   const handleJoinGame = async () => {
     if (!playerName.trim()) {
@@ -241,7 +243,7 @@ export default function LobbyPage() {
           </div>
 
           {/* Game config for guess mode */}
-          {isGuessMode && isOwner && hasJoined && (
+          {isGuessMode && isOwner && (
             <div className="mb-6">
               <GuessConfigPanel
                 sessionId={sessionId}
@@ -251,8 +253,44 @@ export default function LobbyPage() {
             </div>
           )}
 
-          {/* Join or Start */}
-          {!hasJoined ? (
+          {/* Owner: optionally join as player + always show start */}
+          {isOwner && (
+            <div className="space-y-3">
+              {!hasJoined && (
+                <div className="rounded-lg border border-gray-200 p-4 space-y-3">
+                  <p className="text-sm text-gray-600">
+                    Want to play too? Enter your name to join as a player.
+                  </p>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Enter your name"
+                      value={playerName}
+                      onChange={(e) => setPlayerName(e.target.value)}
+                      className="flex-1 rounded-lg border border-gray-300 px-4 py-3 focus:border-green-500 focus:outline-none"
+                    />
+                    <button
+                      onClick={handleJoinGame}
+                      disabled={loading}
+                      className="rounded-lg bg-gray-200 px-4 py-3 font-semibold text-black hover:bg-gray-300 disabled:opacity-50"
+                    >
+                      {loading ? "Joining..." : "Join"}
+                    </button>
+                  </div>
+                </div>
+              )}
+              <button
+                onClick={handleStartGame}
+                disabled={loading || players.length < 2}
+                className="w-full rounded-lg bg-green-600 px-4 py-3 font-semibold text-white hover:bg-green-700 disabled:opacity-50"
+              >
+                {loading ? "Starting..." : "Start Game"}
+              </button>
+            </div>
+          )}
+
+          {/* Non-owner: must join to participate */}
+          {!isOwner && !hasJoined && (
             <div className="space-y-3">
               <input
                 type="text"
@@ -269,23 +307,13 @@ export default function LobbyPage() {
                 {loading ? "Joining..." : "Join Game"}
               </button>
             </div>
-          ) : (
-            <>
-              {isOwner && (
-                <button
-                  onClick={handleStartGame}
-                  disabled={loading || players.length < 2}
-                  className="w-full rounded-lg bg-green-600 px-4 py-3 font-semibold text-white hover:bg-green-700 disabled:opacity-50"
-                >
-                  {loading ? "Starting..." : "Start Game"}
-                </button>
-              )}
-              {!isOwner && hasJoined && (
-                <div className="rounded-lg bg-blue-50 p-4 text-blue-700">
-                  Waiting for the owner to start the game...
-                </div>
-              )}
-            </>
+          )}
+
+          {/* Non-owner who has joined: waiting state */}
+          {!isOwner && hasJoined && (
+            <div className="rounded-lg bg-blue-50 p-4 text-blue-700">
+              Waiting for the owner to start the game...
+            </div>
           )}
         </div>
       </div>

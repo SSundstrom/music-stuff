@@ -147,7 +147,6 @@ model GuessConfig {
   sessionId    String      @unique
   maxRounds    Int?
   guessTimeSec Int         @default(30)
-  hostPlays    Boolean     @default(false)
 
   session GameSession @relation(fields: [sessionId], references: [id])
 }

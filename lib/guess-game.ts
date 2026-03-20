@@ -24,14 +24,13 @@ export async function getOrCreateGuessConfig(
       id: uuidv4(),
       sessionId,
       guessTimeSec: 30,
-      hostPlays: false,
     },
   });
 }
 
 export async function updateGuessConfig(
   sessionId: string,
-  updates: { guessTimeSec?: number; maxRounds?: number | null; hostPlays?: boolean },
+  updates: { guessTimeSec?: number; maxRounds?: number | null },
 ): Promise<GuessConfig> {
   const config = await getOrCreateGuessConfig(sessionId);
   return await prisma.guessConfig.update({
@@ -41,28 +40,30 @@ export async function updateGuessConfig(
 }
 
 export async function startGuessGame(sessionId: string): Promise<GuessTurn> {
-  const config = await getOrCreateGuessConfig(sessionId);
   const players = await prisma.player.findMany({
     where: { sessionId },
     orderBy: { joinOrder: "asc" },
   });
 
-  const eligiblePlayers = config.hostPlays
-    ? players
-    : players.filter((p) => !p.isOwner);
-
-  if (eligiblePlayers.length < 2) {
-    throw new Error("Need at least 2 eligible players to start");
+  if (players.length < 2) {
+    throw new Error("Need at least 2 players to start");
   }
 
-  const [firstPicker] = shuffle(eligiblePlayers);
+  // Find the last turn number so we don't collide with previous games on this session
+  const lastTurn = await prisma.guessTurn.findFirst({
+    where: { sessionId },
+    orderBy: { turnNumber: "desc" },
+  });
+  const nextTurnNumber = (lastTurn?.turnNumber ?? 0) + 1;
+
+  const [firstPicker] = shuffle(players);
 
   const turn = await prisma.guessTurn.create({
     data: {
       id: uuidv4(),
       sessionId,
       roundNumber: 1,
-      turnNumber: 1,
+      turnNumber: nextTurnNumber,
       pickerId: firstPicker.id,
       status: "picking",
       createdAt: new Date(),
@@ -75,7 +76,7 @@ export async function startGuessGame(sessionId: string): Promise<GuessTurn> {
       pickerId: firstPicker.id,
       playerName: firstPicker.name,
       roundNumber: 1,
-      turnNumber: 1,
+      turnNumber: nextTurnNumber,
     },
   } satisfies SSEMessage);
 
@@ -85,8 +86,7 @@ export async function startGuessGame(sessionId: string): Promise<GuessTurn> {
 export async function selectNextPicker(
   sessionId: string,
 ): Promise<{ picker: { id: string; name: string }; roundNumber: number; turnNumber: number }> {
-  const [config, players, turns] = await Promise.all([
-    getOrCreateGuessConfig(sessionId),
+  const [players, turns] = await Promise.all([
     prisma.player.findMany({ where: { sessionId }, orderBy: { joinOrder: "asc" } }),
     prisma.guessTurn.findMany({
       where: { sessionId },
@@ -99,10 +99,6 @@ export async function selectNextPicker(
   const currentRound = lastTurn?.roundNumber ?? 1;
   const nextTurnNumber = (lastTurn?.turnNumber ?? 0) + 1;
 
-  const eligiblePlayers = config.hostPlays
-    ? players
-    : players.filter((p) => !p.isOwner);
-
   // Find who has already picked this round
   const pickersThisRound = await prisma.guessTurn.findMany({
     where: { sessionId, roundNumber: currentRound },
@@ -110,13 +106,13 @@ export async function selectNextPicker(
   });
   const pickedIds = new Set(pickersThisRound.map((t) => t.pickerId));
 
-  let remaining = eligiblePlayers.filter((p) => !pickedIds.has(p.id));
+  let remaining = players.filter((p) => !pickedIds.has(p.id));
   let roundNumber = currentRound;
 
   // If everyone has picked, start a new round
   if (remaining.length === 0) {
     roundNumber = currentRound + 1;
-    remaining = eligiblePlayers;
+    remaining = [...players];
   }
 
   const [nextPicker] = shuffle(remaining);
@@ -186,6 +182,13 @@ export async function startGuessingPhase(
     },
   } satisfies SSEMessage);
 
+  // Auto-end guessing phase when timer expires
+  setTimeout(() => {
+    endGuessingPhase(guessTurnId).catch(() => {
+      // Ignore errors — phase may have already ended because all players guessed
+    });
+  }, config.guessTimeSec * 1000);
+
   return { endsAt };
 }
 
@@ -253,9 +256,7 @@ export async function processGuess(
   const allPlayers = await prisma.player.findMany({
     where: { sessionId: turn.sessionId },
   });
-  const eligibleGuessers = config.hostPlays
-    ? allPlayers.filter((p) => p.id !== turn.pickerId)
-    : allPlayers.filter((p) => !p.isOwner && p.id !== turn.pickerId);
+  const eligibleGuessers = allPlayers.filter((p) => p.id !== turn.pickerId);
 
   const guessCount = await prisma.guess.count({ where: { guessTurnId } });
 
@@ -273,10 +274,15 @@ export async function endGuessingPhase(guessTurnId: string): Promise<void> {
   });
   if (!turn) throw new Error("Turn not found");
 
+  // Already moved past guessing — nothing to do
+  if (turn.status !== "guessing") return;
+
   await prisma.guessTurn.update({
     where: { id: guessTurnId },
     data: { status: "scoreboard" },
   });
+
+  const scores = await getScores(turn.sessionId);
 
   sseManager.broadcast(turn.sessionId, {
     type: "guess_turn_ended",
@@ -296,6 +302,7 @@ export async function endGuessingPhase(guessTurnId: string): Promise<void> {
         artistCorrect: g.artistCorrect,
         points: g.points,
       })),
+      scores,
     },
   } satisfies SSEMessage);
 }
@@ -382,13 +389,10 @@ export async function getGuessState(sessionId: string): Promise<GuessState> {
     const allPickedThisRound = await prisma.player
       .findMany({ where: { sessionId } })
       .then(async (players) => {
-        const eligible = config?.hostPlays
-          ? players
-          : players.filter((p) => !p.isOwner);
         const pickedCount = await prisma.guessTurn.count({
           where: { sessionId, roundNumber: currentTurn.roundNumber },
         });
-        return pickedCount >= eligible.length;
+        return pickedCount >= players.length;
       });
 
     if (

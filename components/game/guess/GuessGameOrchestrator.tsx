@@ -1,8 +1,10 @@
 "use client";
 
 import { useMemo, useCallback } from "react";
-import type { GuessState, Player } from "@/types/game";
-import type { TurnResult } from "@/hooks/useGameSession";
+import type { GuessState } from "@/types/guess";
+import type { Player } from "@/types/shared";
+import type { TurnResult } from "@/hooks/useGuessSession";
+import { useSpotifyPlayer } from "@/components/SpotifyPlayerProvider";
 import PickSongPhase from "./PickSongPhase";
 import WaitingForPicker from "./WaitingForPicker";
 import GuessingPhase from "./GuessingPhase";
@@ -28,6 +30,7 @@ export default function GuessGameOrchestrator({
   turnResults,
   endsAt,
 }: GuessGameOrchestratorProps) {
+  const { play } = useSpotifyPlayer();
   const currentTurn = guessState.currentTurn;
   const isCurrentPicker = useMemo(
     () => currentTurn?.pickerId === playerId,
@@ -41,13 +44,19 @@ export default function GuessGameOrchestrator({
 
   const handleStartPlayback = useCallback(async () => {
     try {
+      if (!currentTurn?.spotifyId) return;
+
+      // Start Spotify playback on the host's device
+      await play(currentTurn.spotifyId, currentTurn.startTime * 1000);
+
+      // Then update game state to guessing phase
       await fetch(`/api/game/${sessionId}/guess/start-playback`, {
         method: "POST",
       });
     } catch {
       // silently fail
     }
-  }, [sessionId]);
+  }, [sessionId, currentTurn?.spotifyId, currentTurn?.startTime, play]);
 
   const handleNextTurn = useCallback(async () => {
     try {

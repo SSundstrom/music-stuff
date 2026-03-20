@@ -1560,8 +1560,7 @@ export const GuessConfigScalarFieldEnum = {
   id: 'id',
   sessionId: 'sessionId',
   maxRounds: 'maxRounds',
-  guessTimeSec: 'guessTimeSec',
-  hostPlays: 'hostPlays'
+  guessTimeSec: 'guessTimeSec'
 } as const
 
 export type GuessConfigScalarFieldEnum = (typeof GuessConfigScalarFieldEnum)[keyof typeof GuessConfigScalarFieldEnum]

@@ -18,7 +18,6 @@ export default function GuessConfigPanel({
   const [maxRounds, setMaxRounds] = useState<number | null>(
     config?.maxRounds ?? null,
   );
-  const [hostPlays, setHostPlays] = useState(config?.hostPlays ?? false);
   const [saving, setSaving] = useState(false);
 
   async function handleSave() {
@@ -27,7 +26,7 @@ export default function GuessConfigPanel({
       const response = await fetch(`/api/game/${sessionId}/guess/config`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ guessTimeSec, maxRounds, hostPlays }),
+        body: JSON.stringify({ guessTimeSec, maxRounds }),
       });
       if (!response.ok) throw new Error("Failed to save config");
       onConfigUpdated();
@@ -78,19 +77,6 @@ export default function GuessConfigPanel({
               {maxRounds ? `${maxRounds} round${maxRounds > 1 ? "s" : ""}` : "Unlimited"}
             </span>
           </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            id="hostPlays"
-            checked={hostPlays}
-            onChange={(e) => setHostPlays(e.target.checked)}
-            className="rounded"
-          />
-          <label htmlFor="hostPlays" className="text-sm text-gray-700">
-            Host participates as a player
-          </label>
         </div>
 
         <button
