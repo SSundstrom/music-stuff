@@ -150,6 +150,7 @@ export default function GuessingPhase({
       <SongSearcher
         onSongSelected={handleSongSelected}
         disabled={submitting || timeRemaining === 0}
+        showStartTime={false}
       />
     </div>
   );

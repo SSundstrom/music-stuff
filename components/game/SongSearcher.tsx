@@ -7,17 +7,21 @@ import { SongSelection } from "./types";
 interface SongSearcherProps {
   onSongSelected: (song: SongSelection) => void;
   disabled?: boolean;
+  showStartTime?: boolean;
 }
 
 export default function SongSearcher({
   onSongSelected,
   disabled = false,
+  showStartTime = true,
 }: SongSearcherProps) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SpotifySearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [selectedTimeMap, setSelectedTimeMap] = useState<Record<string, number>>({});
+  const [selectedTimeMap, setSelectedTimeMap] = useState<
+    Record<string, number>
+  >({});
 
   useEffect(() => {
     if (!query || query.length < 2) {
@@ -95,9 +99,7 @@ export default function SongSearcher({
                     <p className="text-base text-gray-700">
                       {song.artists[0]?.name || "Unknown"}
                     </p>
-                    <p className="text-sm text-gray-600">
-                      {songDurationS}s
-                    </p>
+                    <p className="text-sm text-gray-600">{songDurationS}s</p>
                   </div>
                   <button
                     onClick={() => handleSelectSong(song)}
@@ -108,32 +110,36 @@ export default function SongSearcher({
                   </button>
                 </div>
 
-                {song.preview_url && (
-                  <div className="mt-2">
-                    <audio src={song.preview_url} controls className="w-full" />
-                  </div>
-                )}
+                {/* {song.preview_url && ( */}
+                {/*   <div className="mt-2"> */}
+                {/*     <audio src={song.preview_url} controls className="w-full" /> */}
+                {/*   </div> */}
+                {/* )} */}
 
                 {/* Start time selector */}
-                <div className="mt-3 space-y-2">
-                  <label className="text-sm font-semibold text-gray-700">
-                    Start time (seconds)
-                  </label>
-                  <input
-                    type="range"
-                    min="0"
-                    max={songDurationS}
-                    value={currentStartTime}
-                    onChange={(e) => setSelectedTimeMap((prev) => ({
-                      ...prev,
-                      [song.id]: parseInt(e.target.value),
-                    }))}
-                    className="w-full"
-                  />
-                  <p className="text-sm text-gray-600">
-                    Start at {currentStartTime}s
-                  </p>
-                </div>
+                {showStartTime && (
+                  <div className="mt-3 space-y-2">
+                    <label className="text-sm font-semibold text-gray-700">
+                      Start time (seconds)
+                    </label>
+                    <input
+                      type="range"
+                      min="0"
+                      max={songDurationS}
+                      value={currentStartTime}
+                      onChange={(e) =>
+                        setSelectedTimeMap((prev) => ({
+                          ...prev,
+                          [song.id]: parseInt(e.target.value),
+                        }))
+                      }
+                      className="w-full"
+                    />
+                    <p className="text-sm text-gray-600">
+                      Start at {currentStartTime}s
+                    </p>
+                  </div>
+                )}
               </div>
             );
           })}
