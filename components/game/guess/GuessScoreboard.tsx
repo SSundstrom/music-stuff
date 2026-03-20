@@ -149,33 +149,38 @@ export default function GuessScoreboard({
         <div className="rounded-lg bg-white p-6 shadow-lg">
           <h3 className="mb-3 text-lg font-bold text-black">Guesses</h3>
           <div className="space-y-2">
-            {turnResults.map((result) => (
-              <div
-                key={result.playerId}
-                className="flex items-center justify-between rounded-lg bg-gray-50 px-4 py-2"
-              >
-                <div>
-                  <p className="font-semibold text-black">
-                    {result.playerName}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    {result.songName} - {result.artistName}
-                  </p>
+            {turnResults.map((result) => {
+              const isPicker = result.songName === "" && result.artistName === "";
+              return (
+                <div
+                  key={result.playerId}
+                  className="flex items-center justify-between rounded-lg bg-gray-50 px-4 py-2"
+                >
+                  <div>
+                    <p className="font-semibold text-black">
+                      {result.playerName}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      {isPicker
+                        ? "Picker (avg. score)"
+                        : `${result.songName} - ${result.artistName}`}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-bold text-green-600">+{result.points}</p>
+                    {!isPicker && result.songCorrect && (
+                      <p className="text-xs text-green-600">Exact match!</p>
+                    )}
+                    {!isPicker && !result.songCorrect && result.artistCorrect && (
+                      <p className="text-xs text-yellow-600">Right artist</p>
+                    )}
+                    {!isPicker && !result.songCorrect && !result.artistCorrect && (
+                      <p className="text-xs text-gray-400">Wrong</p>
+                    )}
+                  </div>
                 </div>
-                <div className="text-right">
-                  <p className="font-bold text-green-600">+{result.points}</p>
-                  {result.songCorrect && (
-                    <p className="text-xs text-green-600">Exact match!</p>
-                  )}
-                  {!result.songCorrect && result.artistCorrect && (
-                    <p className="text-xs text-yellow-600">Right artist</p>
-                  )}
-                  {!result.songCorrect && !result.artistCorrect && (
-                    <p className="text-xs text-gray-400">Wrong</p>
-                  )}
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}

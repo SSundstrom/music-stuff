@@ -270,12 +270,37 @@ export async function processGuess(
 export async function endGuessingPhase(guessTurnId: string): Promise<void> {
   const turn = await prisma.guessTurn.findUnique({
     where: { id: guessTurnId },
-    include: { guesses: { include: { player: true } } },
+    include: { guesses: { include: { player: true } }, picker: true },
   });
   if (!turn) throw new Error("Turn not found");
 
   // Already moved past guessing — nothing to do
   if (turn.status !== "guessing") return;
+
+  // Award the picker the average score from this turn's guesses
+  const guesserPoints = turn.guesses.map((g) => g.points);
+  const averagePoints =
+    guesserPoints.length > 0
+      ? Math.round(
+          guesserPoints.reduce((sum, p) => sum + p, 0) / guesserPoints.length,
+        )
+      : 0;
+
+  await prisma.guess.create({
+    data: {
+      id: uuidv4(),
+      guessTurnId,
+      playerId: turn.pickerId,
+      spotifyId: "",
+      songName: "",
+      artistName: "",
+      guessedAt: new Date(),
+      songCorrect: false,
+      artistCorrect: false,
+      points: averagePoints,
+      createdAt: new Date(),
+    },
+  });
 
   await prisma.guessTurn.update({
     where: { id: guessTurnId },
@@ -283,6 +308,27 @@ export async function endGuessingPhase(guessTurnId: string): Promise<void> {
   });
 
   const scores = await getScores(turn.sessionId);
+
+  const results = turn.guesses.map((g) => ({
+    playerId: g.playerId,
+    playerName: g.player.name,
+    songName: g.songName,
+    artistName: g.artistName,
+    songCorrect: g.songCorrect,
+    artistCorrect: g.artistCorrect,
+    points: g.points,
+  }));
+
+  // Add the picker's result
+  results.push({
+    playerId: turn.pickerId,
+    playerName: turn.picker.name,
+    songName: "",
+    artistName: "",
+    songCorrect: false,
+    artistCorrect: false,
+    points: averagePoints,
+  });
 
   sseManager.broadcast(turn.sessionId, {
     type: "guess_turn_ended",
@@ -293,15 +339,7 @@ export async function endGuessingPhase(guessTurnId: string): Promise<void> {
         artistName: turn.artistName ?? "",
         imageUrl: turn.imageUrl,
       },
-      results: turn.guesses.map((g) => ({
-        playerId: g.playerId,
-        playerName: g.player.name,
-        songName: g.songName,
-        artistName: g.artistName,
-        songCorrect: g.songCorrect,
-        artistCorrect: g.artistCorrect,
-        points: g.points,
-      })),
+      results,
       scores,
     },
   } satisfies SSEMessage);
