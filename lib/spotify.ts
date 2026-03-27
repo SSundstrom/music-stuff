@@ -119,6 +119,16 @@ export async function getTrackDetails(spotifyId: string, accessToken: string) {
   return response.json();
 }
 
+export async function getTrackIsrc(
+  spotifyId: string,
+): Promise<string | null> {
+  const accessToken = await getSpotifyAccessToken();
+  const details = (await getTrackDetails(spotifyId, accessToken)) as {
+    external_ids?: { isrc?: string };
+  };
+  return details?.external_ids?.isrc ?? null;
+}
+
 export async function startPlayback(
   deviceId: string,
   spotifyId: string,

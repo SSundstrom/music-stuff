@@ -5,8 +5,10 @@ const SPEED_BONUS_MAX = 50;
 interface ScoreInput {
   guessSpotifyId: string;
   guessArtistName: string;
+  guessIsrc: string | null;
   correctSpotifyId: string;
   correctArtistName: string;
+  correctIsrc: string | null;
   guessTimestamp: Date;
   phaseStartTimestamp: Date;
   guessTimeSec: number;
@@ -23,7 +25,11 @@ function normalizeForComparison(str: string): string {
 }
 
 export function calculateScore(input: ScoreInput): ScoreResult {
-  const songCorrect = input.guessSpotifyId === input.correctSpotifyId;
+  const songCorrect =
+    input.guessSpotifyId === input.correctSpotifyId ||
+    (input.guessIsrc !== null &&
+      input.correctIsrc !== null &&
+      input.guessIsrc === input.correctIsrc);
   const artistCorrect =
     songCorrect ||
     normalizeForComparison(input.guessArtistName) ===

@@ -31,6 +31,7 @@ export const GuessTurnSchema = z.object({
   songName: z.string().nullable(),
   artistName: z.string().nullable(),
   imageUrl: z.string().nullable(),
+  isrc: z.string().nullable().optional(),
   startTime: z.number().default(0),
   status: GuessTurnStatusSchema.default("picking"),
   guessingStartedAt: dateTimeSchema.nullable(),

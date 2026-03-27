@@ -168,6 +168,7 @@ model GuessTurn {
   songName         String?
   artistName       String?
   imageUrl         String?
+  isrc             String?
   startTime        Int             @default(0)
   status           GuessTurnStatus @default(picking)
   guessingStartedAt DateTime?

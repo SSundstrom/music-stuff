@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import { shuffle } from "./arrayHelper";
 import { sseManager } from "./sse-manager";
 import { calculateScore } from "./guess-scoring";
+import { getTrackIsrc } from "./spotify";
 import type {
   GuessConfig,
   GuessTurn,
@@ -134,6 +135,13 @@ export async function submitPickedSong(
     imageUrl?: string | null;
   },
 ): Promise<GuessTurn> {
+  let isrc: string | null = null;
+  try {
+    isrc = await getTrackIsrc(songData.spotifyId);
+  } catch {
+    // Fall back to ID-only matching if ISRC lookup fails
+  }
+
   const turn = await prisma.guessTurn.update({
     where: { id: guessTurnId },
     data: {
@@ -142,6 +150,7 @@ export async function submitPickedSong(
       artistName: songData.artistName,
       startTime: songData.startTime,
       imageUrl: songData.imageUrl ?? null,
+      isrc,
       status: "countdown",
     },
   });
@@ -210,12 +219,23 @@ export async function processGuess(
   if (turn.pickerId === playerId) throw new Error("Picker cannot guess");
   if (!turn.spotifyId || !turn.artistName) throw new Error("No song set for this turn");
 
+  let guessIsrc: string | null = null;
+  if (guessData.spotifyId !== turn.spotifyId) {
+    try {
+      guessIsrc = await getTrackIsrc(guessData.spotifyId);
+    } catch {
+      // Fall back to ID-only matching if ISRC lookup fails
+    }
+  }
+
   const now = new Date();
   const scoreResult = calculateScore({
     guessSpotifyId: guessData.spotifyId,
     guessArtistName: guessData.artistName,
+    guessIsrc,
     correctSpotifyId: turn.spotifyId,
     correctArtistName: turn.artistName,
+    correctIsrc: turn.isrc,
     guessTimestamp: now,
     phaseStartTimestamp: turn.guessingStartedAt ?? now,
     guessTimeSec: config.guessTimeSec,
