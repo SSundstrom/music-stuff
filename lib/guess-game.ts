@@ -217,7 +217,7 @@ export async function processGuess(
   if (!turn || !config || !player) throw new Error("Turn, config, or player not found");
   if (turn.status !== "guessing") throw new Error("Not in guessing phase");
   if (turn.pickerId === playerId) throw new Error("Picker cannot guess");
-  if (!turn.spotifyId || !turn.artistName) throw new Error("No song set for this turn");
+  if (!turn.spotifyId || !turn.songName || !turn.artistName) throw new Error("No song set for this turn");
 
   let guessIsrc: string | null = null;
   if (guessData.spotifyId !== turn.spotifyId) {
@@ -231,9 +231,11 @@ export async function processGuess(
   const now = new Date();
   const scoreResult = calculateScore({
     guessSpotifyId: guessData.spotifyId,
+    guessSongName: guessData.songName,
     guessArtistName: guessData.artistName,
     guessIsrc,
     correctSpotifyId: turn.spotifyId,
+    correctSongName: turn.songName,
     correctArtistName: turn.artistName,
     correctIsrc: turn.isrc,
     guessTimestamp: now,
@@ -421,7 +423,7 @@ export async function getScores(sessionId: string): Promise<PlayerScore[]> {
     playerId: player.id,
     playerName: player.name,
     totalPoints: player.guesses.reduce((sum, g) => sum + g.points, 0),
-    correctSongs: player.guesses.filter((g) => g.songCorrect).length,
+    correctSongs: player.guesses.filter((g) => g.songCorrect && g.artistCorrect).length,
     correctArtists: player.guesses.filter(
       (g) => g.artistCorrect && !g.songCorrect,
     ).length,

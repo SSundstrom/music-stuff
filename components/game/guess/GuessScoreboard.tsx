@@ -168,8 +168,11 @@ export default function GuessScoreboard({
                   </div>
                   <div className="text-right">
                     <p className="font-bold text-green-600">+{result.points}</p>
-                    {!isPicker && result.songCorrect && (
+                    {!isPicker && result.songCorrect && result.artistCorrect && (
                       <p className="text-xs text-green-600">Exact match!</p>
+                    )}
+                    {!isPicker && result.songCorrect && !result.artistCorrect && (
+                      <p className="text-xs text-yellow-600">Right song</p>
                     )}
                     {!isPicker && !result.songCorrect && result.artistCorrect && (
                       <p className="text-xs text-yellow-600">Right artist</p>
