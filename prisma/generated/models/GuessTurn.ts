@@ -48,6 +48,7 @@ export type GuessTurnMinAggregateOutputType = {
   songName: string | null
   artistName: string | null
   imageUrl: string | null
+  isrc: string | null
   startTime: number | null
   status: $Enums.GuessTurnStatus | null
   guessingStartedAt: Date | null
@@ -64,6 +65,7 @@ export type GuessTurnMaxAggregateOutputType = {
   songName: string | null
   artistName: string | null
   imageUrl: string | null
+  isrc: string | null
   startTime: number | null
   status: $Enums.GuessTurnStatus | null
   guessingStartedAt: Date | null
@@ -80,6 +82,7 @@ export type GuessTurnCountAggregateOutputType = {
   songName: number
   artistName: number
   imageUrl: number
+  isrc: number
   startTime: number
   status: number
   guessingStartedAt: number
@@ -110,6 +113,7 @@ export type GuessTurnMinAggregateInputType = {
   songName?: true
   artistName?: true
   imageUrl?: true
+  isrc?: true
   startTime?: true
   status?: true
   guessingStartedAt?: true
@@ -126,6 +130,7 @@ export type GuessTurnMaxAggregateInputType = {
   songName?: true
   artistName?: true
   imageUrl?: true
+  isrc?: true
   startTime?: true
   status?: true
   guessingStartedAt?: true
@@ -142,6 +147,7 @@ export type GuessTurnCountAggregateInputType = {
   songName?: true
   artistName?: true
   imageUrl?: true
+  isrc?: true
   startTime?: true
   status?: true
   guessingStartedAt?: true
@@ -245,6 +251,7 @@ export type GuessTurnGroupByOutputType = {
   songName: string | null
   artistName: string | null
   imageUrl: string | null
+  isrc: string | null
   startTime: number
   status: $Enums.GuessTurnStatus
   guessingStartedAt: Date | null
@@ -284,6 +291,7 @@ export type GuessTurnWhereInput = {
   songName?: Prisma.StringNullableFilter<"GuessTurn"> | string | null
   artistName?: Prisma.StringNullableFilter<"GuessTurn"> | string | null
   imageUrl?: Prisma.StringNullableFilter<"GuessTurn"> | string | null
+  isrc?: Prisma.StringNullableFilter<"GuessTurn"> | string | null
   startTime?: Prisma.IntFilter<"GuessTurn"> | number
   status?: Prisma.EnumGuessTurnStatusFilter<"GuessTurn"> | $Enums.GuessTurnStatus
   guessingStartedAt?: Prisma.DateTimeNullableFilter<"GuessTurn"> | Date | string | null
@@ -303,6 +311,7 @@ export type GuessTurnOrderByWithRelationInput = {
   songName?: Prisma.SortOrderInput | Prisma.SortOrder
   artistName?: Prisma.SortOrderInput | Prisma.SortOrder
   imageUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  isrc?: Prisma.SortOrderInput | Prisma.SortOrder
   startTime?: Prisma.SortOrder
   status?: Prisma.SortOrder
   guessingStartedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -326,6 +335,7 @@ export type GuessTurnWhereUniqueInput = Prisma.AtLeast<{
   songName?: Prisma.StringNullableFilter<"GuessTurn"> | string | null
   artistName?: Prisma.StringNullableFilter<"GuessTurn"> | string | null
   imageUrl?: Prisma.StringNullableFilter<"GuessTurn"> | string | null
+  isrc?: Prisma.StringNullableFilter<"GuessTurn"> | string | null
   startTime?: Prisma.IntFilter<"GuessTurn"> | number
   status?: Prisma.EnumGuessTurnStatusFilter<"GuessTurn"> | $Enums.GuessTurnStatus
   guessingStartedAt?: Prisma.DateTimeNullableFilter<"GuessTurn"> | Date | string | null
@@ -345,6 +355,7 @@ export type GuessTurnOrderByWithAggregationInput = {
   songName?: Prisma.SortOrderInput | Prisma.SortOrder
   artistName?: Prisma.SortOrderInput | Prisma.SortOrder
   imageUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  isrc?: Prisma.SortOrderInput | Prisma.SortOrder
   startTime?: Prisma.SortOrder
   status?: Prisma.SortOrder
   guessingStartedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -369,6 +380,7 @@ export type GuessTurnScalarWhereWithAggregatesInput = {
   songName?: Prisma.StringNullableWithAggregatesFilter<"GuessTurn"> | string | null
   artistName?: Prisma.StringNullableWithAggregatesFilter<"GuessTurn"> | string | null
   imageUrl?: Prisma.StringNullableWithAggregatesFilter<"GuessTurn"> | string | null
+  isrc?: Prisma.StringNullableWithAggregatesFilter<"GuessTurn"> | string | null
   startTime?: Prisma.IntWithAggregatesFilter<"GuessTurn"> | number
   status?: Prisma.EnumGuessTurnStatusWithAggregatesFilter<"GuessTurn"> | $Enums.GuessTurnStatus
   guessingStartedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"GuessTurn"> | Date | string | null
@@ -383,6 +395,7 @@ export type GuessTurnCreateInput = {
   songName?: string | null
   artistName?: string | null
   imageUrl?: string | null
+  isrc?: string | null
   startTime?: number
   status?: $Enums.GuessTurnStatus
   guessingStartedAt?: Date | string | null
@@ -402,6 +415,7 @@ export type GuessTurnUncheckedCreateInput = {
   songName?: string | null
   artistName?: string | null
   imageUrl?: string | null
+  isrc?: string | null
   startTime?: number
   status?: $Enums.GuessTurnStatus
   guessingStartedAt?: Date | string | null
@@ -417,6 +431,7 @@ export type GuessTurnUpdateInput = {
   songName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   artistName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isrc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startTime?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumGuessTurnStatusFieldUpdateOperationsInput | $Enums.GuessTurnStatus
   guessingStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -436,6 +451,7 @@ export type GuessTurnUncheckedUpdateInput = {
   songName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   artistName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isrc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startTime?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumGuessTurnStatusFieldUpdateOperationsInput | $Enums.GuessTurnStatus
   guessingStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -453,6 +469,7 @@ export type GuessTurnCreateManyInput = {
   songName?: string | null
   artistName?: string | null
   imageUrl?: string | null
+  isrc?: string | null
   startTime?: number
   status?: $Enums.GuessTurnStatus
   guessingStartedAt?: Date | string | null
@@ -467,6 +484,7 @@ export type GuessTurnUpdateManyMutationInput = {
   songName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   artistName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isrc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startTime?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumGuessTurnStatusFieldUpdateOperationsInput | $Enums.GuessTurnStatus
   guessingStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -483,6 +501,7 @@ export type GuessTurnUncheckedUpdateManyInput = {
   songName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   artistName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isrc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startTime?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumGuessTurnStatusFieldUpdateOperationsInput | $Enums.GuessTurnStatus
   guessingStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -514,6 +533,7 @@ export type GuessTurnCountOrderByAggregateInput = {
   songName?: Prisma.SortOrder
   artistName?: Prisma.SortOrder
   imageUrl?: Prisma.SortOrder
+  isrc?: Prisma.SortOrder
   startTime?: Prisma.SortOrder
   status?: Prisma.SortOrder
   guessingStartedAt?: Prisma.SortOrder
@@ -536,6 +556,7 @@ export type GuessTurnMaxOrderByAggregateInput = {
   songName?: Prisma.SortOrder
   artistName?: Prisma.SortOrder
   imageUrl?: Prisma.SortOrder
+  isrc?: Prisma.SortOrder
   startTime?: Prisma.SortOrder
   status?: Prisma.SortOrder
   guessingStartedAt?: Prisma.SortOrder
@@ -552,6 +573,7 @@ export type GuessTurnMinOrderByAggregateInput = {
   songName?: Prisma.SortOrder
   artistName?: Prisma.SortOrder
   imageUrl?: Prisma.SortOrder
+  isrc?: Prisma.SortOrder
   startTime?: Prisma.SortOrder
   status?: Prisma.SortOrder
   guessingStartedAt?: Prisma.SortOrder
@@ -679,6 +701,7 @@ export type GuessTurnCreateWithoutSessionInput = {
   songName?: string | null
   artistName?: string | null
   imageUrl?: string | null
+  isrc?: string | null
   startTime?: number
   status?: $Enums.GuessTurnStatus
   guessingStartedAt?: Date | string | null
@@ -696,6 +719,7 @@ export type GuessTurnUncheckedCreateWithoutSessionInput = {
   songName?: string | null
   artistName?: string | null
   imageUrl?: string | null
+  isrc?: string | null
   startTime?: number
   status?: $Enums.GuessTurnStatus
   guessingStartedAt?: Date | string | null
@@ -742,6 +766,7 @@ export type GuessTurnScalarWhereInput = {
   songName?: Prisma.StringNullableFilter<"GuessTurn"> | string | null
   artistName?: Prisma.StringNullableFilter<"GuessTurn"> | string | null
   imageUrl?: Prisma.StringNullableFilter<"GuessTurn"> | string | null
+  isrc?: Prisma.StringNullableFilter<"GuessTurn"> | string | null
   startTime?: Prisma.IntFilter<"GuessTurn"> | number
   status?: Prisma.EnumGuessTurnStatusFilter<"GuessTurn"> | $Enums.GuessTurnStatus
   guessingStartedAt?: Prisma.DateTimeNullableFilter<"GuessTurn"> | Date | string | null
@@ -756,6 +781,7 @@ export type GuessTurnCreateWithoutPickerInput = {
   songName?: string | null
   artistName?: string | null
   imageUrl?: string | null
+  isrc?: string | null
   startTime?: number
   status?: $Enums.GuessTurnStatus
   guessingStartedAt?: Date | string | null
@@ -773,6 +799,7 @@ export type GuessTurnUncheckedCreateWithoutPickerInput = {
   songName?: string | null
   artistName?: string | null
   imageUrl?: string | null
+  isrc?: string | null
   startTime?: number
   status?: $Enums.GuessTurnStatus
   guessingStartedAt?: Date | string | null
@@ -814,6 +841,7 @@ export type GuessTurnCreateWithoutGuessesInput = {
   songName?: string | null
   artistName?: string | null
   imageUrl?: string | null
+  isrc?: string | null
   startTime?: number
   status?: $Enums.GuessTurnStatus
   guessingStartedAt?: Date | string | null
@@ -832,6 +860,7 @@ export type GuessTurnUncheckedCreateWithoutGuessesInput = {
   songName?: string | null
   artistName?: string | null
   imageUrl?: string | null
+  isrc?: string | null
   startTime?: number
   status?: $Enums.GuessTurnStatus
   guessingStartedAt?: Date | string | null
@@ -862,6 +891,7 @@ export type GuessTurnUpdateWithoutGuessesInput = {
   songName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   artistName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isrc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startTime?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumGuessTurnStatusFieldUpdateOperationsInput | $Enums.GuessTurnStatus
   guessingStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -880,6 +910,7 @@ export type GuessTurnUncheckedUpdateWithoutGuessesInput = {
   songName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   artistName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isrc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startTime?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumGuessTurnStatusFieldUpdateOperationsInput | $Enums.GuessTurnStatus
   guessingStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -895,6 +926,7 @@ export type GuessTurnCreateManySessionInput = {
   songName?: string | null
   artistName?: string | null
   imageUrl?: string | null
+  isrc?: string | null
   startTime?: number
   status?: $Enums.GuessTurnStatus
   guessingStartedAt?: Date | string | null
@@ -909,6 +941,7 @@ export type GuessTurnUpdateWithoutSessionInput = {
   songName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   artistName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isrc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startTime?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumGuessTurnStatusFieldUpdateOperationsInput | $Enums.GuessTurnStatus
   guessingStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -926,6 +959,7 @@ export type GuessTurnUncheckedUpdateWithoutSessionInput = {
   songName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   artistName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isrc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startTime?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumGuessTurnStatusFieldUpdateOperationsInput | $Enums.GuessTurnStatus
   guessingStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -942,6 +976,7 @@ export type GuessTurnUncheckedUpdateManyWithoutSessionInput = {
   songName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   artistName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isrc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startTime?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumGuessTurnStatusFieldUpdateOperationsInput | $Enums.GuessTurnStatus
   guessingStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -957,6 +992,7 @@ export type GuessTurnCreateManyPickerInput = {
   songName?: string | null
   artistName?: string | null
   imageUrl?: string | null
+  isrc?: string | null
   startTime?: number
   status?: $Enums.GuessTurnStatus
   guessingStartedAt?: Date | string | null
@@ -971,6 +1007,7 @@ export type GuessTurnUpdateWithoutPickerInput = {
   songName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   artistName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isrc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startTime?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumGuessTurnStatusFieldUpdateOperationsInput | $Enums.GuessTurnStatus
   guessingStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -988,6 +1025,7 @@ export type GuessTurnUncheckedUpdateWithoutPickerInput = {
   songName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   artistName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isrc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startTime?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumGuessTurnStatusFieldUpdateOperationsInput | $Enums.GuessTurnStatus
   guessingStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1004,6 +1042,7 @@ export type GuessTurnUncheckedUpdateManyWithoutPickerInput = {
   songName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   artistName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isrc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startTime?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumGuessTurnStatusFieldUpdateOperationsInput | $Enums.GuessTurnStatus
   guessingStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1051,6 +1090,7 @@ export type GuessTurnSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
   songName?: boolean
   artistName?: boolean
   imageUrl?: boolean
+  isrc?: boolean
   startTime?: boolean
   status?: boolean
   guessingStartedAt?: boolean
@@ -1071,6 +1111,7 @@ export type GuessTurnSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ext
   songName?: boolean
   artistName?: boolean
   imageUrl?: boolean
+  isrc?: boolean
   startTime?: boolean
   status?: boolean
   guessingStartedAt?: boolean
@@ -1089,6 +1130,7 @@ export type GuessTurnSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ext
   songName?: boolean
   artistName?: boolean
   imageUrl?: boolean
+  isrc?: boolean
   startTime?: boolean
   status?: boolean
   guessingStartedAt?: boolean
@@ -1107,13 +1149,14 @@ export type GuessTurnSelectScalar = {
   songName?: boolean
   artistName?: boolean
   imageUrl?: boolean
+  isrc?: boolean
   startTime?: boolean
   status?: boolean
   guessingStartedAt?: boolean
   createdAt?: boolean
 }
 
-export type GuessTurnOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "sessionId" | "roundNumber" | "turnNumber" | "pickerId" | "spotifyId" | "songName" | "artistName" | "imageUrl" | "startTime" | "status" | "guessingStartedAt" | "createdAt", ExtArgs["result"]["guessTurn"]>
+export type GuessTurnOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "sessionId" | "roundNumber" | "turnNumber" | "pickerId" | "spotifyId" | "songName" | "artistName" | "imageUrl" | "isrc" | "startTime" | "status" | "guessingStartedAt" | "createdAt", ExtArgs["result"]["guessTurn"]>
 export type GuessTurnInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   session?: boolean | Prisma.GameSessionDefaultArgs<ExtArgs>
   picker?: boolean | Prisma.PlayerDefaultArgs<ExtArgs>
@@ -1146,6 +1189,7 @@ export type $GuessTurnPayload<ExtArgs extends runtime.Types.Extensions.InternalA
     songName: string | null
     artistName: string | null
     imageUrl: string | null
+    isrc: string | null
     startTime: number
     status: $Enums.GuessTurnStatus
     guessingStartedAt: Date | null
@@ -1585,6 +1629,7 @@ export interface GuessTurnFieldRefs {
   readonly songName: Prisma.FieldRef<"GuessTurn", 'String'>
   readonly artistName: Prisma.FieldRef<"GuessTurn", 'String'>
   readonly imageUrl: Prisma.FieldRef<"GuessTurn", 'String'>
+  readonly isrc: Prisma.FieldRef<"GuessTurn", 'String'>
   readonly startTime: Prisma.FieldRef<"GuessTurn", 'Int'>
   readonly status: Prisma.FieldRef<"GuessTurn", 'GuessTurnStatus'>
   readonly guessingStartedAt: Prisma.FieldRef<"GuessTurn", 'DateTime'>

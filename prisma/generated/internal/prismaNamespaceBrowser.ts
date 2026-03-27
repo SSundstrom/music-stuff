@@ -241,6 +241,7 @@ export const GuessTurnScalarFieldEnum = {
   songName: 'songName',
   artistName: 'artistName',
   imageUrl: 'imageUrl',
+  isrc: 'isrc',
   startTime: 'startTime',
   status: 'status',
   guessingStartedAt: 'guessingStartedAt',
