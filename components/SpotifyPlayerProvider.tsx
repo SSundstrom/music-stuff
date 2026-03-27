@@ -6,9 +6,17 @@ import {
   useEffect,
   useRef,
   useState,
+  useCallback,
   ReactNode,
 } from "react";
 import { useAuthSession } from "@/hooks/useAuthSession";
+
+export interface SpotifyDevice {
+  id: string;
+  name: string;
+  type: string;
+  isActive: boolean;
+}
 
 interface PlayerState {
   deviceId: string | null;
@@ -32,6 +40,10 @@ interface SpotifyPlayerContextType {
   seek: (positionMs: number) => Promise<void>;
   setVolume: (volume: number) => Promise<void>;
   error: string | null;
+  devices: SpotifyDevice[];
+  selectedDevice: SpotifyDevice | null;
+  selectDevice: (device: SpotifyDevice | null) => void;
+  refreshDevices: () => Promise<void>;
 }
 
 const SpotifyPlayerContext = createContext<
@@ -49,6 +61,7 @@ export function useSpotifyPlayer() {
 }
 
 const PLACEHOLDER_TRACK_ID = "placeholder-sims-2-theme";
+export const WEB_PLAYER_NAME = "Spotify Tournament";
 
 export default function SpotifyPlayerProvider({
   children,
@@ -77,6 +90,38 @@ export default function SpotifyPlayerProvider({
     duration: 59000,
   });
   const [error, setError] = useState<string | null>(null);
+  const [devices, setDevices] = useState<SpotifyDevice[]>([]);
+  const [selectedDevice, setSelectedDevice] = useState<SpotifyDevice | null>(
+    null,
+  );
+
+  // Whether we're using an external device (not the Web SDK)
+  const isRemoteDevice = selectedDevice !== null;
+
+  // Effective device ID for API calls
+  const activeDeviceId = selectedDevice?.id ?? state.deviceId;
+
+  // The player is ready if Web SDK is ready OR an external device is selected
+  const isReady = state.isReady || isRemoteDevice;
+
+  const refreshDevices = useCallback(async () => {
+    try {
+      const res = await fetch("/api/spotify/devices");
+      if (!res.ok) return;
+      const data = (await res.json()) as { devices: SpotifyDevice[] };
+      // Filter out the Web SDK device to avoid duplication (shown as "This Browser")
+      const externalDevices = data.devices.filter(
+        (d) => d.id !== state.deviceId && d.name !== WEB_PLAYER_NAME,
+      );
+      setDevices(externalDevices);
+    } catch {
+      // silently fail
+    }
+  }, [state.deviceId]);
+
+  const selectDevice = useCallback((device: SpotifyDevice | null) => {
+    setSelectedDevice(device);
+  }, []);
 
   useEffect(() => {
     if (!session?.user) {
@@ -216,7 +261,7 @@ export default function SpotifyPlayerProvider({
 
       try {
         const player = new window.Spotify.Player({
-          name: "Spotify Tournament",
+          name: WEB_PLAYER_NAME,
           getOAuthToken,
           volume: 0.5,
         });
@@ -334,7 +379,7 @@ export default function SpotifyPlayerProvider({
       });
     };
 
-    if (state.isReady && !state.isPaused && state.currentTrack) {
+    if (isReady && !state.isPaused && state.currentTrack) {
       lastTimestampRef.current = Date.now();
       intervalId = setInterval(updatePosition, 100);
     }
@@ -344,11 +389,11 @@ export default function SpotifyPlayerProvider({
         clearInterval(intervalId);
       }
     };
-  }, [state.isReady, state.isPaused, state.currentTrack]);
+  }, [isReady, state.isPaused, state.currentTrack]);
 
   const play = async (spotifyId: string, positionMs?: number) => {
-    if (!playerRef.current || !state.deviceId) {
-      setError("Player not ready");
+    if (!activeDeviceId) {
+      setError("No device available. Select a device or wait for the browser player to connect.");
       return;
     }
 
@@ -358,13 +403,24 @@ export default function SpotifyPlayerProvider({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           spotifyId,
-          deviceId: state.deviceId,
+          deviceId: activeDeviceId,
           positionMs,
         }),
       });
 
       if (!response.ok) {
         throw new Error("Failed to start playback");
+      }
+
+      // For remote devices, manually update state since Web SDK events won't fire
+      if (isRemoteDevice) {
+        lastPositionRef.current = positionMs ?? 0;
+        lastTimestampRef.current = Date.now();
+        setState((prev) => ({
+          ...prev,
+          isPaused: false,
+          position: positionMs ?? 0,
+        }));
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Playback failed");
@@ -373,36 +429,74 @@ export default function SpotifyPlayerProvider({
   };
 
   const pause = async () => {
-    if (!playerRef.current) return;
-    try {
-      await playerRef.current.pause();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Pause failed");
+    if (isRemoteDevice) {
+      try {
+        const response = await fetch("/api/playback/pause", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ deviceId: activeDeviceId }),
+        });
+        if (!response.ok) throw new Error("Failed to pause playback");
+        setState((prev) => ({ ...prev, isPaused: true }));
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Pause failed");
+      }
+    } else if (playerRef.current) {
+      try {
+        await playerRef.current.pause();
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Pause failed");
+      }
     }
   };
 
   const resume = async () => {
-    if (!playerRef.current) return;
-    try {
-      await playerRef.current.resume();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Resume failed");
+    if (isRemoteDevice) {
+      try {
+        const response = await fetch("/api/playback/resume", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ deviceId: activeDeviceId }),
+        });
+        if (!response.ok) throw new Error("Failed to resume playback");
+        lastTimestampRef.current = Date.now();
+        setState((prev) => ({ ...prev, isPaused: false }));
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Resume failed");
+      }
+    } else if (playerRef.current) {
+      try {
+        await playerRef.current.resume();
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Resume failed");
+      }
     }
   };
 
   const seek = async (positionMs: number) => {
-    if (!playerRef.current) return;
-    try {
-      await playerRef.current.seek(positionMs);
-      // Update position tracking refs after seeking
-      lastPositionRef.current = positionMs;
-      lastTimestampRef.current = Date.now();
-      setState((prev) => ({
-        ...prev,
-        position: positionMs,
-      }));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Seek failed");
+    if (isRemoteDevice) {
+      try {
+        const response = await fetch("/api/playback/seek", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ deviceId: activeDeviceId, positionMs }),
+        });
+        if (!response.ok) throw new Error("Failed to seek");
+        lastPositionRef.current = positionMs;
+        lastTimestampRef.current = Date.now();
+        setState((prev) => ({ ...prev, position: positionMs }));
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Seek failed");
+      }
+    } else if (playerRef.current) {
+      try {
+        await playerRef.current.seek(positionMs);
+        lastPositionRef.current = positionMs;
+        lastTimestampRef.current = Date.now();
+        setState((prev) => ({ ...prev, position: positionMs }));
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Seek failed");
+      }
     }
   };
 
@@ -418,13 +512,17 @@ export default function SpotifyPlayerProvider({
   return (
     <SpotifyPlayerContext.Provider
       value={{
-        state,
+        state: { ...state, isReady },
         play,
         pause,
         resume,
         seek,
         setVolume,
         error,
+        devices,
+        selectedDevice,
+        selectDevice,
+        refreshDevices,
       }}
     >
       {children}

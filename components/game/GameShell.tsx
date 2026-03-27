@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import { MdSettings, MdQrCode2 } from "react-icons/md";
 import type { Player } from "@/types/shared";
 import SpotifyPlayer from "@/components/SpotifyPlayer";
-import PlayersModal from "@/components/game/PlayersModal";
+import SettingsModal from "@/components/game/SettingsModal";
 import QRCodeModal from "@/components/game/QRCodeModal";
 
 interface GameShellProps {
@@ -34,7 +34,7 @@ export default function GameShell({
   children,
   activeTrack,
 }: GameShellProps) {
-  const [showPlayersModal, setShowPlayersModal] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showQRModal, setShowQRModal] = useState(false);
   const optionsButtonRef = useRef<HTMLButtonElement>(null);
   const qrButtonRef = useRef<HTMLButtonElement>(null);
@@ -86,7 +86,7 @@ export default function GameShell({
             </button>
             <button
               ref={optionsButtonRef}
-              onClick={() => setShowPlayersModal(true)}
+              onClick={() => setShowSettingsModal(true)}
               className="text-gray-600 hover:text-gray-900 transition-colors p-2 ml-2"
               aria-label="Options"
             >
@@ -102,9 +102,9 @@ export default function GameShell({
           buttonRef={qrButtonRef}
         />
 
-        <PlayersModal
-          isOpen={showPlayersModal}
-          onClose={() => setShowPlayersModal(false)}
+        <SettingsModal
+          isOpen={showSettingsModal}
+          onClose={() => setShowSettingsModal(false)}
           players={players}
           isOwner={isOwner}
           sessionId={sessionId}

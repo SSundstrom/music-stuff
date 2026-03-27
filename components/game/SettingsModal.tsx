@@ -2,9 +2,24 @@
 
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
+import { MdSpeaker, MdComputer, MdSmartphone, MdDevices, MdCheck } from "react-icons/md";
 import type { Player } from "@/types/game";
+import { useSpotifyPlayer } from "@/components/SpotifyPlayerProvider";
 
-interface PlayersModalProps {
+function DeviceIcon({ type }: { type: string }) {
+  switch (type.toLowerCase()) {
+    case "speaker":
+      return <MdSpeaker className="w-5 h-5" />;
+    case "smartphone":
+      return <MdSmartphone className="w-5 h-5" />;
+    case "computer":
+      return <MdComputer className="w-5 h-5" />;
+    default:
+      return <MdDevices className="w-5 h-5" />;
+  }
+}
+
+interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
   players: Player[];
@@ -14,7 +29,7 @@ interface PlayersModalProps {
   buttonRef?: React.RefObject<HTMLButtonElement | null>;
 }
 
-export default function PlayersModal({
+export default function SettingsModal({
   isOpen,
   onClose,
   players,
@@ -22,11 +37,14 @@ export default function PlayersModal({
   sessionId,
   currentPlayerId,
   buttonRef,
-}: PlayersModalProps) {
+}: SettingsModalProps) {
   const [expandMenu, setExpandMenu] = useState<string | null>(null);
   const [loadingKick, setLoadingKick] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [position, setPosition] = useState({ top: 0, right: 0 });
+  const [devicesLoading, setDevicesLoading] = useState(false);
+  const { devices, selectedDevice, selectDevice, refreshDevices } =
+    useSpotifyPlayer();
 
   useEffect(() => {
     if (!isOpen || !buttonRef?.current) return;
@@ -36,7 +54,11 @@ export default function PlayersModal({
       top: rect.bottom + 8, // 8px below the button
       right: window.innerWidth - rect.right, // align with right edge
     });
-  }, [isOpen, buttonRef]);
+
+    // Fetch devices when modal opens
+    setDevicesLoading(true);
+    refreshDevices().finally(() => setDevicesLoading(false));
+  }, [isOpen, buttonRef, refreshDevices]);
 
   const handleKickPlayer = async (playerId: string, playerName: string) => {
     if (
@@ -85,7 +107,7 @@ export default function PlayersModal({
       >
         {/* Header */}
         <div className="flex items-center justify-between border-b border-gray-200 p-4">
-          <h2 className="text-lg font-bold text-black">Players</h2>
+          <h2 className="text-lg font-bold text-black">Settings</h2>
           <button
             onClick={onClose}
             className="text-2xl text-gray-500 hover:text-gray-700"
@@ -151,6 +173,77 @@ export default function PlayersModal({
           {players.length === 0 && (
             <p className="text-center text-gray-500">No players yet</p>
           )}
+
+          {/* Device Selection */}
+          <div className="mt-6 border-t border-gray-200 pt-4">
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-gray-900">
+                Playback Device
+              </h3>
+              <button
+                onClick={async () => {
+                  setDevicesLoading(true);
+                  await refreshDevices();
+                  setDevicesLoading(false);
+                }}
+                className="text-xs text-green-600 hover:text-green-800"
+              >
+                Refresh
+              </button>
+            </div>
+
+            {/* This Browser */}
+            <button
+              onClick={() => selectDevice(null)}
+              className={`w-full flex items-center gap-3 rounded-lg p-3 text-left transition-colors ${
+                selectedDevice === null
+                  ? "bg-green-50 ring-1 ring-green-500"
+                  : "bg-gray-50 hover:bg-gray-100"
+              }`}
+            >
+              <MdComputer className="w-5 h-5 text-gray-600 shrink-0" />
+              <span className="flex-1 text-sm font-medium text-gray-900">
+                This Browser
+              </span>
+              {selectedDevice === null && (
+                <MdCheck className="w-5 h-5 text-green-600 shrink-0" />
+              )}
+            </button>
+
+            {/* External devices */}
+            {devicesLoading ? (
+              <p className="mt-2 text-center text-sm text-gray-400">
+                Loading devices...
+              </p>
+            ) : (
+              <div className="mt-1 space-y-1">
+                {devices.map((device) => (
+                  <button
+                    key={device.id}
+                    onClick={() => selectDevice(device)}
+                    className={`w-full flex items-center gap-3 rounded-lg p-3 text-left transition-colors ${
+                      selectedDevice?.id === device.id
+                        ? "bg-green-50 ring-1 ring-green-500"
+                        : "bg-gray-50 hover:bg-gray-100"
+                    }`}
+                  >
+                    <DeviceIcon type={device.type} />
+                    <span className="flex-1 text-sm font-medium text-gray-900">
+                      {device.name}
+                    </span>
+                    {selectedDevice?.id === device.id && (
+                      <MdCheck className="w-5 h-5 text-green-600 shrink-0" />
+                    )}
+                  </button>
+                ))}
+                {devices.length === 0 && (
+                  <p className="text-center text-sm text-gray-400 py-2">
+                    No other devices found
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </>,

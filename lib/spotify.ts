@@ -188,6 +188,43 @@ export async function getCurrentPlayback(accessToken: string) {
   return response.json();
 }
 
+export async function seekPlayback(
+  deviceId: string,
+  positionMs: number,
+  accessToken: string,
+) {
+  const response = await fetch(
+    `https://api.spotify.com/v1/me/player/seek?position_ms=${positionMs}&device_id=${deviceId}`,
+    {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error(`Failed to seek playback: ${response.statusText}`);
+  }
+}
+
+export async function resumePlayback(deviceId: string, accessToken: string) {
+  const response = await fetch(
+    `https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`,
+    {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error(`Failed to resume playback: ${response.statusText}`);
+  }
+}
+
 export async function getAvailableDevices(accessToken: string) {
   const response = await fetch("https://api.spotify.com/v1/me/player/devices", {
     headers: {
@@ -200,7 +237,17 @@ export async function getAvailableDevices(accessToken: string) {
   }
 
   const data = (await response.json()) as {
-    devices: Array<{ id: string; name: string }>;
+    devices: Array<{
+      id: string;
+      name: string;
+      type: string;
+      is_active: boolean;
+    }>;
   };
-  return data.devices;
+  return data.devices.map((d) => ({
+    id: d.id,
+    name: d.name,
+    type: d.type,
+    isActive: d.is_active,
+  }));
 }
