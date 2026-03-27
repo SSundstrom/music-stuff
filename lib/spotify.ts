@@ -9,11 +9,11 @@ async function getSpotifyAccessToken(
 ): Promise<string> {
   // For owner, use OAuth token from database with expiration validation
   if (isOwner && userId) {
-    const token = await getSpotifyAccessTokenFromAuth(userId);
-    if (!token) {
+    const result = await getSpotifyAccessTokenFromAuth(userId);
+    if (!result) {
       throw new Error("Not authenticated with Spotify");
     }
-    return token;
+    return result.accessToken;
   }
 
   // For server-side operations, use Client Credentials flow

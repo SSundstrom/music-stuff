@@ -24,7 +24,7 @@ export const auth = betterAuth({
     },
   },
   session: {
-    expiresIn: 3600,
+    expiresIn: 86400,
   },
 });
 
@@ -32,7 +32,7 @@ const providerId = "spotify";
 
 export async function getSpotifyAccessToken(
   userId: string,
-): Promise<string | null> {
+): Promise<{ accessToken: string; expiresAt: number } | null> {
   const account = await prisma.account.findUnique({
     where: { userId, providerId },
   });
@@ -61,14 +61,14 @@ export async function getSpotifyAccessToken(
     }
 
     try {
-      const refreshedToken = await refreshSpotifyToken(
+      const refreshed = await refreshSpotifyToken(
         userId,
         account.refreshToken,
       );
       console.log(
-        `[auth] Successfully refreshed token for user ${userId}, new token length: ${refreshedToken.length}`,
+        `[auth] Successfully refreshed token for user ${userId}, new token length: ${refreshed.accessToken.length}`,
       );
-      return refreshedToken;
+      return refreshed;
     } catch (error) {
       console.error(
         `[auth] Failed to refresh token for user ${userId}:`,
@@ -79,13 +79,15 @@ export async function getSpotifyAccessToken(
   }
 
   console.log(`[auth] Token still valid for user ${userId}`);
-  return account.accessToken ?? null;
+  return account.accessToken
+    ? { accessToken: account.accessToken, expiresAt: expiresAtMs }
+    : null;
 }
 
 async function refreshSpotifyToken(
   userId: string,
   refreshToken: string,
-): Promise<string> {
+): Promise<{ accessToken: string; expiresAt: number }> {
   const clientId = process.env.SPOTIFY_CLIENT_ID as string;
   const clientSecret = process.env.SPOTIFY_CLIENT_SECRET as string;
 
@@ -160,5 +162,5 @@ async function refreshSpotifyToken(
   }
 
   console.log(`[auth] Token updated in database for user ${userId}`);
-  return data.access_token;
+  return { accessToken: data.access_token, expiresAt: expiresAtMs };
 }

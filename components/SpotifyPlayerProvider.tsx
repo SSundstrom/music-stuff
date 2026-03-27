@@ -86,6 +86,62 @@ export default function SpotifyPlayerProvider({
     let mounted = true;
     let timeoutId: NodeJS.Timeout | null = null;
 
+    // Schedule token refresh based on actual expiry time
+    const scheduleTokenRefresh = () => {
+      if (tokenRefreshIntervalRef.current) {
+        clearTimeout(tokenRefreshIntervalRef.current);
+      }
+
+      const cache = tokenCacheRef.current;
+      if (!cache) return;
+
+      // Refresh 2 minutes before the client-side cache expires, minimum 30s
+      const refreshIn = Math.max(
+        cache.expiresAt - Date.now() - 120_000,
+        30_000,
+      );
+      console.log(
+        `[SpotifyPlayer] Next token refresh scheduled in ${Math.round(refreshIn / 1000)}s`,
+      );
+
+      tokenRefreshIntervalRef.current = setTimeout(async () => {
+        console.log("[SpotifyPlayer] Scheduled token refresh...");
+        try {
+          const res = await fetch("/api/spotify/token");
+          if (res.ok) {
+            const data = (await res.json()) as {
+              accessToken: string;
+              expiresAt: number;
+            };
+            if (data.accessToken) {
+              tokenCacheRef.current = {
+                token: data.accessToken,
+                expiresAt: data.expiresAt - 30_000,
+              };
+              console.log(
+                `[SpotifyPlayer] Token refresh successful, expires in ${Math.round((data.expiresAt - Date.now()) / 1000)}s`,
+              );
+              scheduleTokenRefresh();
+            }
+          } else {
+            console.error(
+              `[SpotifyPlayer] Token refresh failed: ${res.status}`,
+            );
+            tokenRefreshIntervalRef.current = setTimeout(
+              scheduleTokenRefresh,
+              30_000,
+            );
+          }
+        } catch (err) {
+          console.error("[SpotifyPlayer] Token refresh error:", err);
+          tokenRefreshIntervalRef.current = setTimeout(
+            scheduleTokenRefresh,
+            30_000,
+          );
+        }
+      }, refreshIn);
+    };
+
     const getOAuthToken = async (callback: (token: string) => void) => {
       try {
         // Check if we have a cached token that's still valid
@@ -112,21 +168,25 @@ export default function SpotifyPlayerProvider({
           );
         }
 
-        const data = (await res.json()) as { accessToken: string };
+        const data = (await res.json()) as {
+          accessToken: string;
+          expiresAt: number;
+        };
         if (!data.accessToken) {
           throw new Error("No access token in response");
         }
 
         console.log(
-          `[SpotifyPlayer] Got new token from server, length: ${data.accessToken.length}`,
+          `[SpotifyPlayer] Got new token from server, length: ${data.accessToken.length}, expires in ${Math.round((data.expiresAt - now) / 1000)}s`,
         );
 
-        // Cache the token with an expiration time (typically 3600s, we'll use 3000s as buffer)
+        // Cache the token using server-provided expiry with 30s extra client buffer
         tokenCacheRef.current = {
           token: data.accessToken,
-          expiresAt: now + 3000 * 1000, // Conservative 3000 second expiration
+          expiresAt: data.expiresAt - 30_000,
         };
 
+        scheduleTokenRefresh();
         callback(data.accessToken);
       } catch (err) {
         console.error(
@@ -206,6 +266,10 @@ export default function SpotifyPlayerProvider({
         });
 
         player.addListener("authentication_error", ({ message }) => {
+          console.log(
+            "[SpotifyPlayer] Authentication error, clearing token cache",
+          );
+          tokenCacheRef.current = null;
           if (mounted) {
             setError(message);
           }
@@ -230,44 +294,13 @@ export default function SpotifyPlayerProvider({
 
     initializePlayer();
 
-    // Set up background token refresh every 2500 seconds (about 42 minutes)
-    // This ensures we always have a fresh token without relying on SDK callbacks
-    tokenRefreshIntervalRef.current = setInterval(async () => {
-      console.log("[SpotifyPlayer] Background token refresh check...");
-      try {
-        const res = await fetch("/api/spotify/token");
-        if (res.ok) {
-          const data = (await res.json()) as { accessToken: string };
-          if (data.accessToken) {
-            const now = Date.now();
-            tokenCacheRef.current = {
-              token: data.accessToken,
-              expiresAt: now + 3000 * 1000,
-            };
-            console.log(
-              `[SpotifyPlayer] Background token refresh successful, new token length: ${data.accessToken.length}`,
-            );
-          }
-        } else {
-          console.error(
-            `[SpotifyPlayer] Background token refresh failed: ${res.status}`,
-          );
-        }
-      } catch (err) {
-        console.error(
-          "[SpotifyPlayer] Failed to refresh Spotify token in background:",
-          err,
-        );
-      }
-    }, 2500 * 1000); // Refresh every 2500 seconds
-
     return () => {
       mounted = false;
       if (timeoutId) {
         clearTimeout(timeoutId);
       }
       if (tokenRefreshIntervalRef.current) {
-        clearInterval(tokenRefreshIntervalRef.current);
+        clearTimeout(tokenRefreshIntervalRef.current);
         tokenRefreshIntervalRef.current = null;
       }
       if (playerRef.current) {
