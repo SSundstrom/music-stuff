@@ -14,7 +14,7 @@ import FinalScoreboard from "./FinalScoreboard";
 
 interface GuessGameOrchestratorProps {
   sessionId: string;
-  playerId: string;
+  playerId: string | null;
   players: Player[];
   guessState: GuessState;
   isOwner: boolean;
@@ -103,7 +103,7 @@ export default function GuessGameOrchestrator({
 
   // Picking phase
   if (currentTurn.status === "picking") {
-    if (isCurrentPicker) {
+    if (isCurrentPicker && playerId) {
       return <PickSongPhase sessionId={sessionId} playerId={playerId} />;
     }
     return <WaitingForPicker picker={picker} />;
@@ -133,6 +133,14 @@ export default function GuessGameOrchestrator({
 
   // Guessing phase
   if (currentTurn.status === "guessing") {
+    if (!playerId) {
+      return (
+        <div className="rounded-lg bg-white p-8 shadow-lg text-center">
+          <h2 className="mb-2 text-2xl font-bold text-black">Guessing in progress...</h2>
+          <p className="text-gray-600">Players are guessing the song</p>
+        </div>
+      );
+    }
     return (
       <GuessingPhase
         sessionId={sessionId}

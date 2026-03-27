@@ -67,7 +67,7 @@ export default function GuessPage() {
       error={error}
       activeTrack={activeTrack}
     >
-      {guessState && currentPlayerId && (
+      {guessState && (currentPlayerId || isOwner) && (
         <GuessGameOrchestrator
           sessionId={sessionId}
           playerId={currentPlayerId}
