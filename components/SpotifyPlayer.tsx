@@ -5,15 +5,34 @@ import { useSpotifyPlayer } from "./SpotifyPlayerProvider";
 const PLACEHOLDER_TRACK_ID = "placeholder-sims-2-theme";
 const SIMS_THEME_SPOTIFY_ID = "30xHm3p2stFpmHyq0Rfm9x";
 
-export default function SpotifyPlayer() {
+interface SpotifyPlayerProps {
+  /** When set, the play button will restart this track from the given position instead of resuming */
+  activeTrack?: {
+    spotifyId: string;
+    startTimeMs: number;
+  };
+}
+
+export default function SpotifyPlayer({ activeTrack }: SpotifyPlayerProps) {
   const { state, pause, resume, seek, play } = useSpotifyPlayer();
 
-  if (!state.currentTrack) {
+  if (!state.currentTrack && !activeTrack) {
     return null;
   }
 
   const progressPercent =
     state.duration > 0 ? (state.position / state.duration) * 100 : 0;
+
+  const handlePlay = () => {
+    if (activeTrack) {
+      // In guess mode: always restart from the configured start time
+      play(activeTrack.spotifyId, activeTrack.startTimeMs);
+    } else if (state.currentTrack?.id === PLACEHOLDER_TRACK_ID) {
+      play(SIMS_THEME_SPOTIFY_ID);
+    } else {
+      resume();
+    }
+  };
 
   return (
     <div className="flex items-center gap-4">
@@ -38,11 +57,7 @@ export default function SpotifyPlayer() {
       <button
         onClick={() => {
           if (state.isPaused) {
-            if (state.currentTrack?.id === PLACEHOLDER_TRACK_ID) {
-              play(SIMS_THEME_SPOTIFY_ID);
-            } else {
-              resume();
-            }
+            handlePlay();
           } else {
             pause();
           }

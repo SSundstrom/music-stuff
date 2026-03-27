@@ -80,12 +80,12 @@ export type PrismaVersion = {
 }
 
 /**
- * Prisma Client JS version: 7.2.0
- * Query Engine version: 0c8ef2ce45c83248ab3df073180d5eda9e8be7a3
+ * Prisma Client JS version: 7.5.0
+ * Query Engine version: 280c870be64f457428992c43c1f6d557fab6e29e
  */
 export const prismaVersion: PrismaVersion = {
-  client: "7.2.0",
-  engine: "0c8ef2ce45c83248ab3df073180d5eda9e8be7a3"
+  client: "7.5.0",
+  engine: "280c870be64f457428992c43c1f6d557fab6e29e"
 }
 
 /**
@@ -393,7 +393,10 @@ export const ModelName = {
   Player: 'Player',
   Song: 'Song',
   TournamentMatch: 'TournamentMatch',
-  Vote: 'Vote'
+  Vote: 'Vote',
+  GuessConfig: 'GuessConfig',
+  GuessTurn: 'GuessTurn',
+  Guess: 'Guess'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -409,7 +412,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "session" | "account" | "verification" | "gameSession" | "tournament" | "player" | "song" | "tournamentMatch" | "vote"
+    modelProps: "user" | "session" | "account" | "verification" | "gameSession" | "tournament" | "player" | "song" | "tournamentMatch" | "vote" | "guessConfig" | "guessTurn" | "guess"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1153,6 +1156,228 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    GuessConfig: {
+      payload: Prisma.$GuessConfigPayload<ExtArgs>
+      fields: Prisma.GuessConfigFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.GuessConfigFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GuessConfigPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.GuessConfigFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GuessConfigPayload>
+        }
+        findFirst: {
+          args: Prisma.GuessConfigFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GuessConfigPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.GuessConfigFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GuessConfigPayload>
+        }
+        findMany: {
+          args: Prisma.GuessConfigFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GuessConfigPayload>[]
+        }
+        create: {
+          args: Prisma.GuessConfigCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GuessConfigPayload>
+        }
+        createMany: {
+          args: Prisma.GuessConfigCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.GuessConfigCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GuessConfigPayload>[]
+        }
+        delete: {
+          args: Prisma.GuessConfigDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GuessConfigPayload>
+        }
+        update: {
+          args: Prisma.GuessConfigUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GuessConfigPayload>
+        }
+        deleteMany: {
+          args: Prisma.GuessConfigDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.GuessConfigUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.GuessConfigUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GuessConfigPayload>[]
+        }
+        upsert: {
+          args: Prisma.GuessConfigUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GuessConfigPayload>
+        }
+        aggregate: {
+          args: Prisma.GuessConfigAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateGuessConfig>
+        }
+        groupBy: {
+          args: Prisma.GuessConfigGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.GuessConfigGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.GuessConfigCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.GuessConfigCountAggregateOutputType> | number
+        }
+      }
+    }
+    GuessTurn: {
+      payload: Prisma.$GuessTurnPayload<ExtArgs>
+      fields: Prisma.GuessTurnFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.GuessTurnFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GuessTurnPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.GuessTurnFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GuessTurnPayload>
+        }
+        findFirst: {
+          args: Prisma.GuessTurnFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GuessTurnPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.GuessTurnFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GuessTurnPayload>
+        }
+        findMany: {
+          args: Prisma.GuessTurnFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GuessTurnPayload>[]
+        }
+        create: {
+          args: Prisma.GuessTurnCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GuessTurnPayload>
+        }
+        createMany: {
+          args: Prisma.GuessTurnCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.GuessTurnCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GuessTurnPayload>[]
+        }
+        delete: {
+          args: Prisma.GuessTurnDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GuessTurnPayload>
+        }
+        update: {
+          args: Prisma.GuessTurnUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GuessTurnPayload>
+        }
+        deleteMany: {
+          args: Prisma.GuessTurnDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.GuessTurnUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.GuessTurnUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GuessTurnPayload>[]
+        }
+        upsert: {
+          args: Prisma.GuessTurnUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GuessTurnPayload>
+        }
+        aggregate: {
+          args: Prisma.GuessTurnAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateGuessTurn>
+        }
+        groupBy: {
+          args: Prisma.GuessTurnGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.GuessTurnGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.GuessTurnCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.GuessTurnCountAggregateOutputType> | number
+        }
+      }
+    }
+    Guess: {
+      payload: Prisma.$GuessPayload<ExtArgs>
+      fields: Prisma.GuessFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.GuessFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GuessPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.GuessFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GuessPayload>
+        }
+        findFirst: {
+          args: Prisma.GuessFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GuessPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.GuessFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GuessPayload>
+        }
+        findMany: {
+          args: Prisma.GuessFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GuessPayload>[]
+        }
+        create: {
+          args: Prisma.GuessCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GuessPayload>
+        }
+        createMany: {
+          args: Prisma.GuessCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.GuessCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GuessPayload>[]
+        }
+        delete: {
+          args: Prisma.GuessDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GuessPayload>
+        }
+        update: {
+          args: Prisma.GuessUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GuessPayload>
+        }
+        deleteMany: {
+          args: Prisma.GuessDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.GuessUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.GuessUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GuessPayload>[]
+        }
+        upsert: {
+          args: Prisma.GuessUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GuessPayload>
+        }
+        aggregate: {
+          args: Prisma.GuessAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateGuess>
+        }
+        groupBy: {
+          args: Prisma.GuessGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.GuessGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.GuessCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.GuessCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1253,6 +1478,7 @@ export type VerificationScalarFieldEnum = (typeof VerificationScalarFieldEnum)[k
 export const GameSessionScalarFieldEnum = {
   id: 'id',
   ownerId: 'ownerId',
+  gameType: 'gameType',
   status: 'status',
   createdAt: 'createdAt'
 } as const
@@ -1330,6 +1556,53 @@ export const VoteScalarFieldEnum = {
 export type VoteScalarFieldEnum = (typeof VoteScalarFieldEnum)[keyof typeof VoteScalarFieldEnum]
 
 
+export const GuessConfigScalarFieldEnum = {
+  id: 'id',
+  sessionId: 'sessionId',
+  maxRounds: 'maxRounds',
+  guessTimeSec: 'guessTimeSec'
+} as const
+
+export type GuessConfigScalarFieldEnum = (typeof GuessConfigScalarFieldEnum)[keyof typeof GuessConfigScalarFieldEnum]
+
+
+export const GuessTurnScalarFieldEnum = {
+  id: 'id',
+  sessionId: 'sessionId',
+  roundNumber: 'roundNumber',
+  turnNumber: 'turnNumber',
+  pickerId: 'pickerId',
+  spotifyId: 'spotifyId',
+  songName: 'songName',
+  artistName: 'artistName',
+  imageUrl: 'imageUrl',
+  isrc: 'isrc',
+  startTime: 'startTime',
+  status: 'status',
+  guessingStartedAt: 'guessingStartedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type GuessTurnScalarFieldEnum = (typeof GuessTurnScalarFieldEnum)[keyof typeof GuessTurnScalarFieldEnum]
+
+
+export const GuessScalarFieldEnum = {
+  id: 'id',
+  guessTurnId: 'guessTurnId',
+  playerId: 'playerId',
+  spotifyId: 'spotifyId',
+  songName: 'songName',
+  artistName: 'artistName',
+  guessedAt: 'guessedAt',
+  songCorrect: 'songCorrect',
+  artistCorrect: 'artistCorrect',
+  points: 'points',
+  createdAt: 'createdAt'
+} as const
+
+export type GuessScalarFieldEnum = (typeof GuessScalarFieldEnum)[keyof typeof GuessScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -1396,6 +1669,20 @@ export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaM
 
 
 /**
+ * Reference to a field of type 'GameType'
+ */
+export type EnumGameTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'GameType'>
+    
+
+
+/**
+ * Reference to a field of type 'GameType[]'
+ */
+export type ListEnumGameTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'GameType[]'>
+    
+
+
+/**
  * Reference to a field of type 'SessionStatus'
  */
 export type EnumSessionStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SessionStatus'>
@@ -1448,6 +1735,20 @@ export type EnumMatchStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$Pris
  * Reference to a field of type 'MatchStatus[]'
  */
 export type ListEnumMatchStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MatchStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'GuessTurnStatus'
+ */
+export type EnumGuessTurnStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'GuessTurnStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'GuessTurnStatus[]'
+ */
+export type ListEnumGuessTurnStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'GuessTurnStatus[]'>
     
 
 
@@ -1569,6 +1870,9 @@ export type GlobalOmitConfig = {
   song?: Prisma.SongOmit
   tournamentMatch?: Prisma.TournamentMatchOmit
   vote?: Prisma.VoteOmit
+  guessConfig?: Prisma.GuessConfigOmit
+  guessTurn?: Prisma.GuessTurnOmit
+  guess?: Prisma.GuessOmit
 }
 
 /* Types for Logging */

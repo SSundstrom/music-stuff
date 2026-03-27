@@ -17,6 +17,14 @@ export const SessionStatus = {
 export type SessionStatus = (typeof SessionStatus)[keyof typeof SessionStatus]
 
 
+export const GameType = {
+  tournament: 'tournament',
+  guess_the_song: 'guess_the_song'
+} as const
+
+export type GameType = (typeof GameType)[keyof typeof GameType]
+
+
 export const TournamentStatus = {
   waiting: 'waiting',
   category_selection: 'category_selection',
@@ -37,3 +45,13 @@ export const MatchStatus = {
 } as const
 
 export type MatchStatus = (typeof MatchStatus)[keyof typeof MatchStatus]
+
+
+export const GuessTurnStatus = {
+  picking: 'picking',
+  countdown: 'countdown',
+  guessing: 'guessing',
+  scoreboard: 'scoreboard'
+} as const
+
+export type GuessTurnStatus = (typeof GuessTurnStatus)[keyof typeof GuessTurnStatus]

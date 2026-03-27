@@ -15,9 +15,9 @@ export async function POST(request: Request) {
     }
 
     // Get the Spotify access token from the database
-    const accessToken = await getSpotifyAccessToken(session.user.id);
+    const tokenResult = await getSpotifyAccessToken(session.user.id);
 
-    if (!accessToken) {
+    if (!tokenResult) {
       return new Response(
         JSON.stringify({ error: "Not authenticated with Spotify" }),
         {
@@ -47,7 +47,7 @@ export async function POST(request: Request) {
     await startPlayback(
       body.deviceId,
       body.spotifyId,
-      accessToken,
+      tokenResult.accessToken,
       body.positionMs,
     );
 

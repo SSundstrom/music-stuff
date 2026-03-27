@@ -2009,6 +2009,11 @@ export type TournamentMatchFindManyArgs<ExtArgs extends runtime.Types.Extensions
    * Skip the first `n` TournamentMatches.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of TournamentMatches.
+   */
   distinct?: Prisma.TournamentMatchScalarFieldEnum | Prisma.TournamentMatchScalarFieldEnum[]
 }
 

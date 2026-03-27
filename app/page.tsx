@@ -4,7 +4,7 @@ import { authClient } from "@/components/SessionProvider";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthSession } from "@/hooks/useAuthSession";
-import { CreateSessionRequest } from "@/types/game";
+import type { CreateSessionRequest, GameType } from "@/types/game";
 
 export default function Home() {
   const router = useRouter();
@@ -12,6 +12,7 @@ export default function Home() {
   const [joinCode, setJoinCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [gameType, setGameType] = useState<GameType>("tournament");
 
   const handleSignIn = async () => {
     try {
@@ -48,6 +49,7 @@ export default function Home() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ownerId: session.user.id,
+          gameType,
         } satisfies CreateSessionRequest),
       });
 
@@ -119,13 +121,37 @@ export default function Home() {
             </button>
           )}
           {session?.user && (
-            <button
-              onClick={handleCreateGame}
-              disabled={loading}
-              className="w-full rounded-lg bg-green-600 px-4 py-3 font-semibold text-white hover:bg-green-700 disabled:opacity-50"
-            >
-              {loading ? "Creating..." : "Create New Game"}
-            </button>
+            <>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setGameType("tournament")}
+                  className={`flex-1 rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${
+                    gameType === "tournament"
+                      ? "bg-green-600 text-white"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  }`}
+                >
+                  Tournament
+                </button>
+                <button
+                  onClick={() => setGameType("guess_the_song")}
+                  className={`flex-1 rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${
+                    gameType === "guess_the_song"
+                      ? "bg-green-600 text-white"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  }`}
+                >
+                  Guess the Song
+                </button>
+              </div>
+              <button
+                onClick={handleCreateGame}
+                disabled={loading}
+                className="w-full rounded-lg bg-green-600 px-4 py-3 font-semibold text-white hover:bg-green-700 disabled:opacity-50"
+              >
+                {loading ? "Creating..." : "Create New Game"}
+              </button>
+            </>
           )}
 
           <div className="relative flex items-center">

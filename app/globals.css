@@ -10,6 +10,28 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --animate-score-pop: score-pop 2s ease-out forwards;
+}
+
+@keyframes score-pop {
+  0% {
+    opacity: 0;
+    transform: translateY(4px) scale(0.8);
+  }
+  15% {
+    opacity: 1;
+    transform: translateY(-2px) scale(1.1);
+  }
+  30% {
+    transform: translateY(0) scale(1);
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
 }
 
 @media (prefers-color-scheme: dark) {

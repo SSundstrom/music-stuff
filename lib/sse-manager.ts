@@ -113,4 +113,8 @@ class SSEManager {
   }
 }
 
-export const sseManager = new SSEManager();
+// Persist across HMR in development — without this, module re-evaluation
+// creates a new empty SSEManager and broadcasts go nowhere.
+const globalForSSE = globalThis as unknown as { sseManager?: SSEManager };
+export const sseManager = globalForSSE.sseManager ?? new SSEManager();
+globalForSSE.sseManager = sseManager;

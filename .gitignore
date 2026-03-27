@@ -18,3 +18,4 @@ certs/
 .db/
 
 certificates
+storybook-static/

@@ -15,9 +15,9 @@ export async function GET(request: Request) {
     }
 
     console.log(`[token] Getting token for user: ${session.user.id}`);
-    const accessToken = await getSpotifyAccessToken(session.user.id);
+    const result = await getSpotifyAccessToken(session.user.id);
 
-    if (!accessToken) {
+    if (!result) {
       console.log("[token] No access token found for user - Spotify re-authentication required");
       return new Response(
         JSON.stringify({
@@ -32,11 +32,12 @@ export async function GET(request: Request) {
     }
 
     console.log(
-      `[token] Returning token for user ${session.user.id}, token length: ${accessToken.length}`,
+      `[token] Returning token for user ${session.user.id}, token length: ${result.accessToken.length}`,
     );
     return new Response(
       JSON.stringify({
-        accessToken,
+        accessToken: result.accessToken,
+        expiresAt: result.expiresAt,
       }),
       {
         status: 200,

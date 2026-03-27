@@ -6,6 +6,7 @@ import {
   getMatches,
   updateSession,
 } from "@/lib/game-session";
+import { getGuessState } from "@/lib/guess-game";
 import { sseManager } from "@/lib/sse-manager";
 import type { SSEMessage } from "@/types/game";
 
@@ -22,6 +23,28 @@ export async function GET(
         status: 404,
         headers: { "Content-Type": "application/json" },
       });
+    }
+
+    if (session.gameType === "guess_the_song") {
+      const [players, guessState] = await Promise.all([
+        getPlayers(sessionId),
+        getGuessState(sessionId),
+      ]);
+
+      return new Response(
+        JSON.stringify({
+          session,
+          tournament: null,
+          players,
+          songs: [],
+          matches: [],
+          guessState,
+        }),
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
     }
 
     const tournament = await getActiveTournament(sessionId);
