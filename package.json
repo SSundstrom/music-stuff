@@ -12,7 +12,8 @@
     "db:reset": "prisma migrate reset",
     "db:migrate": "prisma migrate dev",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "skills:react-best-practises": "./scripts/update-skills.sh git@github.com:vercel-labs/agent-skills.git skills/react-best-practices"
   },
   "dependencies": {
     "@prisma/adapter-neon": "7.5.0",
