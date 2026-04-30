@@ -23,7 +23,7 @@ RUN apt-get update -qq && \
 # Install node modules
 COPY package-lock.json package.json ./
 COPY prisma .
-RUN npm ci --include=dev
+RUN npm install --include=dev
 
 # Generate Prisma Client
 RUN npx prisma generate
