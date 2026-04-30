@@ -6,15 +6,14 @@
     "dev": "npx prisma migrate deploy && next dev",
     "build": "npx prisma generate && next build",
     "start": "next start",
-    "test:lint": "vp lint",
-    "test:lint:fix": "vp lint --fix",
+    "test:lint": "eslint",
+    "test:lint:fix": "eslint --fix",
     "db:gen": "prisma generate",
     "db:reset": "prisma migrate reset",
     "db:migrate": "prisma migrate dev",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "skills:react-best-practises": "./scripts/update-skills.sh git@github.com:vercel-labs/agent-skills.git skills/react-best-practices",
-    "prepare": "vp config"
+    "skills:react-best-practises": "./scripts/update-skills.sh git@github.com:vercel-labs/agent-skills.git skills/react-best-practices"
   },
   "dependencies": {
     "@prisma/adapter-neon": "7.5.0",
@@ -32,33 +31,29 @@
     "zod": "4.2.1"
   },
   "devDependencies": {
-    "@chromatic-com/storybook": "^5.0.2",
     "@flydotio/dockerfile": "0.7.10",
-    "@storybook/addon-a11y": "^10.3.1",
-    "@storybook/addon-docs": "^10.3.1",
-    "@storybook/addon-vitest": "^10.3.1",
-    "@storybook/nextjs-vite": "^10.3.1",
     "@tailwindcss/postcss": "^4",
     "@types/better-sqlite3": "7.6.13",
     "@types/node": "^20",
     "@types/pg": "8.16.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@vitest/coverage-v8": "^4.1.0",
+    "eslint": "^9",
     "eslint-config-next": "16.1.0",
-    "eslint-plugin-storybook": "^10.3.1",
-    "playwright": "^1.58.2",
     "prisma": "7.5.0",
-    "storybook": "^10.3.1",
     "tailwindcss": "^4",
     "typescript": "^5",
-    "vite": "npm:@voidzero-dev/vite-plus-core@latest",
-    "vite-plus": "latest",
-    "vitest": "npm:@voidzero-dev/vite-plus-test@latest"
-  },
-  "overrides": {
-    "vite": "npm:@voidzero-dev/vite-plus-core@latest",
-    "vitest": "npm:@voidzero-dev/vite-plus-test@latest"
-  },
-  "packageManager": "npm@11.13.0"
+    "storybook": "^10.3.1",
+    "@storybook/nextjs-vite": "^10.3.1",
+    "@chromatic-com/storybook": "^5.0.2",
+    "@storybook/addon-vitest": "^10.3.1",
+    "@storybook/addon-a11y": "^10.3.1",
+    "@storybook/addon-docs": "^10.3.1",
+    "vite": "^8.0.1",
+    "eslint-plugin-storybook": "^10.3.1",
+    "vitest": "^4.1.0",
+    "playwright": "^1.58.2",
+    "@vitest/browser-playwright": "^4.1.0",
+    "@vitest/coverage-v8": "^4.1.0"
+  }
 }
