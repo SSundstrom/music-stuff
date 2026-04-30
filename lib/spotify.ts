@@ -3,10 +3,7 @@ import { getSpotifyAccessToken as getSpotifyAccessTokenFromAuth } from "@/lib/au
 let cachedAccessToken: string | null = null;
 let tokenExpirationTime: number | null = null;
 
-async function getSpotifyAccessToken(
-  isOwner: boolean = false,
-  userId?: string,
-): Promise<string> {
+async function getSpotifyAccessToken(isOwner: boolean = false, userId?: string): Promise<string> {
   // For owner, use OAuth token from database with expiration validation
   if (isOwner && userId) {
     const result = await getSpotifyAccessTokenFromAuth(userId);
@@ -17,11 +14,7 @@ async function getSpotifyAccessToken(
   }
 
   // For server-side operations, use Client Credentials flow
-  if (
-    cachedAccessToken &&
-    tokenExpirationTime &&
-    Date.now() < tokenExpirationTime
-  ) {
+  if (cachedAccessToken && tokenExpirationTime && Date.now() < tokenExpirationTime) {
     return cachedAccessToken;
   }
 
@@ -57,6 +50,27 @@ async function getSpotifyAccessToken(
   return cachedAccessToken;
 }
 
+const userMarketCache = new Map<string, string>();
+
+export async function getUserMarket(userId: string): Promise<string | null> {
+  const cached = userMarketCache.get(userId);
+  if (cached) return cached;
+
+  const token = await getSpotifyAccessTokenFromAuth(userId);
+  if (!token) return null;
+
+  const response = await fetch("https://api.spotify.com/v1/me", {
+    headers: { Authorization: `Bearer ${token.accessToken}` },
+  });
+  if (!response.ok) return null;
+
+  const data = (await response.json()) as { country?: string };
+  if (!data.country) return null;
+
+  userMarketCache.set(userId, data.country);
+  return data.country;
+}
+
 export interface SpotifySearchResult {
   id: string;
   name: string;
@@ -68,17 +82,22 @@ export interface SpotifySearchResult {
 
 export async function searchSpotify(
   query: string,
+  market?: string,
 ): Promise<SpotifySearchResult[]> {
   const accessToken = await getSpotifyAccessToken();
 
-  const response = await fetch(
-    `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&limit=20`,
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
+  const params = new URLSearchParams({
+    q: query,
+    type: "track",
+    limit: "20",
+  });
+  if (market) params.set("market", market);
+
+  const response = await fetch(`https://api.spotify.com/v1/search?${params.toString()}`, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
     },
-  );
+  });
 
   if (!response.ok) {
     throw new Error(`Spotify search failed: ${response.statusText}`);
@@ -103,14 +122,11 @@ export async function searchSpotify(
 }
 
 export async function getTrackDetails(spotifyId: string, accessToken: string) {
-  const response = await fetch(
-    `https://api.spotify.com/v1/tracks/${spotifyId}`,
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
+  const response = await fetch(`https://api.spotify.com/v1/tracks/${spotifyId}`, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
     },
-  );
+  });
 
   if (!response.ok) {
     throw new Error(`Failed to get track details: ${response.statusText}`);
@@ -119,9 +135,7 @@ export async function getTrackDetails(spotifyId: string, accessToken: string) {
   return response.json();
 }
 
-export async function getTrackIsrc(
-  spotifyId: string,
-): Promise<string | null> {
+export async function getTrackIsrc(spotifyId: string): Promise<string | null> {
   const accessToken = await getSpotifyAccessToken();
   const details = (await getTrackDetails(spotifyId, accessToken)) as {
     external_ids?: { isrc?: string };
@@ -135,20 +149,17 @@ export async function startPlayback(
   accessToken: string,
   positionMs: number = 0,
 ) {
-  const response = await fetch(
-    `https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`,
-    {
-      method: "PUT",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        uris: [`spotify:track:${spotifyId}`],
-        position_ms: positionMs,
-      }),
+  const response = await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
     },
-  );
+    body: JSON.stringify({
+      uris: [`spotify:track:${spotifyId}`],
+      position_ms: positionMs,
+    }),
+  });
 
   if (!response.ok) {
     throw new Error(`Failed to start playback: ${response.statusText}`);
@@ -156,15 +167,12 @@ export async function startPlayback(
 }
 
 export async function pausePlayback(deviceId: string, accessToken: string) {
-  const response = await fetch(
-    `https://api.spotify.com/v1/me/player/pause?device_id=${deviceId}`,
-    {
-      method: "PUT",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
+  const response = await fetch(`https://api.spotify.com/v1/me/player/pause?device_id=${deviceId}`, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
     },
-  );
+  });
 
   if (!response.ok) {
     throw new Error(`Failed to pause playback: ${response.statusText}`);
@@ -172,14 +180,11 @@ export async function pausePlayback(deviceId: string, accessToken: string) {
 }
 
 export async function getCurrentPlayback(accessToken: string) {
-  const response = await fetch(
-    "https://api.spotify.com/v1/me/player/currently-playing",
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
+  const response = await fetch("https://api.spotify.com/v1/me/player/currently-playing", {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
     },
-  );
+  });
 
   if (!response.ok) {
     throw new Error(`Failed to get current playback: ${response.statusText}`);
@@ -188,11 +193,7 @@ export async function getCurrentPlayback(accessToken: string) {
   return response.json();
 }
 
-export async function seekPlayback(
-  deviceId: string,
-  positionMs: number,
-  accessToken: string,
-) {
+export async function seekPlayback(deviceId: string, positionMs: number, accessToken: string) {
   const response = await fetch(
     `https://api.spotify.com/v1/me/player/seek?position_ms=${positionMs}&device_id=${deviceId}`,
     {
@@ -209,16 +210,13 @@ export async function seekPlayback(
 }
 
 export async function resumePlayback(deviceId: string, accessToken: string) {
-  const response = await fetch(
-    `https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`,
-    {
-      method: "PUT",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json",
-      },
+  const response = await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
     },
-  );
+  });
 
   if (!response.ok) {
     throw new Error(`Failed to resume playback: ${response.statusText}`);

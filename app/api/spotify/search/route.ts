@@ -1,9 +1,11 @@
-import { searchSpotify } from "@/lib/spotify";
+import { getUserMarket, searchSpotify } from "@/lib/spotify";
+import { getSession } from "@/lib/game-session";
 
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const query = searchParams.get("q");
+    const sessionId = searchParams.get("sessionId");
 
     if (!query) {
       return new Response(JSON.stringify({ error: "Query parameter 'q' required" }), {
@@ -19,7 +21,16 @@ export async function GET(request: Request) {
       });
     }
 
-    const results = await searchSpotify(query);
+    let market: string | undefined;
+    if (sessionId) {
+      const gameSession = await getSession(sessionId);
+      if (gameSession) {
+        const ownerMarket = await getUserMarket(gameSession.ownerId);
+        if (ownerMarket) market = ownerMarket;
+      }
+    }
+
+    const results = await searchSpotify(query, market);
 
     return new Response(JSON.stringify(results), {
       status: 200,

@@ -9,10 +9,7 @@ interface PickSongPhaseProps {
   playerId: string;
 }
 
-export default function PickSongPhase({
-  sessionId,
-  playerId,
-}: PickSongPhaseProps) {
+export default function PickSongPhase({ sessionId, playerId }: PickSongPhaseProps) {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
@@ -51,12 +48,8 @@ export default function PickSongPhase({
   if (submitted) {
     return (
       <div className="rounded-lg bg-white p-8 shadow-lg text-center">
-        <h2 className="mb-2 text-2xl font-bold text-green-600">
-          Song picked!
-        </h2>
-        <p className="text-gray-600">
-          Waiting for the host to start playback...
-        </p>
+        <h2 className="mb-2 text-2xl font-bold text-green-600">Song picked!</h2>
+        <p className="text-gray-600">Waiting for the host to start playback...</p>
       </div>
     );
   }
@@ -64,13 +57,13 @@ export default function PickSongPhase({
   return (
     <div className="rounded-lg bg-white p-6 shadow-lg">
       <h2 className="mb-2 text-2xl font-bold text-black">Your Turn to Pick!</h2>
-      <p className="mb-4 text-gray-600">
-        Choose a song for others to guess.
-      </p>
-      {error && (
-        <div className="mb-4 rounded bg-red-100 p-3 text-red-700">{error}</div>
-      )}
-      <SongSearcher onSongSelected={handleSongSelected} disabled={submitting} />
+      <p className="mb-4 text-gray-600">Choose a song for others to guess.</p>
+      {error && <div className="mb-4 rounded bg-red-100 p-3 text-red-700">{error}</div>}
+      <SongSearcher
+        onSongSelected={handleSongSelected}
+        disabled={submitting}
+        sessionId={sessionId}
+      />
     </div>
   );
 }

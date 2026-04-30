@@ -8,20 +8,20 @@ interface SongSearcherProps {
   onSongSelected: (song: SongSelection) => void;
   disabled?: boolean;
   showStartTime?: boolean;
+  sessionId?: string;
 }
 
 export default function SongSearcher({
   onSongSelected,
   disabled = false,
   showStartTime = true,
+  sessionId,
 }: SongSearcherProps) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SpotifySearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [selectedTimeMap, setSelectedTimeMap] = useState<
-    Record<string, number>
-  >({});
+  const [selectedTimeMap, setSelectedTimeMap] = useState<Record<string, number>>({});
 
   useEffect(() => {
     if (!query || query.length < 2) {
@@ -34,9 +34,9 @@ export default function SongSearcher({
       setError("");
 
       try {
-        const response = await fetch(
-          `/api/spotify/search?q=${encodeURIComponent(query)}`,
-        );
+        const params = new URLSearchParams({ q: query });
+        if (sessionId) params.set("sessionId", sessionId);
+        const response = await fetch(`/api/spotify/search?${params.toString()}`);
         if (!response.ok) throw new Error("Search failed");
 
         const data = (await response.json()) as SpotifySearchResult[];
@@ -51,7 +51,7 @@ export default function SongSearcher({
 
     const timer = setTimeout(searchDebounced, 300);
     return () => clearTimeout(timer);
-  }, [query]);
+  }, [query, sessionId]);
 
   const handleSelectSong = (song: SpotifySearchResult) => {
     onSongSelected({
@@ -76,9 +76,7 @@ export default function SongSearcher({
         {error && <p className="mt-2 text-base text-red-600">{error}</p>}
       </div>
 
-      {loading && (
-        <p className="text-center text-lg text-gray-700">Searching...</p>
-      )}
+      {loading && <p className="text-center text-lg text-gray-700">Searching...</p>}
 
       {results.length > 0 && (
         <div className="space-y-2 max-h-96 overflow-y-auto">
@@ -87,18 +85,11 @@ export default function SongSearcher({
             const currentStartTime = selectedTimeMap[song.id] || 0;
 
             return (
-              <div
-                key={song.id}
-                className="rounded-lg border border-gray-200 p-3 hover:bg-gray-50"
-              >
+              <div key={song.id} className="rounded-lg border border-gray-200 p-3 hover:bg-gray-50">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1">
-                    <p className="text-base font-semibold text-black">
-                      {song.name}
-                    </p>
-                    <p className="text-base text-gray-700">
-                      {song.artists[0]?.name || "Unknown"}
-                    </p>
+                    <p className="text-base font-semibold text-black">{song.name}</p>
+                    <p className="text-base text-gray-700">{song.artists[0]?.name || "Unknown"}</p>
                     <p className="text-sm text-gray-600">{songDurationS}s</p>
                   </div>
                   <button
@@ -135,9 +126,7 @@ export default function SongSearcher({
                       }
                       className="w-full"
                     />
-                    <p className="text-sm text-gray-600">
-                      Start at {currentStartTime}s
-                    </p>
+                    <p className="text-sm text-gray-600">Start at {currentStartTime}s</p>
                   </div>
                 )}
               </div>

@@ -85,14 +85,10 @@ export default function SongSubmissionPhase({
       <h1 className="mb-2 text-3xl font-bold text-black">
         Submit Songs for &quot;{category}&quot;
       </h1>
-      <p className="mb-6 text-lg text-gray-700">
-        Find a song that fits this category
-      </p>
+      <p className="mb-6 text-lg text-gray-700">Find a song that fits this category</p>
 
       {error && (
-        <div className="mb-4 rounded-lg bg-red-100 p-4 text-base text-red-800">
-          {error}
-        </div>
+        <div className="mb-4 rounded-lg bg-red-100 p-4 text-base text-red-800">{error}</div>
       )}
 
       {submitted ? (
@@ -104,6 +100,7 @@ export default function SongSubmissionPhase({
           <SongSearcher
             onSongSelected={handleSongSelected}
             disabled={loading}
+            sessionId={sessionId}
           />
         </div>
       )}
