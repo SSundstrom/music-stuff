@@ -151,6 +151,7 @@ export default function GuessingPhase({
         onSongSelected={handleSongSelected}
         disabled={submitting || timeRemaining === 0}
         showStartTime={false}
+        sessionId={sessionId}
       />
     </div>
   );
