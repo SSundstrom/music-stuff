@@ -1,187 +1,324 @@
 # Spotify Tournament
 
-A multiplayer song tournament game where players vote on which songs best fit chosen categories.
+A multiplayer party game built around the Spotify catalogue. The host signs in
+with Spotify; other players join from any device with just a name. Two game
+modes are included:
+
+- **Tournament**: a single-elimination bracket where players submit songs for a
+  category and the table votes on which one fits best.
+- **Guess Game**: a picker plays a song through the host's Spotify device and
+  the other players race to guess the title and artist for points.
 
 ## Features
 
-- **Create Game Sessions**: Session owners authenticate with Spotify to create game rooms
-- **Join Sessions**: Other players join with just a name (no Spotify account required)
-- **Category Selection**: Players take turns picking categories in round-robin fashion
-- **Song Submission**: Players search and submit songs matching the category
-- **Tournament Voting**: Single-elimination tournament with blind voting
-- **Adaptive Playback**: Songs play for 30 seconds in first round, 15 seconds in later rounds
-- **Real-time Updates**: Server-Sent Events (SSE) for live game updates
+- Spotify OAuth for the host (Better Auth)
+- Name-only join for everyone else (no Spotify account required)
+- Playback through the host's Spotify Connect device via the Web Playback SDK
+- Round-robin category selection in tournament mode
+- Single-elimination bracket with blind voting and no self-voting
+- Adaptive playback length (30s in round 1, 15s in later rounds)
+- Live updates over Server-Sent Events
+- QR code for quick join from phones on the same network
 
-## Tech Stack
+## Tech stack
 
-- **Framework**: Next.js 14+ with TypeScript
-- **Real-time**: Server-Sent Events (SSE)
-- **Database**: SQLite
-- **Spotify Integration**: Spotify Web API (OAuth 2.0)
-- **Frontend**: React with Tailwind CSS
-- **Authentication**: Better Auth
+- **Framework**: Next.js 16 (App Router) with React 19 and TypeScript
+- **Auth**: Better Auth with the Spotify social provider
+- **Database**: PostgreSQL via Prisma with the Neon serverless adapter
+- **Hosting**: Fly.io (production app + staging app)
+- **Realtime**: Server-Sent Events
+- **Spotify**: Web API + Web Playback SDK
+- **Styling**: Tailwind CSS v4
+- **Component workshop**: Storybook
+- **Tests/lint**: Vitest, ESLint
 
-## Setup
+## Prerequisites
 
-### Prerequisites
+- Node.js 24+ (matches `Dockerfile`)
+- npm
+- A Spotify developer app (free, Premium required for the host at play time)
+- A Postgres database — Neon recommended (free tier is enough for development)
+- For deploys: a Fly.io account and `flyctl` installed
 
-- Node.js 18+
-- npm or yarn
-- Spotify Developer Account (free)
+## Local setup
 
-### Installation
-
-1. Clone the repository
+### 1. Clone and install
 
 ```bash
 git clone <repository-url>
 cd spotify-tournament
-```
-
-2. Install dependencies
-
-```bash
 npm install
 ```
 
-3. Set up Spotify Developer Credentials
+### 2. Create a Spotify app
 
-   a. Go to <https://developer.spotify.com/dashboard>
-   b. Create a new application
-   c. Accept the terms and create the app
-   d. You'll get Client ID and Client Secret
-   e. Add redirect URI: `http://localhost:3000/api/auth/callback/spotify`
+1. Go to <https://developer.spotify.com/dashboard> and create a new app.
+2. Copy the **Client ID** and **Client Secret**.
+3. Add the redirect URI: `http://localhost:3000/api/auth/callback/spotify`.
+   (If you run with HTTPS or on a LAN IP, add those variants too.)
 
-4. Create `.env.local` file
+### 3. Provision a Neon database
+
+1. Sign in at <https://neon.tech> and create a project.
+2. From the project dashboard, copy the **pooled connection string**.
+3. Keep it handy for the `.env` step below.
+
+Any Postgres works (e.g. a local `postgres://` URL via Docker), but the
+production code path uses `@prisma/adapter-neon`, so Neon is the path with
+the fewest surprises.
+
+### 4. Configure environment
 
 ```bash
-cp .env.example .env.local
+cp .env.example .env
 ```
 
-5. Fill in the environment variables:
+Fill in `.env`:
 
-```
-# From Spotify Developer Dashboard
-SPOTIFY_CLIENT_ID=your-spotify-client-id
-SPOTIFY_CLIENT_SECRET=your-spotify-client-secret
+```env
+# Better Auth
+BETTER_AUTH_SECRET=<generate with: openssl rand -base64 32>
+BETTER_AUTH_URL=http://localhost:3000
+
+# Spotify OAuth
+SPOTIFY_CLIENT_ID=<from Spotify dashboard>
+SPOTIFY_CLIENT_SECRET=<from Spotify dashboard>
+
+# Neon Postgres
+DATABASE_URL=postgres://<user>:<password>@<host>/<db>?sslmode=require
 ```
 
-### Running the Application
+### 5. Run the app
 
 ```bash
 npm run dev
 ```
 
-Access at `http://localhost:3000`
+`npm run dev` runs `prisma migrate deploy` before starting Next, so the schema
+is applied to whatever `DATABASE_URL` points at.
 
-## Game Flow
+Open <http://localhost:3000>.
 
-1. **Landing Page**: Sign in with Spotify or join existing session
-2. **Lobby**: Wait for all players to join
-3. **Category Selection**: Current player picks a category
-4. **Song Submission**: Other players search and submit songs
-5. **Tournament**: Single-elimination bracket with voting
-6. **Round Repeat**: Next player picks category, repeat from step 3
+### Optional: HTTPS on your LAN
 
-## Game Rules
+To test multi-device play (e.g. join from your phone via QR code) the host's
+browser needs HTTPS so the Web Playback SDK and Spotify OAuth callback work
+over the LAN IP:
 
-- **Category Picker**: The player whose turn it is picks the category but cannot submit a song
-- **Voting**: Players vote for the song they think best fits the category
-- **No Self-Voting**: Players cannot vote for songs they submitted
-- **Duration**: 30 seconds for first round, 15 seconds for subsequent rounds
-- **Playback**: Only the session owner's device plays the music
+```bash
+./scripts/setup-https.sh
+```
 
-## Project Structure
+The script generates a self-signed cert in `certs/` covering `localhost`,
+`127.0.0.1`, and your current Wi‑Fi IP. Trust the cert on macOS with the
+command the script prints, then run Next with HTTPS:
+
+```bash
+next dev --experimental-https \
+  --experimental-https-key ./certs/server.key \
+  --experimental-https-cert ./certs/server.crt
+```
+
+Update `BETTER_AUTH_URL` and the Spotify redirect URI to the matching
+`https://<lan-ip>:3000` value.
+
+## Database
+
+The Prisma schema lives in `prisma/`. The generated client is committed to
+`prisma/generated/`.
+
+```bash
+npm run db:migrate   # create a new migration locally
+npm run db:gen       # regenerate the Prisma client
+npm run db:reset     # drop everything and re-run migrations (destructive)
+```
+
+## Deploying to Fly.io
+
+There are two apps: `spotify-tournament` (production, `fly.toml`) and
+`spotify-tournament-staging` (`fly.staging.toml`). Both deploy the same
+`Dockerfile` and run `prisma migrate deploy` on release.
+
+### One-time setup per app
+
+```bash
+# Install flyctl: https://fly.io/docs/flyctl/install/
+flyctl auth login
+
+# Set secrets (production)
+flyctl secrets set \
+  BETTER_AUTH_SECRET=<value> \
+  SPOTIFY_CLIENT_ID=<value> \
+  SPOTIFY_CLIENT_SECRET=<value> \
+  DATABASE_URL=<neon pooled connection string> \
+  --app spotify-tournament
+
+# Same for staging
+flyctl secrets set ... --app spotify-tournament-staging --config fly.staging.toml
+```
+
+`BETTER_AUTH_URL` is set as a non-secret `[env]` in each `fly.toml`.
+
+### Add Fly URLs to Spotify
+
+Add the following redirect URIs in the Spotify dashboard:
+
+- `https://spotify-tournament.fly.dev/api/auth/callback/spotify`
+- `https://spotify-tournament-staging.fly.dev/api/auth/callback/spotify`
+
+### Deploy
+
+```bash
+flyctl deploy                                  # production
+flyctl deploy --config fly.staging.toml        # staging
+```
+
+A `fly-deploy.yml` GitHub workflow exists but is currently gated off
+(`if: false`); deploys are done manually with `flyctl` for now.
+
+## Game flow
+
+1. **Landing**: host signs in with Spotify, others join with a name.
+2. **Lobby**: host shares the join link / QR code, kicks anyone, picks a mode.
+3. **Tournament mode**: round-robin category picks → submissions → bracket vote.
+4. **Guess mode**: each turn one player picks a song; the rest guess title/artist.
+5. **Round repeat** until the host ends the session.
+
+### Tournament rules
+
+- The category picker doesn't submit a song that round.
+- Players can't vote for their own submission.
+- Round 1 plays 30 seconds of each song; later rounds play 15 seconds.
+- Only the host's Spotify device plays audio.
+
+## Project structure
 
 ```
 ├── app/
-│   ├── api/                          # API Routes
-│   │   ├── auth/                     # NextAuth configuration
-│   │   ├── game/                     # Game endpoints
-│   │   └── spotify/                  # Spotify API integration
-│   ├── game/                         # Game page
-│   ├── lobby/                        # Lobby page
-│   └── page.tsx                      # Landing page
+│   ├── api/
+│   │   ├── auth/[...auth]/        # Better Auth handler
+│   │   ├── game/
+│   │   │   ├── create/
+│   │   │   └── [sessionId]/       # join, category, submit-song, vote,
+│   │   │                          # start-tournament, play-song, new-round,
+│   │   │                          # playback, kick, stream (SSE), guess/*
+│   │   ├── playback/              # pause / resume / seek / transfer
+│   │   └── spotify/               # search, devices, token, transfer-playback
+│   ├── auth/signin/
+│   ├── lobby/[sessionId]/
+│   ├── game/[sessionId]/
+│   ├── tournament/[sessionId]/
+│   ├── guess/[sessionId]/
+│   └── page.tsx
 ├── components/
-│   ├── game/                         # Game phase components
-│   │   ├── CategoryPhase.tsx
-│   │   ├── SongSubmissionPhase.tsx
-│   │   ├── TournamentPhase.tsx
-│   │   ├── MatchDisplay.tsx
-│   │   └── SongSearcher.tsx
-│   └── SessionProvider.tsx           # NextAuth provider
+│   ├── SessionProvider.tsx        # Better Auth client provider
+│   ├── SpotifyPlayer.tsx          # Web Playback SDK wrapper
+│   ├── SpotifyPlayerProvider.tsx
+│   └── game/
+│       ├── CategoryPhase.tsx
+│       ├── SongSubmissionPhase.tsx
+│       ├── SongSearcher.tsx
+│       ├── TournamentPhase.tsx
+│       ├── MatchDisplay.tsx
+│       ├── SongMatchCard.tsx
+│       ├── GameShell.tsx
+│       ├── QRCodeModal.tsx
+│       ├── SettingsModal.tsx
+│       └── guess/                 # Guess game phases & scoreboards
+├── hooks/                         # useAuthSession, useGameSession,
+│                                  # useTournamentSession, useGuessSession,
+│                                  # useSSEStream
 ├── lib/
-│   ├── db.ts                         # Database initialization
-│   ├── game-session.ts               # Game session logic
-│   ├── spotify.ts                    # Spotify API client
-│   ├── tournament.ts                 # Tournament logic
-│   └── sse-manager.ts                # SSE management
-├── types/
-│   ├── game.ts                       # Game type definitions
-│   └── next-auth.d.ts                # NextAuth type extensions
-└── data/                             # SQLite database (created at runtime)
+│   ├── auth.ts                    # Better Auth config + Spotify token refresh
+│   ├── db-prisma.ts               # Prisma client w/ Neon adapter
+│   ├── game-session.ts
+│   ├── tournament.ts
+│   ├── guess-game.ts
+│   ├── guess-scoring.ts
+│   ├── spotify.ts
+│   └── sse-manager.ts
+├── prisma/
+│   ├── schema.prisma
+│   ├── models/
+│   ├── migrations/
+│   └── generated/                 # generated Prisma client (committed)
+├── scripts/
+│   ├── init-db.ts
+│   └── setup-https.sh
+├── Dockerfile
+├── docker-entrypoint.js
+├── fly.toml
+└── fly.staging.toml
 ```
 
-## API Endpoints
+## Key API endpoints
 
-### Session Management
+### Auth
 
-- `POST /api/game/create` - Create new session
-- `POST /api/game/[sessionId]/join` - Join session
-- `GET /api/game/[sessionId]` - Get session state
-- `PATCH /api/game/[sessionId]` - Update session
+- `GET/POST /api/auth/[...auth]` — Better Auth (sign in, callbacks, session)
 
-### Game Flow
+### Session management
 
-- `POST /api/game/[sessionId]/category` - Submit category
-- `POST /api/game/[sessionId]/submit-song` - Submit song
-- `POST /api/game/[sessionId]/vote` - Cast vote
-- `POST /api/game/[sessionId]/start-tournament` - Start tournament
-- `POST /api/game/[sessionId]/playback` - Control playback
+- `POST /api/game/create` — create a session
+- `POST /api/game/[sessionId]/join` — join with a player name
+- `POST /api/game/[sessionId]/kick` — host removes a player
+- `GET  /api/game/[sessionId]` — fetch session state
+- `PATCH /api/game/[sessionId]` — update session
+- `GET  /api/game/[sessionId]/stream` — SSE event stream
 
-### Search
+### Tournament flow
 
-- `GET /api/spotify/search?q=query` - Search Spotify songs
+- `POST /api/game/[sessionId]/category` — pick the round's category
+- `POST /api/game/[sessionId]/submit-song` — submit a song
+- `POST /api/game/[sessionId]/start-tournament` — kick off the bracket
+- `POST /api/game/[sessionId]/play-song` — host plays the current match
+- `POST /api/game/[sessionId]/vote` — cast a vote
+- `POST /api/game/[sessionId]/new-round` — advance to the next round
 
-## Building for Production
+### Guess game flow
+
+- `POST /api/game/[sessionId]/guess/config` — host configures guess game
+- `POST /api/game/[sessionId]/guess/start` — start the guess game
+- `POST /api/game/[sessionId]/guess/pick-song` — picker chooses a song
+- `POST /api/game/[sessionId]/guess/start-playback` — start the round
+- `POST /api/game/[sessionId]/guess/submit-guess` — submit a guess
+- `POST /api/game/[sessionId]/guess/next-turn` — advance to the next picker
+- `POST /api/game/[sessionId]/guess/restart` — reset scores and start again
+
+### Spotify / playback
+
+- `GET  /api/spotify/search?q=...` — song search (filtered by host's market)
+- `GET  /api/spotify/devices` — list the host's Spotify Connect devices
+- `POST /api/spotify/transfer-playback` — move playback to a chosen device
+- `GET  /api/spotify/token` — short-lived access token for the Web Playback SDK
+- `POST /api/playback`, `/api/playback/pause`, `/resume`, `/seek` — host controls
+
+## Scripts
 
 ```bash
-npm run build
-npm start
+npm run dev               # prisma migrate deploy + next dev
+npm run build             # prisma generate + next build
+npm start                 # next start (production)
+npm run test:lint         # eslint
+npm run test:lint:fix     # eslint --fix
+npm run db:migrate        # prisma migrate dev
+npm run db:gen            # prisma generate
+npm run db:reset          # prisma migrate reset (destructive)
+npm run storybook         # storybook dev on :6006
+npm run build-storybook   # static storybook build
 ```
 
-## Testing
+## Spotify Premium requirement
 
-```bash
-npm run test:lint
-```
+Only the **host** needs Spotify Premium — audio always plays on the host's
+active Spotify device. Joining players don't need a Spotify account at all.
 
-## Spotify Premium Requirement
+## Known limitations
 
-- Only the **session owner** needs Spotify Premium
-- Other players can have free Spotify accounts
-- Music plays through the owner's active device
-
-## Known Limitations
-
-- SSE real-time updates are implemented using Server-Sent Events
-- Player IDs stored in localStorage (should use sessions in production)
-- Match completion auto-advances to next (could add manual advancement)
-
-## Future Enhancements
-
-- Additional SSE events for more granular updates
-- Match result animations
-- Leaderboard and statistics
-- Persistent player ratings
-- Custom tournament formats
-- Mobile app
-- Multi-language support
+- Player IDs are stored in `localStorage` on join devices.
+- Match completion auto-advances; there is no manual "next" button.
+- The Fly deploy GitHub workflow is gated off; deploys are manual.
 
 ## License
 
 MIT
-
-## Contributing
-
-Feel free to fork and submit pull requests!
