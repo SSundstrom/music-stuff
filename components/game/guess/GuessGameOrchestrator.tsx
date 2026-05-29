@@ -8,7 +8,6 @@ import type { TurnResult } from "@/hooks/useGuessSession";
 import { useSpotifyPlayer } from "@/components/SpotifyPlayerProvider";
 import { useGameSettings } from "@/components/GameSettingsProvider";
 import PickSongPhase from "./PickSongPhase";
-import WaitingForPicker from "./WaitingForPicker";
 import GuessingPhase from "./GuessingPhase";
 import GuessScoreboard from "./GuessScoreboard";
 import FinalScoreboard from "./FinalScoreboard";
@@ -162,12 +161,27 @@ export default function GuessGameOrchestrator({
     );
   }
 
-  // Picking phase
+  // Picking phase — only the picker advances to the song search. Everyone else
+  // (guessers and the host) stays on the scoreboard so the group keeps seeing
+  // the standings and who's up next, rather than a dead-end waiting screen.
   if (currentTurn.status === "picking") {
     if (isCurrentPicker && playerId) {
       return <PickSongPhase sessionId={sessionId} playerId={playerId} />;
     }
-    return <WaitingForPicker picker={picker} />;
+    return (
+      <GuessScoreboard
+        sessionId={sessionId}
+        currentTurn={currentTurn}
+        scores={guessState.scores}
+        turnResults={turnResults}
+        isOwner={isOwner}
+        onNextTurn={handleNextTurn}
+        onOneMoreRound={handleOneMoreRound}
+        maxRounds={config?.maxRounds ?? null}
+        autoAdvanceSec={null}
+        picker={picker}
+      />
+    );
   }
 
   // Countdown phase — host needs to start playback

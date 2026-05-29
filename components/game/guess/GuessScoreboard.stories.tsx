@@ -119,3 +119,14 @@ export const AsPlayer: Story = {
     isOwner: false,
   },
 };
+
+// Picking phase: the next picker is choosing a song, so the group waits here
+// with a "who's picking" banner, the picker highlighted in the standings, and
+// no song reveal, turn results, or host controls.
+export const Picking: Story = {
+  args: {
+    currentTurn: { ...currentTurn, status: "picking" },
+    turnResults: [],
+    picker: { id: "p3", name: "Charlie" },
+  },
+};

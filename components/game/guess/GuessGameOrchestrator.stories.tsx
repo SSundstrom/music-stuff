@@ -146,7 +146,9 @@ export const PickingAsPicker: Story = {
   },
 };
 
-// Picking — viewed as everyone else: a "waiting for the picker" spinner.
+// Picking — viewed as everyone else (a guesser or the host): the scoreboard
+// stays up with the standings, the current picker highlighted, and a
+// "who's picking" banner. The host's advance controls are hidden here.
 export const PickingAsWaiter: Story = {
   args: {
     playerId: "p1",
