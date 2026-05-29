@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useCallback } from "react";
+import { useMemo, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import type { GuessState } from "@/types/guess";
 import type { Player } from "@/types/shared";
@@ -32,8 +32,20 @@ export default function GuessGameOrchestrator({
   endsAt,
 }: GuessGameOrchestratorProps) {
   const router = useRouter();
-  const { play } = useSpotifyPlayer();
+  const { play, setVolume } = useSpotifyPlayer();
   const currentTurn = guessState.currentTurn;
+
+  // Drive the host's player volume from the game phase: louder while players
+  // are guessing, quieter between songs. Only the host's Web SDK player is
+  // actually playing the music, so setVolume is a no-op for everyone else.
+  const config = guessState.config;
+  const phaseStatus = currentTurn?.status;
+  useEffect(() => {
+    if (!isOwner || !config) return;
+    const targetPercent =
+      phaseStatus === "guessing" ? config.guessingVolume : config.betweenVolume;
+    setVolume(targetPercent / 100);
+  }, [isOwner, phaseStatus, config, setVolume]);
   const isCurrentPicker = useMemo(
     () => currentTurn?.pickerId === playerId,
     [currentTurn?.pickerId, playerId],

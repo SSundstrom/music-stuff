@@ -10,6 +10,8 @@ export const GuessConfigSchema = z.object({
   sessionId: z.string(),
   maxRounds: z.number().nullable(),
   guessTimeSec: z.number().default(30),
+  guessingVolume: z.number().default(80),
+  betweenVolume: z.number().default(30),
 });
 
 export type GuessConfig = z.infer<typeof GuessConfigSchema>;
@@ -202,6 +204,8 @@ export type GuessSSEMessage = z.infer<typeof GuessSSEMessageSchema>;
 export const GuessConfigRequestSchema = z.object({
   guessTimeSec: z.number().min(10).max(120).optional(),
   maxRounds: z.number().min(1).max(20).nullable().optional(),
+  guessingVolume: z.number().min(0).max(100).optional(),
+  betweenVolume: z.number().min(0).max(100).optional(),
 });
 
 export type GuessConfigRequest = z.infer<typeof GuessConfigRequestSchema>;

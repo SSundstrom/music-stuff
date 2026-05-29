@@ -143,10 +143,12 @@ model Vote {
 // Guess the Song game mode
 
 model GuessConfig {
-  id           String      @id
-  sessionId    String      @unique
-  maxRounds    Int?
-  guessTimeSec Int         @default(30)
+  id             String @id
+  sessionId      String @unique
+  maxRounds      Int?
+  guessTimeSec   Int    @default(30)
+  guessingVolume Int    @default(80)
+  betweenVolume  Int    @default(30)
 
   session GameSession @relation(fields: [sessionId], references: [id])
 }

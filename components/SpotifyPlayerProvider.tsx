@@ -500,14 +500,16 @@ export default function SpotifyPlayerProvider({
     }
   };
 
-  const setVolume = async (volume: number) => {
+  const setVolume = useCallback(async (volume: number) => {
+    // Volume control is only supported on the Web SDK player (the host's
+    // browser); remote Spotify devices have no SDK volume hook.
     if (!playerRef.current) return;
     try {
       await playerRef.current.setVolume(Math.max(0, Math.min(1, volume)));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Volume control failed");
     }
-  };
+  }, []);
 
   return (
     <SpotifyPlayerContext.Provider
