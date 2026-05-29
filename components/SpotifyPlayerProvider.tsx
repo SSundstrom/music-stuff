@@ -52,9 +52,13 @@ interface SpotifyPlayerContextType {
   refreshDevices: () => Promise<void>;
 }
 
-const SpotifyPlayerContext = createContext<
+// Exported so Storybook (and other tests) can wrap components in a provider
+// with mock values instead of the real Spotify Web SDK wiring.
+export const SpotifyPlayerContext = createContext<
   SpotifyPlayerContextType | undefined
 >(undefined);
+
+export type { SpotifyPlayerContextType };
 
 export function useSpotifyPlayer() {
   const context = useContext(SpotifyPlayerContext);

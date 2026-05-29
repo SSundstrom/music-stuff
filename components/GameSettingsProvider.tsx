@@ -20,9 +20,13 @@ interface GameSettingsContextType {
   setScoreboardDelaySec: (value: number) => void;
 }
 
-const GameSettingsContext = createContext<GameSettingsContextType | undefined>(
-  undefined,
-);
+// Exported so Storybook (and other tests) can wrap components in a provider
+// with mock values instead of the real localStorage-backed state.
+export const GameSettingsContext = createContext<
+  GameSettingsContextType | undefined
+>(undefined);
+
+export type { GameSettingsContextType };
 
 export function useGameSettings() {
   const context = useContext(GameSettingsContext);
