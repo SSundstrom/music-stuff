@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth";
 import { getSession, addPlayer } from "@/lib/game-session";
+import { insertJoinedPlayerIntoPickOrder } from "@/lib/guess-game";
 import { JoinSessionRequestSchema, type SSEMessage } from "@/types/game";
 import { sseManager } from "@/lib/sse-manager";
 
@@ -33,6 +34,12 @@ export async function POST(
 
     // Add player to session
     const player = await addPlayer(validated.sessionId, validated.playerName, isOwner);
+
+    // For an in-progress guess game, slot the new player into the picking
+    // rotation (no-op if the game hasn't started yet).
+    if (session.gameType === "guess_the_song") {
+      await insertJoinedPlayerIntoPickOrder(validated.sessionId, player.id);
+    }
 
     // Broadcast player_joined message to all players in the session
     sseManager.broadcast(validated.sessionId, {

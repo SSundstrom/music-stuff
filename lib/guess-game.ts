@@ -62,7 +62,16 @@ export async function startGuessGame(sessionId: string): Promise<GuessTurn> {
   });
   const nextTurnNumber = (lastTurn?.turnNumber ?? 0) + 1;
 
-  const [firstPicker] = shuffle(players);
+  // Round 1 is random; the shuffled order becomes the fixed rotation reused for
+  // every subsequent round (see selectNextPicker).
+  const pickOrder = shuffle(players).map((p) => p.id);
+  const config = await getOrCreateGuessConfig(sessionId);
+  await prisma.guessConfig.update({
+    where: { id: config.id },
+    data: { pickOrder },
+  });
+
+  const firstPicker = players.find((p) => p.id === pickOrder[0])!;
 
   const turn = await prisma.guessTurn.create({
     data: {
@@ -89,45 +98,136 @@ export async function startGuessGame(sessionId: string): Promise<GuessTurn> {
   return turn;
 }
 
+/**
+ * Returns the picking rotation for a session, healing any drift between the
+ * stored order and the current player roster:
+ *  - stale ids (players who left) are dropped
+ *  - players missing from the order are appended (a safety net; mid-game joiners
+ *    are normally placed by insertJoinedPlayerIntoPickOrder at join time)
+ *  - a legacy game with no stored order is seeded from the order players have
+ *    already picked in, then by join order
+ * The reconciled order is persisted when it changed so it stays stable.
+ */
+async function ensurePickOrder(
+  sessionId: string,
+  configId: string,
+  storedOrder: string[],
+): Promise<{ id: string; name: string }[]> {
+  const players = await prisma.player.findMany({
+    where: { sessionId },
+    orderBy: { joinOrder: "asc" },
+  });
+  const byId = new Map(players.map((p) => [p.id, { id: p.id, name: p.name }]));
+
+  const order = storedOrder.filter((id) => byId.has(id));
+
+  // Legacy/empty order: seed from the order players have already picked in.
+  if (order.length === 0) {
+    const priorTurns = await prisma.guessTurn.findMany({
+      where: { sessionId },
+      orderBy: { turnNumber: "asc" },
+      select: { pickerId: true },
+    });
+    const seen = new Set<string>();
+    for (const t of priorTurns) {
+      if (byId.has(t.pickerId) && !seen.has(t.pickerId)) {
+        seen.add(t.pickerId);
+        order.push(t.pickerId);
+      }
+    }
+  }
+
+  // Append any players not yet represented (defensive — they pick last).
+  const inOrder = new Set(order);
+  for (const p of players) {
+    if (!inOrder.has(p.id)) order.push(p.id);
+  }
+
+  if (order.length !== storedOrder.length || order.some((id, i) => id !== storedOrder[i])) {
+    await prisma.guessConfig.update({ where: { id: configId }, data: { pickOrder: order } });
+  }
+
+  return order.map((id) => byId.get(id)!);
+}
+
 export async function selectNextPicker(
   sessionId: string,
 ): Promise<{ picker: { id: string; name: string }; roundNumber: number; turnNumber: number }> {
-  const [players, turns] = await Promise.all([
-    prisma.player.findMany({ where: { sessionId }, orderBy: { joinOrder: "asc" } }),
-    prisma.guessTurn.findMany({
+  const [config, lastTurn] = await Promise.all([
+    getOrCreateGuessConfig(sessionId),
+    prisma.guessTurn.findFirst({
       where: { sessionId },
       orderBy: { turnNumber: "desc" },
-      take: 1,
     }),
   ]);
 
-  const lastTurn = turns[0];
+  const order = await ensurePickOrder(sessionId, config.id, config.pickOrder);
+
   const currentRound = lastTurn?.roundNumber ?? 1;
   const nextTurnNumber = (lastTurn?.turnNumber ?? 0) + 1;
 
-  // Find who has already picked this round
+  // Who has already picked this round
   const pickersThisRound = await prisma.guessTurn.findMany({
     where: { sessionId, roundNumber: currentRound },
     select: { pickerId: true },
   });
   const pickedIds = new Set(pickersThisRound.map((t) => t.pickerId));
 
-  let remaining = players.filter((p) => !pickedIds.has(p.id));
+  // Walk the fixed rotation; the next picker is the first player in order who
+  // hasn't picked this round yet. When everyone has, roll over to a new round
+  // starting again from the top of the order — same sequence every round.
   let roundNumber = currentRound;
-
-  // If everyone has picked, start a new round
-  if (remaining.length === 0) {
+  let nextPicker = order.find((p) => !pickedIds.has(p.id));
+  if (!nextPicker) {
     roundNumber = currentRound + 1;
-    remaining = [...players];
+    nextPicker = order[0];
   }
-
-  const [nextPicker] = shuffle(remaining);
 
   return {
     picker: { id: nextPicker.id, name: nextPicker.name },
     roundNumber,
     turnNumber: nextTurnNumber,
   };
+}
+
+/**
+ * Splice a player who joined mid-game into the picking rotation. They are placed
+ * to pick after at most 3 more players, or last in the current round — whichever
+ * comes first — so they get a turn soon without jumping the queue. A no-op if the
+ * guess game hasn't started or the player is already in the rotation.
+ */
+export async function insertJoinedPlayerIntoPickOrder(
+  sessionId: string,
+  playerId: string,
+): Promise<void> {
+  const config = await prisma.guessConfig.findUnique({ where: { sessionId } });
+  // No config or empty order => game hasn't started; startGuessGame will include
+  // this player when it shuffles the initial rotation.
+  if (!config || config.pickOrder.length === 0) return;
+  if (config.pickOrder.includes(playerId)) return;
+
+  const lastTurn = await prisma.guessTurn.findFirst({
+    where: { sessionId },
+    orderBy: { turnNumber: "desc" },
+  });
+  if (!lastTurn) return;
+
+  // Turns already created this round == index of the next pick in the rotation.
+  // Placing the joiner at (that index + 3) lets exactly 3 more players pick
+  // first; capping at the end of the rotation makes them pick last instead when
+  // fewer than 3 remain this round.
+  const turnsThisRound = await prisma.guessTurn.count({
+    where: { sessionId, roundNumber: lastTurn.roundNumber },
+  });
+  const insertIndex = Math.min(turnsThisRound + 3, config.pickOrder.length);
+
+  const newOrder = [...config.pickOrder];
+  newOrder.splice(insertIndex, 0, playerId);
+
+  await prisma.guessConfig.update({
+    where: { id: config.id },
+    data: { pickOrder: newOrder },
+  });
 }
 
 export async function submitPickedSong(

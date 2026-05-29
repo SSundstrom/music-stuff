@@ -12,6 +12,7 @@ export const GuessConfigSchema = z.object({
   guessTimeSec: z.number().default(30),
   guessingVolume: z.number().default(80),
   betweenVolume: z.number().default(30),
+  pickOrder: z.array(z.string()).default([]),
 });
 
 export type GuessConfig = z.infer<typeof GuessConfigSchema>;
