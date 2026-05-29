@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { MdSpeaker, MdComputer, MdSmartphone, MdDevices, MdCheck } from "react-icons/md";
 import type { Player } from "@/types/game";
 import { useSpotifyPlayer } from "@/components/SpotifyPlayerProvider";
+import { useGameSettings } from "@/components/GameSettingsProvider";
 import VolumeControls from "@/components/game/VolumeControls";
 
 function DeviceIcon({ type }: { type: string }) {
@@ -55,6 +56,14 @@ export default function SettingsModal({
     setBetweenVolume,
     setVolume,
   } = useSpotifyPlayer();
+  const {
+    autoAdvance,
+    getReadyDelaySec,
+    scoreboardDelaySec,
+    setAutoAdvance,
+    setGetReadyDelaySec,
+    setScoreboardDelaySec,
+  } = useGameSettings();
 
   useEffect(() => {
     if (!isOpen || !buttonRef?.current) return;
@@ -109,14 +118,17 @@ export default function SettingsModal({
 
       {/* Dropdown menu style modal */}
       <div
-        className="fixed z-50 w-96 rounded-lg bg-white shadow-xl"
+        className="fixed z-50 flex w-96 flex-col rounded-lg bg-white shadow-xl"
         style={{
           top: `${position.top}px`,
           right: `${position.right}px`,
+          // Cap to the space below the button so a tall settings list scrolls
+          // instead of running off the bottom of the viewport.
+          maxHeight: `calc(100vh - ${position.top + 16}px)`,
         }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-gray-200 p-4">
+        <div className="flex shrink-0 items-center justify-between border-b border-gray-200 p-4">
           <h2 className="text-lg font-bold text-black">Settings</h2>
           <button
             onClick={onClose}
@@ -128,7 +140,7 @@ export default function SettingsModal({
         </div>
 
         {/* Content */}
-        <div className="p-4">
+        <div className="min-h-0 overflow-y-auto p-4">
           {error && (
             <div className="mb-4 rounded-lg bg-red-100 p-3 text-sm text-red-800">
               {error}
@@ -270,6 +282,88 @@ export default function SettingsModal({
               setVolume(value / 100);
             }}
           />
+
+          {/* Auto-advance — host-device preference. When on, the host's client
+              clicks through the host-gated steps (Start Playback, Next Turn)
+              automatically after the delay instead of waiting for a button. */}
+          <div className="mt-6 border-t border-gray-200 pt-4">
+            <label className="flex items-center justify-between">
+              <span className="text-sm font-semibold text-gray-900">
+                Auto-advance
+              </span>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={autoAdvance}
+                onClick={() => setAutoAdvance(!autoAdvance)}
+                className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors ${
+                  autoAdvance ? "bg-green-600" : "bg-gray-300"
+                }`}
+              >
+                <span
+                  className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${
+                    autoAdvance ? "translate-x-5" : "translate-x-0.5"
+                  }`}
+                />
+              </button>
+            </label>
+            <p className="mt-1 text-xs text-gray-500">
+              Move on automatically instead of pressing the button each time.
+            </p>
+
+            {autoAdvance && (
+              <div className="mt-3 space-y-3">
+                <div>
+                  <div className="mb-1 flex items-center justify-between">
+                    <label className="text-xs font-medium text-gray-600">
+                      Get-ready countdown
+                    </label>
+                    <span className="text-xs text-gray-500">
+                      {getReadyDelaySec}s
+                    </span>
+                  </div>
+                  <input
+                    type="range"
+                    min={2}
+                    max={30}
+                    step={1}
+                    value={getReadyDelaySec}
+                    onChange={(e) =>
+                      setGetReadyDelaySec(parseInt(e.target.value))
+                    }
+                    className="w-full"
+                  />
+                  <p className="text-xs text-gray-400">
+                    Pause on “Get ready” before the song plays.
+                  </p>
+                </div>
+                <div>
+                  <div className="mb-1 flex items-center justify-between">
+                    <label className="text-xs font-medium text-gray-600">
+                      Scoreboard time
+                    </label>
+                    <span className="text-xs text-gray-500">
+                      {scoreboardDelaySec}s
+                    </span>
+                  </div>
+                  <input
+                    type="range"
+                    min={2}
+                    max={30}
+                    step={1}
+                    value={scoreboardDelaySec}
+                    onChange={(e) =>
+                      setScoreboardDelaySec(parseInt(e.target.value))
+                    }
+                    className="w-full"
+                  />
+                  <p className="text-xs text-gray-400">
+                    Pause on the scoreboard before the next turn.
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </>,

@@ -1,16 +1,18 @@
 "use client";
 
-import { useMemo, useCallback, useEffect } from "react";
+import { useMemo, useCallback, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import type { GuessState } from "@/types/guess";
 import type { Player } from "@/types/shared";
 import type { TurnResult } from "@/hooks/useGuessSession";
 import { useSpotifyPlayer } from "@/components/SpotifyPlayerProvider";
+import { useGameSettings } from "@/components/GameSettingsProvider";
 import PickSongPhase from "./PickSongPhase";
 import WaitingForPicker from "./WaitingForPicker";
 import GuessingPhase from "./GuessingPhase";
 import GuessScoreboard from "./GuessScoreboard";
 import FinalScoreboard from "./FinalScoreboard";
+import AutoAdvanceIndicator from "./AutoAdvanceIndicator";
 
 interface GuessGameOrchestratorProps {
   sessionId: string;
@@ -33,6 +35,8 @@ export default function GuessGameOrchestrator({
 }: GuessGameOrchestratorProps) {
   const router = useRouter();
   const { play, setVolume, guessingVolume, betweenVolume } = useSpotifyPlayer();
+  const { autoAdvance, getReadyDelaySec, scoreboardDelaySec } =
+    useGameSettings();
   const currentTurn = guessState.currentTurn;
   const config = guessState.config;
 
@@ -106,6 +110,40 @@ export default function GuessGameOrchestrator({
     }
   }, [sessionId, router]);
 
+  // Auto-advance: when the host enables it, the two host-gated steps
+  // (Start Playback in countdown, Next Turn on the scoreboard) fire on a timer
+  // instead of waiting for a button press. We keep the action behind a ref so
+  // the timer arms exactly once per phase/turn — handleStartPlayback's identity
+  // changes on every render (it closes over the non-memoized `play`), so
+  // depending on it directly would keep resetting the countdown.
+  const turnId = currentTurn?.id;
+  const autoAdvanceActionRef = useRef<() => void>(() => {});
+  autoAdvanceActionRef.current = () => {
+    if (phaseStatus === "countdown") {
+      handleStartPlayback();
+    } else if (phaseStatus === "scoreboard") {
+      handleNextTurn();
+    }
+  };
+  useEffect(() => {
+    if (!isOwner || !autoAdvance) return;
+    if (phaseStatus !== "countdown" && phaseStatus !== "scoreboard") return;
+    const delaySec =
+      phaseStatus === "countdown" ? getReadyDelaySec : scoreboardDelaySec;
+    const timer = setTimeout(
+      () => autoAdvanceActionRef.current(),
+      delaySec * 1000,
+    );
+    return () => clearTimeout(timer);
+  }, [
+    isOwner,
+    autoAdvance,
+    getReadyDelaySec,
+    scoreboardDelaySec,
+    phaseStatus,
+    turnId,
+  ]);
+
   if (guessState.status === "ended") {
     return (
       <FinalScoreboard
@@ -150,6 +188,13 @@ export default function GuessGameOrchestrator({
             Start Playback
           </button>
         )}
+        {isOwner && autoAdvance && (
+          <AutoAdvanceIndicator
+            key={turnId}
+            delaySec={getReadyDelaySec}
+            label="Song starts in"
+          />
+        )}
       </div>
     );
   }
@@ -187,6 +232,7 @@ export default function GuessGameOrchestrator({
         onNextTurn={handleNextTurn}
         onOneMoreRound={handleOneMoreRound}
         maxRounds={config?.maxRounds ?? null}
+        autoAdvanceSec={isOwner && autoAdvance ? scoreboardDelaySec : null}
       />
     );
   }

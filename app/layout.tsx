@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import SessionProvider from "@/components/SessionProvider";
 import SpotifyPlayerProvider from "@/components/SpotifyPlayerProvider";
+import GameSettingsProvider from "@/components/GameSettingsProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -41,7 +42,7 @@ export default function RootLayout({
       >
         <SessionProvider>
           <SpotifyPlayerProvider>
-            {children}
+            <GameSettingsProvider>{children}</GameSettingsProvider>
           </SpotifyPlayerProvider>
         </SessionProvider>
       </body>

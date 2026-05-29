@@ -84,6 +84,7 @@ const meta: Meta<typeof GuessScoreboard> = {
     turnResults,
     isOwner: true,
     maxRounds: null,
+    autoAdvanceSec: null,
     onNextTurn: () => {},
     onOneMoreRound: () => {},
   },
@@ -101,6 +102,14 @@ export const OneMoreRoundAvailable: Story = {};
 export const FinalRoundScheduled: Story = {
   args: {
     maxRounds: 2,
+  },
+};
+
+// Auto-advance on: a countdown cue under the buttons shows when the next song
+// will start automatically.
+export const AutoAdvancing: Story = {
+  args: {
+    autoAdvanceSec: 8,
   },
 };
 

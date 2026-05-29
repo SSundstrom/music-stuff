@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import type { GuessTurn, PlayerScore } from "@/types/game";
+import AutoAdvanceIndicator from "./AutoAdvanceIndicator";
 
 interface TurnResult {
   playerId: string;
@@ -23,6 +24,8 @@ interface GuessScoreboardProps {
   onNextTurn: () => void;
   onOneMoreRound: () => void;
   maxRounds: number | null;
+  /** Seconds until auto-advance fires, or null when auto-advance is off. */
+  autoAdvanceSec: number | null;
 }
 
 function useAnimatedScore(target: number, duration = 1200) {
@@ -111,6 +114,7 @@ export default function GuessScoreboard({
   onNextTurn,
   onOneMoreRound,
   maxRounds,
+  autoAdvanceSec,
 }: GuessScoreboardProps) {
   // The game is already set to finish on (or before) the round in progress, so
   // there is nothing left to wrap up.
@@ -125,7 +129,9 @@ export default function GuessScoreboard({
   );
 
   return (
-    <div className="space-y-4">
+    // Leave room at the bottom so the pinned auto-advance bar never covers the
+    // host's buttons.
+    <div className={`space-y-4 ${autoAdvanceSec !== null ? "pb-24" : ""}`}>
       {/* Song reveal */}
       <div className="rounded-lg bg-white p-6 shadow-lg text-center">
         <h2 className="mb-2 text-xl font-bold text-gray-700">
@@ -230,6 +236,13 @@ export default function GuessScoreboard({
             >
               One more round
             </button>
+          )}
+          {autoAdvanceSec !== null && (
+            <AutoAdvanceIndicator
+              key={currentTurn.id}
+              delaySec={autoAdvanceSec}
+              label={endAlreadyScheduled ? "Game ends in" : "Next song in"}
+            />
           )}
         </div>
       )}
