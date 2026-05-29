@@ -509,6 +509,42 @@ export async function advanceToNextTurn(
   return { ended: false };
 }
 
+/**
+ * Lock the game to finish after "one more round". If the current round still has
+ * players left to pick, that round becomes the last; if everyone has already
+ * picked this round, one further round is played before the game ends. Works as a
+ * mid-game wrap-up control and can also extend a game that was about to end.
+ */
+export async function endAfterCurrentRound(
+  sessionId: string,
+): Promise<{ finalRound: number }> {
+  const [config, lastTurn, playerCount] = await Promise.all([
+    getOrCreateGuessConfig(sessionId),
+    prisma.guessTurn.findFirst({
+      where: { sessionId },
+      orderBy: { turnNumber: "desc" },
+    }),
+    prisma.player.count({ where: { sessionId } }),
+  ]);
+
+  const currentRound = lastTurn?.roundNumber ?? 1;
+  const pickedThisRound = await prisma.guessTurn.count({
+    where: { sessionId, roundNumber: currentRound },
+  });
+
+  // Everyone already picked this round => the current round is done, so the "one
+  // more round" is the next one. Otherwise the current round becomes the last.
+  const allPickedThisRound = playerCount > 0 && pickedThisRound >= playerCount;
+  const finalRound = allPickedThisRound ? currentRound + 1 : currentRound;
+
+  await prisma.guessConfig.update({
+    where: { id: config.id },
+    data: { maxRounds: finalRound },
+  });
+
+  return { finalRound };
+}
+
 export async function getScores(sessionId: string): Promise<PlayerScore[]> {
   const players = await prisma.player.findMany({
     where: { sessionId },

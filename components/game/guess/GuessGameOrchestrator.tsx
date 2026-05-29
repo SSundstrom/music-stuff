@@ -34,6 +34,7 @@ export default function GuessGameOrchestrator({
   const router = useRouter();
   const { play, setVolume, guessingVolume, betweenVolume } = useSpotifyPlayer();
   const currentTurn = guessState.currentTurn;
+  const config = guessState.config;
 
   // Drive the host's player volume from the game phase: louder while players
   // are guessing, quieter between songs. The volumes are a host-device
@@ -75,6 +76,16 @@ export default function GuessGameOrchestrator({
   const handleNextTurn = useCallback(async () => {
     try {
       await fetch(`/api/game/${sessionId}/guess/next-turn`, {
+        method: "POST",
+      });
+    } catch {
+      // silently fail
+    }
+  }, [sessionId]);
+
+  const handleOneMoreRound = useCallback(async () => {
+    try {
+      await fetch(`/api/game/${sessionId}/guess/one-more-round`, {
         method: "POST",
       });
     } catch {
@@ -174,6 +185,8 @@ export default function GuessGameOrchestrator({
         turnResults={turnResults}
         isOwner={isOwner}
         onNextTurn={handleNextTurn}
+        onOneMoreRound={handleOneMoreRound}
+        maxRounds={config?.maxRounds ?? null}
       />
     );
   }

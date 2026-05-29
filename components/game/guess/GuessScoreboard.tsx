@@ -21,6 +21,8 @@ interface GuessScoreboardProps {
   turnResults: TurnResult[];
   isOwner: boolean;
   onNextTurn: () => void;
+  onOneMoreRound: () => void;
+  maxRounds: number | null;
 }
 
 function useAnimatedScore(target: number, duration = 1200) {
@@ -107,7 +109,13 @@ export default function GuessScoreboard({
   turnResults,
   isOwner,
   onNextTurn,
+  onOneMoreRound,
+  maxRounds,
 }: GuessScoreboardProps) {
+  // The game is already set to finish on (or before) the round in progress, so
+  // there is nothing left to wrap up.
+  const endAlreadyScheduled =
+    maxRounds !== null && currentTurn.roundNumber >= maxRounds;
   const sortedScores = [...scores].sort(
     (a, b) => b.totalPoints - a.totalPoints,
   );
@@ -204,12 +212,26 @@ export default function GuessScoreboard({
       </div>
 
       {isOwner && (
-        <button
-          onClick={onNextTurn}
-          className="w-full rounded-lg bg-green-600 px-4 py-3 font-semibold text-white hover:bg-green-700"
-        >
-          Next Turn
-        </button>
+        <div className="space-y-2">
+          <button
+            onClick={onNextTurn}
+            className="w-full rounded-lg bg-green-600 px-4 py-3 font-semibold text-white hover:bg-green-700"
+          >
+            Next Turn
+          </button>
+          {endAlreadyScheduled ? (
+            <p className="text-center text-sm font-medium text-amber-600">
+              Final round — the game ends when this round finishes
+            </p>
+          ) : (
+            <button
+              onClick={onOneMoreRound}
+              className="w-full rounded-lg border border-green-600 px-4 py-3 font-semibold text-green-700 hover:bg-green-50"
+            >
+              One more round
+            </button>
+          )}
+        </div>
       )}
     </div>
   );
