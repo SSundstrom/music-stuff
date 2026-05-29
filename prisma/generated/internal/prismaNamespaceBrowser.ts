@@ -226,8 +226,6 @@ export const GuessConfigScalarFieldEnum = {
   sessionId: 'sessionId',
   maxRounds: 'maxRounds',
   guessTimeSec: 'guessTimeSec',
-  guessingVolume: 'guessingVolume',
-  betweenVolume: 'betweenVolume',
   pickOrder: 'pickOrder'
 } as const
 

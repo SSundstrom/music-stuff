@@ -31,12 +31,7 @@ export async function getOrCreateGuessConfig(
 
 export async function updateGuessConfig(
   sessionId: string,
-  updates: {
-    guessTimeSec?: number;
-    maxRounds?: number | null;
-    guessingVolume?: number;
-    betweenVolume?: number;
-  },
+  updates: { guessTimeSec?: number; maxRounds?: number | null },
 ): Promise<GuessConfig> {
   const config = await getOrCreateGuessConfig(sessionId);
   return await prisma.guessConfig.update({

@@ -29,15 +29,11 @@ export type AggregateGuessConfig = {
 export type GuessConfigAvgAggregateOutputType = {
   maxRounds: number | null
   guessTimeSec: number | null
-  guessingVolume: number | null
-  betweenVolume: number | null
 }
 
 export type GuessConfigSumAggregateOutputType = {
   maxRounds: number | null
   guessTimeSec: number | null
-  guessingVolume: number | null
-  betweenVolume: number | null
 }
 
 export type GuessConfigMinAggregateOutputType = {
@@ -45,8 +41,6 @@ export type GuessConfigMinAggregateOutputType = {
   sessionId: string | null
   maxRounds: number | null
   guessTimeSec: number | null
-  guessingVolume: number | null
-  betweenVolume: number | null
 }
 
 export type GuessConfigMaxAggregateOutputType = {
@@ -54,8 +48,6 @@ export type GuessConfigMaxAggregateOutputType = {
   sessionId: string | null
   maxRounds: number | null
   guessTimeSec: number | null
-  guessingVolume: number | null
-  betweenVolume: number | null
 }
 
 export type GuessConfigCountAggregateOutputType = {
@@ -63,8 +55,6 @@ export type GuessConfigCountAggregateOutputType = {
   sessionId: number
   maxRounds: number
   guessTimeSec: number
-  guessingVolume: number
-  betweenVolume: number
   pickOrder: number
   _all: number
 }
@@ -73,15 +63,11 @@ export type GuessConfigCountAggregateOutputType = {
 export type GuessConfigAvgAggregateInputType = {
   maxRounds?: true
   guessTimeSec?: true
-  guessingVolume?: true
-  betweenVolume?: true
 }
 
 export type GuessConfigSumAggregateInputType = {
   maxRounds?: true
   guessTimeSec?: true
-  guessingVolume?: true
-  betweenVolume?: true
 }
 
 export type GuessConfigMinAggregateInputType = {
@@ -89,8 +75,6 @@ export type GuessConfigMinAggregateInputType = {
   sessionId?: true
   maxRounds?: true
   guessTimeSec?: true
-  guessingVolume?: true
-  betweenVolume?: true
 }
 
 export type GuessConfigMaxAggregateInputType = {
@@ -98,8 +82,6 @@ export type GuessConfigMaxAggregateInputType = {
   sessionId?: true
   maxRounds?: true
   guessTimeSec?: true
-  guessingVolume?: true
-  betweenVolume?: true
 }
 
 export type GuessConfigCountAggregateInputType = {
@@ -107,8 +89,6 @@ export type GuessConfigCountAggregateInputType = {
   sessionId?: true
   maxRounds?: true
   guessTimeSec?: true
-  guessingVolume?: true
-  betweenVolume?: true
   pickOrder?: true
   _all?: true
 }
@@ -204,8 +184,6 @@ export type GuessConfigGroupByOutputType = {
   sessionId: string
   maxRounds: number | null
   guessTimeSec: number
-  guessingVolume: number
-  betweenVolume: number
   pickOrder: string[]
   _count: GuessConfigCountAggregateOutputType | null
   _avg: GuessConfigAvgAggregateOutputType | null
@@ -237,8 +215,6 @@ export type GuessConfigWhereInput = {
   sessionId?: Prisma.StringFilter<"GuessConfig"> | string
   maxRounds?: Prisma.IntNullableFilter<"GuessConfig"> | number | null
   guessTimeSec?: Prisma.IntFilter<"GuessConfig"> | number
-  guessingVolume?: Prisma.IntFilter<"GuessConfig"> | number
-  betweenVolume?: Prisma.IntFilter<"GuessConfig"> | number
   pickOrder?: Prisma.StringNullableListFilter<"GuessConfig">
   session?: Prisma.XOR<Prisma.GameSessionScalarRelationFilter, Prisma.GameSessionWhereInput>
 }
@@ -248,8 +224,6 @@ export type GuessConfigOrderByWithRelationInput = {
   sessionId?: Prisma.SortOrder
   maxRounds?: Prisma.SortOrderInput | Prisma.SortOrder
   guessTimeSec?: Prisma.SortOrder
-  guessingVolume?: Prisma.SortOrder
-  betweenVolume?: Prisma.SortOrder
   pickOrder?: Prisma.SortOrder
   session?: Prisma.GameSessionOrderByWithRelationInput
 }
@@ -262,8 +236,6 @@ export type GuessConfigWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.GuessConfigWhereInput | Prisma.GuessConfigWhereInput[]
   maxRounds?: Prisma.IntNullableFilter<"GuessConfig"> | number | null
   guessTimeSec?: Prisma.IntFilter<"GuessConfig"> | number
-  guessingVolume?: Prisma.IntFilter<"GuessConfig"> | number
-  betweenVolume?: Prisma.IntFilter<"GuessConfig"> | number
   pickOrder?: Prisma.StringNullableListFilter<"GuessConfig">
   session?: Prisma.XOR<Prisma.GameSessionScalarRelationFilter, Prisma.GameSessionWhereInput>
 }, "id" | "sessionId">
@@ -273,8 +245,6 @@ export type GuessConfigOrderByWithAggregationInput = {
   sessionId?: Prisma.SortOrder
   maxRounds?: Prisma.SortOrderInput | Prisma.SortOrder
   guessTimeSec?: Prisma.SortOrder
-  guessingVolume?: Prisma.SortOrder
-  betweenVolume?: Prisma.SortOrder
   pickOrder?: Prisma.SortOrder
   _count?: Prisma.GuessConfigCountOrderByAggregateInput
   _avg?: Prisma.GuessConfigAvgOrderByAggregateInput
@@ -291,8 +261,6 @@ export type GuessConfigScalarWhereWithAggregatesInput = {
   sessionId?: Prisma.StringWithAggregatesFilter<"GuessConfig"> | string
   maxRounds?: Prisma.IntNullableWithAggregatesFilter<"GuessConfig"> | number | null
   guessTimeSec?: Prisma.IntWithAggregatesFilter<"GuessConfig"> | number
-  guessingVolume?: Prisma.IntWithAggregatesFilter<"GuessConfig"> | number
-  betweenVolume?: Prisma.IntWithAggregatesFilter<"GuessConfig"> | number
   pickOrder?: Prisma.StringNullableListFilter<"GuessConfig">
 }
 
@@ -300,8 +268,6 @@ export type GuessConfigCreateInput = {
   id: string
   maxRounds?: number | null
   guessTimeSec?: number
-  guessingVolume?: number
-  betweenVolume?: number
   pickOrder?: Prisma.GuessConfigCreatepickOrderInput | string[]
   session: Prisma.GameSessionCreateNestedOneWithoutGuessConfigInput
 }
@@ -311,8 +277,6 @@ export type GuessConfigUncheckedCreateInput = {
   sessionId: string
   maxRounds?: number | null
   guessTimeSec?: number
-  guessingVolume?: number
-  betweenVolume?: number
   pickOrder?: Prisma.GuessConfigCreatepickOrderInput | string[]
 }
 
@@ -320,8 +284,6 @@ export type GuessConfigUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   maxRounds?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   guessTimeSec?: Prisma.IntFieldUpdateOperationsInput | number
-  guessingVolume?: Prisma.IntFieldUpdateOperationsInput | number
-  betweenVolume?: Prisma.IntFieldUpdateOperationsInput | number
   pickOrder?: Prisma.GuessConfigUpdatepickOrderInput | string[]
   session?: Prisma.GameSessionUpdateOneRequiredWithoutGuessConfigNestedInput
 }
@@ -331,8 +293,6 @@ export type GuessConfigUncheckedUpdateInput = {
   sessionId?: Prisma.StringFieldUpdateOperationsInput | string
   maxRounds?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   guessTimeSec?: Prisma.IntFieldUpdateOperationsInput | number
-  guessingVolume?: Prisma.IntFieldUpdateOperationsInput | number
-  betweenVolume?: Prisma.IntFieldUpdateOperationsInput | number
   pickOrder?: Prisma.GuessConfigUpdatepickOrderInput | string[]
 }
 
@@ -341,8 +301,6 @@ export type GuessConfigCreateManyInput = {
   sessionId: string
   maxRounds?: number | null
   guessTimeSec?: number
-  guessingVolume?: number
-  betweenVolume?: number
   pickOrder?: Prisma.GuessConfigCreatepickOrderInput | string[]
 }
 
@@ -350,8 +308,6 @@ export type GuessConfigUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   maxRounds?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   guessTimeSec?: Prisma.IntFieldUpdateOperationsInput | number
-  guessingVolume?: Prisma.IntFieldUpdateOperationsInput | number
-  betweenVolume?: Prisma.IntFieldUpdateOperationsInput | number
   pickOrder?: Prisma.GuessConfigUpdatepickOrderInput | string[]
 }
 
@@ -360,8 +316,6 @@ export type GuessConfigUncheckedUpdateManyInput = {
   sessionId?: Prisma.StringFieldUpdateOperationsInput | string
   maxRounds?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   guessTimeSec?: Prisma.IntFieldUpdateOperationsInput | number
-  guessingVolume?: Prisma.IntFieldUpdateOperationsInput | number
-  betweenVolume?: Prisma.IntFieldUpdateOperationsInput | number
   pickOrder?: Prisma.GuessConfigUpdatepickOrderInput | string[]
 }
 
@@ -383,16 +337,12 @@ export type GuessConfigCountOrderByAggregateInput = {
   sessionId?: Prisma.SortOrder
   maxRounds?: Prisma.SortOrder
   guessTimeSec?: Prisma.SortOrder
-  guessingVolume?: Prisma.SortOrder
-  betweenVolume?: Prisma.SortOrder
   pickOrder?: Prisma.SortOrder
 }
 
 export type GuessConfigAvgOrderByAggregateInput = {
   maxRounds?: Prisma.SortOrder
   guessTimeSec?: Prisma.SortOrder
-  guessingVolume?: Prisma.SortOrder
-  betweenVolume?: Prisma.SortOrder
 }
 
 export type GuessConfigMaxOrderByAggregateInput = {
@@ -400,8 +350,6 @@ export type GuessConfigMaxOrderByAggregateInput = {
   sessionId?: Prisma.SortOrder
   maxRounds?: Prisma.SortOrder
   guessTimeSec?: Prisma.SortOrder
-  guessingVolume?: Prisma.SortOrder
-  betweenVolume?: Prisma.SortOrder
 }
 
 export type GuessConfigMinOrderByAggregateInput = {
@@ -409,15 +357,11 @@ export type GuessConfigMinOrderByAggregateInput = {
   sessionId?: Prisma.SortOrder
   maxRounds?: Prisma.SortOrder
   guessTimeSec?: Prisma.SortOrder
-  guessingVolume?: Prisma.SortOrder
-  betweenVolume?: Prisma.SortOrder
 }
 
 export type GuessConfigSumOrderByAggregateInput = {
   maxRounds?: Prisma.SortOrder
   guessTimeSec?: Prisma.SortOrder
-  guessingVolume?: Prisma.SortOrder
-  betweenVolume?: Prisma.SortOrder
 }
 
 export type GuessConfigCreateNestedOneWithoutSessionInput = {
@@ -473,8 +417,6 @@ export type GuessConfigCreateWithoutSessionInput = {
   id: string
   maxRounds?: number | null
   guessTimeSec?: number
-  guessingVolume?: number
-  betweenVolume?: number
   pickOrder?: Prisma.GuessConfigCreatepickOrderInput | string[]
 }
 
@@ -482,8 +424,6 @@ export type GuessConfigUncheckedCreateWithoutSessionInput = {
   id: string
   maxRounds?: number | null
   guessTimeSec?: number
-  guessingVolume?: number
-  betweenVolume?: number
   pickOrder?: Prisma.GuessConfigCreatepickOrderInput | string[]
 }
 
@@ -507,8 +447,6 @@ export type GuessConfigUpdateWithoutSessionInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   maxRounds?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   guessTimeSec?: Prisma.IntFieldUpdateOperationsInput | number
-  guessingVolume?: Prisma.IntFieldUpdateOperationsInput | number
-  betweenVolume?: Prisma.IntFieldUpdateOperationsInput | number
   pickOrder?: Prisma.GuessConfigUpdatepickOrderInput | string[]
 }
 
@@ -516,8 +454,6 @@ export type GuessConfigUncheckedUpdateWithoutSessionInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   maxRounds?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   guessTimeSec?: Prisma.IntFieldUpdateOperationsInput | number
-  guessingVolume?: Prisma.IntFieldUpdateOperationsInput | number
-  betweenVolume?: Prisma.IntFieldUpdateOperationsInput | number
   pickOrder?: Prisma.GuessConfigUpdatepickOrderInput | string[]
 }
 
@@ -528,8 +464,6 @@ export type GuessConfigSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   sessionId?: boolean
   maxRounds?: boolean
   guessTimeSec?: boolean
-  guessingVolume?: boolean
-  betweenVolume?: boolean
   pickOrder?: boolean
   session?: boolean | Prisma.GameSessionDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["guessConfig"]>
@@ -539,8 +473,6 @@ export type GuessConfigSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   sessionId?: boolean
   maxRounds?: boolean
   guessTimeSec?: boolean
-  guessingVolume?: boolean
-  betweenVolume?: boolean
   pickOrder?: boolean
   session?: boolean | Prisma.GameSessionDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["guessConfig"]>
@@ -550,8 +482,6 @@ export type GuessConfigSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   sessionId?: boolean
   maxRounds?: boolean
   guessTimeSec?: boolean
-  guessingVolume?: boolean
-  betweenVolume?: boolean
   pickOrder?: boolean
   session?: boolean | Prisma.GameSessionDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["guessConfig"]>
@@ -561,12 +491,10 @@ export type GuessConfigSelectScalar = {
   sessionId?: boolean
   maxRounds?: boolean
   guessTimeSec?: boolean
-  guessingVolume?: boolean
-  betweenVolume?: boolean
   pickOrder?: boolean
 }
 
-export type GuessConfigOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "sessionId" | "maxRounds" | "guessTimeSec" | "guessingVolume" | "betweenVolume" | "pickOrder", ExtArgs["result"]["guessConfig"]>
+export type GuessConfigOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "sessionId" | "maxRounds" | "guessTimeSec" | "pickOrder", ExtArgs["result"]["guessConfig"]>
 export type GuessConfigInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   session?: boolean | Prisma.GameSessionDefaultArgs<ExtArgs>
 }
@@ -587,8 +515,6 @@ export type $GuessConfigPayload<ExtArgs extends runtime.Types.Extensions.Interna
     sessionId: string
     maxRounds: number | null
     guessTimeSec: number
-    guessingVolume: number
-    betweenVolume: number
     pickOrder: string[]
   }, ExtArgs["result"]["guessConfig"]>
   composites: {}
@@ -1018,8 +944,6 @@ export interface GuessConfigFieldRefs {
   readonly sessionId: Prisma.FieldRef<"GuessConfig", 'String'>
   readonly maxRounds: Prisma.FieldRef<"GuessConfig", 'Int'>
   readonly guessTimeSec: Prisma.FieldRef<"GuessConfig", 'Int'>
-  readonly guessingVolume: Prisma.FieldRef<"GuessConfig", 'Int'>
-  readonly betweenVolume: Prisma.FieldRef<"GuessConfig", 'Int'>
   readonly pickOrder: Prisma.FieldRef<"GuessConfig", 'String[]'>
 }
     

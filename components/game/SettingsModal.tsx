@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { MdSpeaker, MdComputer, MdSmartphone, MdDevices, MdCheck } from "react-icons/md";
 import type { Player } from "@/types/game";
 import { useSpotifyPlayer } from "@/components/SpotifyPlayerProvider";
+import VolumeControls from "@/components/game/VolumeControls";
 
 function DeviceIcon({ type }: { type: string }) {
   switch (type.toLowerCase()) {
@@ -43,8 +44,17 @@ export default function SettingsModal({
   const [error, setError] = useState("");
   const [position, setPosition] = useState({ top: 0, right: 0 });
   const [devicesLoading, setDevicesLoading] = useState(false);
-  const { devices, selectedDevice, selectDevice, refreshDevices } =
-    useSpotifyPlayer();
+  const {
+    devices,
+    selectedDevice,
+    selectDevice,
+    refreshDevices,
+    guessingVolume,
+    betweenVolume,
+    setGuessingVolume,
+    setBetweenVolume,
+    setVolume,
+  } = useSpotifyPlayer();
 
   useEffect(() => {
     if (!isOpen || !buttonRef?.current) return;
@@ -244,6 +254,22 @@ export default function SettingsModal({
               </div>
             )}
           </div>
+
+          {/* Volume — host-device preference, used by the browser player.
+              Apply live via setVolume so the host hears the change immediately;
+              in Guess the Song the orchestrator reconciles to the phase value. */}
+          <VolumeControls
+            guessingVolume={guessingVolume}
+            betweenVolume={betweenVolume}
+            onGuessingVolumeChange={(value) => {
+              setGuessingVolume(value);
+              setVolume(value / 100);
+            }}
+            onBetweenVolumeChange={(value) => {
+              setBetweenVolume(value);
+              setVolume(value / 100);
+            }}
+          />
         </div>
       </div>
     </>,

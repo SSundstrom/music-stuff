@@ -18,12 +18,6 @@ export default function GuessConfigPanel({
   const [maxRounds, setMaxRounds] = useState<number | null>(
     config?.maxRounds ?? null,
   );
-  const [guessingVolume, setGuessingVolume] = useState(
-    config?.guessingVolume ?? 80,
-  );
-  const [betweenVolume, setBetweenVolume] = useState(
-    config?.betweenVolume ?? 30,
-  );
   const [saving, setSaving] = useState(false);
 
   async function handleSave() {
@@ -32,12 +26,7 @@ export default function GuessConfigPanel({
       const response = await fetch(`/api/game/${sessionId}/guess/config`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          guessTimeSec,
-          maxRounds,
-          guessingVolume,
-          betweenVolume,
-        }),
+        body: JSON.stringify({ guessTimeSec, maxRounds }),
       });
       if (!response.ok) throw new Error("Failed to save config");
       onConfigUpdated();
@@ -88,38 +77,6 @@ export default function GuessConfigPanel({
               {maxRounds ? `${maxRounds} round${maxRounds > 1 ? "s" : ""}` : "Unlimited"}
             </span>
           </div>
-        </div>
-
-        <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-1">
-            Guessing Volume
-          </label>
-          <input
-            type="range"
-            min={0}
-            max={100}
-            step={5}
-            value={guessingVolume}
-            onChange={(e) => setGuessingVolume(parseInt(e.target.value))}
-            className="w-full"
-          />
-          <p className="text-sm text-gray-600">{guessingVolume}%</p>
-        </div>
-
-        <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-1">
-            Between-Songs Volume
-          </label>
-          <input
-            type="range"
-            min={0}
-            max={100}
-            step={5}
-            value={betweenVolume}
-            onChange={(e) => setBetweenVolume(parseInt(e.target.value))}
-            className="w-full"
-          />
-          <p className="text-sm text-gray-600">{betweenVolume}%</p>
         </div>
 
         <button

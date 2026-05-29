@@ -39,6 +39,12 @@ interface SpotifyPlayerContextType {
   resume: () => Promise<void>;
   seek: (positionMs: number) => Promise<void>;
   setVolume: (volume: number) => Promise<void>;
+  /** Host-device volume (0-100) used while players are guessing. */
+  guessingVolume: number;
+  /** Host-device volume (0-100) used between songs. */
+  betweenVolume: number;
+  setGuessingVolume: (volume: number) => void;
+  setBetweenVolume: (volume: number) => void;
   error: string | null;
   devices: SpotifyDevice[];
   selectedDevice: SpotifyDevice | null;
@@ -62,6 +68,23 @@ export function useSpotifyPlayer() {
 
 const PLACEHOLDER_TRACK_ID = "placeholder-sims-2-theme";
 export const WEB_PLAYER_NAME = "Spotify Tournament";
+
+// Volume is a host-device preference (only the Web SDK player honors it), so it
+// lives in localStorage and persists across games on this device rather than in
+// the shared game config.
+const GUESSING_VOLUME_KEY = "playerGuessingVolume";
+const BETWEEN_VOLUME_KEY = "playerBetweenVolume";
+const DEFAULT_GUESSING_VOLUME = 80;
+const DEFAULT_BETWEEN_VOLUME = 30;
+
+function readStoredVolume(key: string, fallback: number): number {
+  if (typeof window === "undefined") return fallback;
+  const raw = window.localStorage.getItem(key);
+  if (raw === null) return fallback;
+  const parsed = Number(raw);
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.max(0, Math.min(100, parsed));
+}
 
 export default function SpotifyPlayerProvider({
   children,
@@ -94,6 +117,28 @@ export default function SpotifyPlayerProvider({
   const [selectedDevice, setSelectedDevice] = useState<SpotifyDevice | null>(
     null,
   );
+  const [guessingVolume, setGuessingVolumeState] = useState(() =>
+    readStoredVolume(GUESSING_VOLUME_KEY, DEFAULT_GUESSING_VOLUME),
+  );
+  const [betweenVolume, setBetweenVolumeState] = useState(() =>
+    readStoredVolume(BETWEEN_VOLUME_KEY, DEFAULT_BETWEEN_VOLUME),
+  );
+
+  const setGuessingVolume = useCallback((volume: number) => {
+    const clamped = Math.max(0, Math.min(100, volume));
+    setGuessingVolumeState(clamped);
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(GUESSING_VOLUME_KEY, String(clamped));
+    }
+  }, []);
+
+  const setBetweenVolume = useCallback((volume: number) => {
+    const clamped = Math.max(0, Math.min(100, volume));
+    setBetweenVolumeState(clamped);
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(BETWEEN_VOLUME_KEY, String(clamped));
+    }
+  }, []);
 
   // Whether we're using an external device (not the Web SDK)
   const isRemoteDevice = selectedDevice !== null;
@@ -520,6 +565,10 @@ export default function SpotifyPlayerProvider({
         resume,
         seek,
         setVolume,
+        guessingVolume,
+        betweenVolume,
+        setGuessingVolume,
+        setBetweenVolume,
         error,
         devices,
         selectedDevice,

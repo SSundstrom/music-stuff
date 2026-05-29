@@ -147,8 +147,6 @@ model GuessConfig {
   sessionId      String   @unique
   maxRounds      Int?
   guessTimeSec   Int      @default(30)
-  guessingVolume Int      @default(80)
-  betweenVolume  Int      @default(30)
   // Ordered list of player IDs defining the picking rotation. Set when the game
   // starts (round 1 is random); reused every subsequent round so the order is
   // consistent. New players are spliced in by insertJoinedPlayerIntoPickOrder.

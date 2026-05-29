@@ -32,20 +32,20 @@ export default function GuessGameOrchestrator({
   endsAt,
 }: GuessGameOrchestratorProps) {
   const router = useRouter();
-  const { play, setVolume } = useSpotifyPlayer();
+  const { play, setVolume, guessingVolume, betweenVolume } = useSpotifyPlayer();
   const currentTurn = guessState.currentTurn;
 
   // Drive the host's player volume from the game phase: louder while players
-  // are guessing, quieter between songs. Only the host's Web SDK player is
-  // actually playing the music, so setVolume is a no-op for everyone else.
-  const config = guessState.config;
+  // are guessing, quieter between songs. The volumes are a host-device
+  // preference (localStorage); only the host's Web SDK player is actually
+  // playing the music, so setVolume is a no-op for everyone else.
   const phaseStatus = currentTurn?.status;
   useEffect(() => {
-    if (!isOwner || !config) return;
+    if (!isOwner) return;
     const targetPercent =
-      phaseStatus === "guessing" ? config.guessingVolume : config.betweenVolume;
+      phaseStatus === "guessing" ? guessingVolume : betweenVolume;
     setVolume(targetPercent / 100);
-  }, [isOwner, phaseStatus, config, setVolume]);
+  }, [isOwner, phaseStatus, guessingVolume, betweenVolume, setVolume]);
   const isCurrentPicker = useMemo(
     () => currentTurn?.pickerId === playerId,
     [currentTurn?.pickerId, playerId],
